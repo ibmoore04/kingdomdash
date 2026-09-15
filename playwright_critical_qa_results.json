@@ -1,0 +1,530 @@
+{
+  "superAdminIsolation": {
+    "zeroSuperAdminRecordsInTable": true,
+    "zeroSuperAdminInRoleFilter": true,
+    "zeroDisclosureInUI": true,
+    "directDeactivateRejected": true,
+    "passed": true,
+    "superAdminFilterElevated": true
+  },
+  "vendorMultiService": {
+    "modalOpened": true,
+    "bothServiceCheckboxesPresent": true,
+    "persistedMultiService": true,
+    "passed": true
+  },
+  "riderOnboarding": {
+    "modalOpened": true,
+    "vehicleDetailsShown": true,
+    "rpcCalled": true,
+    "passed": true
+  },
+  "supportSystem": {
+    "unauthenticatedAccess": true,
+    "verifiedPhone": true,
+    "verifiedEmail": true,
+    "verifiedLocation": true,
+    "liveWhatsApp": true,
+    "accountInactiveBanner": true,
+    "ticketSubmittedRpc": true,
+    "ticketReferenceReturned": true,
+    "passed": true
+  },
+  "inactiveAccount": {
+    "loginSupportLinkVisible": true,
+    "passed": true
+  },
+  "responsiveAudit": [
+    {
+      "page": "support",
+      "viewport": "320x568",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasOverflow": false
+    },
+    {
+      "page": "support_inactive",
+      "viewport": "320x568",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasOverflow": false
+    },
+    {
+      "page": "login",
+      "viewport": "320x568",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasOverflow": false
+    },
+    {
+      "page": "home",
+      "viewport": "320x568",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasOverflow": false
+    },
+    {
+      "page": "food",
+      "viewport": "320x568",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasOverflow": false
+    },
+    {
+      "page": "grocery",
+      "viewport": "320x568",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasOverflow": false
+    },
+    {
+      "page": "courier",
+      "viewport": "320x568",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasOverflow": false
+    },
+    {
+      "page": "support",
+      "viewport": "375x667",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasOverflow": false
+    },
+    {
+      "page": "support_inactive",
+      "viewport": "375x667",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasOverflow": false
+    },
+    {
+      "page": "login",
+      "viewport": "375x667",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasOverflow": false
+    },
+    {
+      "page": "home",
+      "viewport": "375x667",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasOverflow": false
+    },
+    {
+      "page": "food",
+      "viewport": "375x667",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasOverflow": false
+    },
+    {
+      "page": "grocery",
+      "viewport": "375x667",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasOverflow": false
+    },
+    {
+      "page": "courier",
+      "viewport": "375x667",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasOverflow": false
+    },
+    {
+      "page": "support",
+      "viewport": "390x844",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasOverflow": false
+    },
+    {
+      "page": "support_inactive",
+      "viewport": "390x844",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasOverflow": false
+    },
+    {
+      "page": "login",
+      "viewport": "390x844",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasOverflow": false
+    },
+    {
+      "page": "home",
+      "viewport": "390x844",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasOverflow": false
+    },
+    {
+      "page": "food",
+      "viewport": "390x844",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasOverflow": false
+    },
+    {
+      "page": "grocery",
+      "viewport": "390x844",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasOverflow": false
+    },
+    {
+      "page": "courier",
+      "viewport": "390x844",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasOverflow": false
+    },
+    {
+      "page": "support",
+      "viewport": "414x896",
+      "scrollWidth": 414,
+      "clientWidth": 414,
+      "hasOverflow": false
+    },
+    {
+      "page": "support_inactive",
+      "viewport": "414x896",
+      "scrollWidth": 414,
+      "clientWidth": 414,
+      "hasOverflow": false
+    },
+    {
+      "page": "login",
+      "viewport": "414x896",
+      "scrollWidth": 414,
+      "clientWidth": 414,
+      "hasOverflow": false
+    },
+    {
+      "page": "home",
+      "viewport": "414x896",
+      "scrollWidth": 414,
+      "clientWidth": 414,
+      "hasOverflow": false
+    },
+    {
+      "page": "food",
+      "viewport": "414x896",
+      "scrollWidth": 414,
+      "clientWidth": 414,
+      "hasOverflow": false
+    },
+    {
+      "page": "grocery",
+      "viewport": "414x896",
+      "scrollWidth": 414,
+      "clientWidth": 414,
+      "hasOverflow": false
+    },
+    {
+      "page": "courier",
+      "viewport": "414x896",
+      "scrollWidth": 414,
+      "clientWidth": 414,
+      "hasOverflow": false
+    },
+    {
+      "page": "support",
+      "viewport": "768x1024",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasOverflow": false
+    },
+    {
+      "page": "support_inactive",
+      "viewport": "768x1024",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasOverflow": false
+    },
+    {
+      "page": "login",
+      "viewport": "768x1024",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasOverflow": false
+    },
+    {
+      "page": "home",
+      "viewport": "768x1024",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasOverflow": false
+    },
+    {
+      "page": "food",
+      "viewport": "768x1024",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasOverflow": false
+    },
+    {
+      "page": "grocery",
+      "viewport": "768x1024",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasOverflow": false
+    },
+    {
+      "page": "courier",
+      "viewport": "768x1024",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasOverflow": false
+    },
+    {
+      "page": "support",
+      "viewport": "820x1180",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasOverflow": false
+    },
+    {
+      "page": "support_inactive",
+      "viewport": "820x1180",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasOverflow": false
+    },
+    {
+      "page": "login",
+      "viewport": "820x1180",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasOverflow": false
+    },
+    {
+      "page": "home",
+      "viewport": "820x1180",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasOverflow": false
+    },
+    {
+      "page": "food",
+      "viewport": "820x1180",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasOverflow": false
+    },
+    {
+      "page": "grocery",
+      "viewport": "820x1180",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasOverflow": false
+    },
+    {
+      "page": "courier",
+      "viewport": "820x1180",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasOverflow": false
+    },
+    {
+      "page": "support",
+      "viewport": "1024x768",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasOverflow": false
+    },
+    {
+      "page": "support_inactive",
+      "viewport": "1024x768",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasOverflow": false
+    },
+    {
+      "page": "login",
+      "viewport": "1024x768",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasOverflow": false
+    },
+    {
+      "page": "home",
+      "viewport": "1024x768",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasOverflow": false
+    },
+    {
+      "page": "food",
+      "viewport": "1024x768",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasOverflow": false
+    },
+    {
+      "page": "grocery",
+      "viewport": "1024x768",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasOverflow": false
+    },
+    {
+      "page": "courier",
+      "viewport": "1024x768",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasOverflow": false
+    },
+    {
+      "page": "support",
+      "viewport": "1280x800",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasOverflow": false
+    },
+    {
+      "page": "support_inactive",
+      "viewport": "1280x800",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasOverflow": false
+    },
+    {
+      "page": "login",
+      "viewport": "1280x800",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasOverflow": false
+    },
+    {
+      "page": "home",
+      "viewport": "1280x800",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasOverflow": false
+    },
+    {
+      "page": "food",
+      "viewport": "1280x800",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasOverflow": false
+    },
+    {
+      "page": "grocery",
+      "viewport": "1280x800",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasOverflow": false
+    },
+    {
+      "page": "courier",
+      "viewport": "1280x800",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasOverflow": false
+    },
+    {
+      "page": "support",
+      "viewport": "1440x900",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasOverflow": false
+    },
+    {
+      "page": "support_inactive",
+      "viewport": "1440x900",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasOverflow": false
+    },
+    {
+      "page": "login",
+      "viewport": "1440x900",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasOverflow": false
+    },
+    {
+      "page": "home",
+      "viewport": "1440x900",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasOverflow": false
+    },
+    {
+      "page": "food",
+      "viewport": "1440x900",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasOverflow": false
+    },
+    {
+      "page": "grocery",
+      "viewport": "1440x900",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasOverflow": false
+    },
+    {
+      "page": "courier",
+      "viewport": "1440x900",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasOverflow": false
+    },
+    {
+      "page": "support",
+      "viewport": "1920x1080",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasOverflow": false
+    },
+    {
+      "page": "support_inactive",
+      "viewport": "1920x1080",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasOverflow": false
+    },
+    {
+      "page": "login",
+      "viewport": "1920x1080",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasOverflow": false
+    },
+    {
+      "page": "home",
+      "viewport": "1920x1080",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasOverflow": false
+    },
+    {
+      "page": "food",
+      "viewport": "1920x1080",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasOverflow": false
+    },
+    {
+      "page": "grocery",
+      "viewport": "1920x1080",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasOverflow": false
+    },
+    {
+      "page": "courier",
+      "viewport": "1920x1080",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasOverflow": false
+    }
+  ],
+  "overflowViolations": []
+}

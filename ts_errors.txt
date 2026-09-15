@@ -1,0 +1,2 @@
+npm notice run kindomdash@0.0.0 npx
+npm notice run tsc -b ; Get-Content ts_errors.txt

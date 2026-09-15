@@ -1,0 +1,2803 @@
+{
+  "timestamp": "2026-09-10T12:30:55.803Z",
+  "findings": {
+    "screenshots": [
+      "homepage_1440x900.png",
+      "food_1440x900.png",
+      "groceries_1440x900.png",
+      "courier_1440x900.png",
+      "contact_1440x900.png",
+      "login_1440x900.png",
+      "register_1440x900.png",
+      "cart_1440x900.png",
+      "homepage_mob_390x844.png",
+      "food_mob_390x844.png",
+      "groceries_mob_390x844.png",
+      "courier_mob_390x844.png",
+      "contact_mob_390x844.png",
+      "login_mob_390x844.png",
+      "register_mob_390x844.png",
+      "cart_mob_390x844.png",
+      "homepage_tablet_768x1024.png",
+      "cust_dashboard_1440x900.png",
+      "cust_orders_1440x900.png",
+      "cust_addresses_1440x900.png",
+      "cust_profile_1440x900.png",
+      "cust_notifications_1440x900.png",
+      "cust_settings_1440x900.png",
+      "cust_dashboard_mob_390x844.png",
+      "cust_orders_mob_390x844.png",
+      "cust_addresses_mob_390x844.png",
+      "cust_profile_mob_390x844.png",
+      "cust_notifications_mob_390x844.png",
+      "cust_settings_mob_390x844.png",
+      "vendor_dash_1440x900.png",
+      "admin_dash_1440x900.png",
+      "rider_dash_1440x900.png"
+    ],
+    "overflowIssues": [],
+    "pageResults": {
+      "homepage_1440x900": {
+        "name": "homepage",
+        "url": "/",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors fo",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "9999px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visibl",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": false
+          },
+          {
+            "text": "Order Now",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 44,
+            "width": 129,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "14px",
+            "padding": "12px 28px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 36,
+            "width": 48,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "0px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 69,
+          "bg": "rgba(255, 255, 255, 0.95)",
+          "links": [
+            "KingdomDashSWIFT IN MOTIO",
+            "Home",
+            "About",
+            "Services",
+            "Food",
+            "Grocery",
+            "Courier",
+            "Contact"
+          ]
+        },
+        "screenshot": "homepage_1440x900.png"
+      },
+      "food_1440x900": {
+        "name": "food",
+        "url": "/food",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors fo",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "9999px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visibl",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": false
+          },
+          {
+            "text": "Find Food",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 44,
+            "width": 115,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "14px",
+            "padding": "12px 24px",
+            "visible": true
+          },
+          {
+            "text": "View all categories →",
+            "classes": "text-xs font-bold text-primary hover:underline",
+            "height": 16,
+            "width": 124,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(229, 9, 20)",
+            "radius": "0px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "AllAll dishes",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-primary bg-primary/5 ring-1 ring-primary shad",
+            "height": 121,
+            "width": 160,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "AfricanNigerian specialties",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-neutral-200 bg-white hover:border-neutral-300",
+            "height": 121,
+            "width": 160,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "Fast FoodBurgers & grills",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-neutral-200 bg-white hover:border-neutral-300",
+            "height": 121,
+            "width": 160,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "PizzaOven-baked pizzas",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-neutral-200 bg-white hover:border-neutral-300",
+            "height": 121,
+            "width": 160,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "ShawarmaWraps & quick bites",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-neutral-200 bg-white hover:border-neutral-300",
+            "height": 121,
+            "width": 160,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "ContinentalGlobal delicacies",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-neutral-200 bg-white hover:border-neutral-300",
+            "height": 121,
+            "width": 160,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "HealthySalads & bowls",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-neutral-200 bg-white hover:border-neutral-300",
+            "height": 121,
+            "width": 160,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "Cuisine",
+            "classes": "inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-",
+            "height": 30,
+            "width": 88,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "14px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Rating",
+            "classes": "inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-",
+            "height": 30,
+            "width": 81,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "14px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Delivery Time",
+            "classes": "inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-",
+            "height": 30,
+            "width": 124,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "14px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 36,
+            "width": 48,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "0px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 69,
+          "bg": "rgba(255, 255, 255, 0.95)",
+          "links": [
+            "KingdomDashSWIFT IN MOTIO",
+            "Home",
+            "About",
+            "Services",
+            "Food",
+            "Grocery",
+            "Courier",
+            "Contact"
+          ]
+        },
+        "screenshot": "food_1440x900.png"
+      },
+      "groceries_1440x900": {
+        "name": "groceries",
+        "url": "/groceries",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors fo",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "9999px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visibl",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": false
+          },
+          {
+            "text": "Find Stores",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:shadow-none f",
+            "height": 44,
+            "width": 143,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "14px",
+            "padding": "12px 28px",
+            "visible": true
+          },
+          {
+            "text": "All Items",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all bg-neutral-900 text-white shadow-md",
+            "height": 36,
+            "width": 107,
+            "bg": "rgb(23, 23, 23)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Fresh Produce",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 143,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Dairy & Eggs",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 133,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Pantry Staples",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 143,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Meat & Poultry",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 144,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Beverages",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 121,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Household",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 122,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Bakery & Snacks",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 156,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "All Stores (0)",
+            "classes": "rounded-full px-4 py-2 text-xs font-medium transition-all bg-neutral-900 text-white",
+            "height": 32,
+            "width": 106,
+            "bg": "rgb(23, 23, 23)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "9999px",
+            "padding": "8px 16px",
+            "visible": true
+          },
+          {
+            "text": "Open Now",
+            "classes": "rounded-full px-4 py-2 text-xs font-medium transition-all border border-border bg-white text-neutral-600 hover:bg-neutral-50",
+            "height": 34,
+            "width": 94,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(82, 82, 82)",
+            "radius": "9999px",
+            "padding": "8px 16px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 36,
+            "width": 48,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "0px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 69,
+          "bg": "rgba(255, 255, 255, 0.95)",
+          "links": [
+            "KingdomDashSWIFT IN MOTIO",
+            "Home",
+            "About",
+            "Services",
+            "Food",
+            "Grocery",
+            "Courier",
+            "Contact"
+          ]
+        },
+        "screenshot": "groceries_1440x900.png"
+      },
+      "courier_1440x900": {
+        "name": "courier",
+        "url": "/courier",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors fo",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "9999px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visibl",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": false
+          },
+          {
+            "text": "Send Booking via WhatsApp",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:shadow-none f",
+            "height": 48,
+            "width": 590,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "14px",
+            "padding": "16px 24px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 36,
+            "width": 48,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "0px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 69,
+          "bg": "rgba(255, 255, 255, 0.95)",
+          "links": [
+            "KingdomDashSWIFT IN MOTIO",
+            "Home",
+            "About",
+            "Services",
+            "Food",
+            "Grocery",
+            "Courier",
+            "Contact"
+          ]
+        },
+        "screenshot": "courier_1440x900.png"
+      },
+      "contact_1440x900": {
+        "name": "contact",
+        "url": "/contact",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors fo",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "9999px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visibl",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": false
+          },
+          {
+            "text": "Send Message",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:trans",
+            "height": 48,
+            "width": 502,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "9999px",
+            "padding": "0px 24px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 36,
+            "width": 48,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "0px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 69,
+          "bg": "rgba(255, 255, 255, 0.95)",
+          "links": [
+            "KingdomDashSWIFT IN MOTIO",
+            "Home",
+            "About",
+            "Services",
+            "Food",
+            "Grocery",
+            "Courier",
+            "Contact"
+          ]
+        },
+        "screenshot": "contact_1440x900.png"
+      },
+      "login_1440x900": {
+        "name": "login",
+        "url": "/auth/login",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#6b7280] focus-visible:outline-none transition-colors",
+            "height": 20,
+            "width": 20,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(156, 163, 175)",
+            "radius": "0px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "Sign in",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:sh",
+            "height": 54,
+            "width": 448,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "12px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": false
+        },
+        "screenshot": "login_1440x900.png"
+      },
+      "register_1440x900": {
+        "name": "register",
+        "url": "/auth/register",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#6b7280] focus-visible:outline-none transition-colors",
+            "height": 20,
+            "width": 20,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(156, 163, 175)",
+            "radius": "0px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "CustomerOrder food, groceries, and courier service",
+            "classes": "flex items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all border-[#E50914] bg-red-50/40 shadow-sm ring-1 ring-[#E50914]",
+            "height": 70,
+            "width": 448,
+            "bg": "rgba(254, 242, 242, 0.4)",
+            "color": "rgb(8, 6, 7)",
+            "radius": "14px",
+            "padding": "14px",
+            "visible": true
+          },
+          {
+            "text": "RiderDeliver orders and courier packages.",
+            "classes": "flex items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all border-[#e5e7eb] bg-white hover:border-[#d1d5db] hover:bg-gray-50/50",
+            "height": 70,
+            "width": 448,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(8, 6, 7)",
+            "radius": "14px",
+            "padding": "14px",
+            "visible": true
+          },
+          {
+            "text": "VendorSell food or groceries through KingdomDash.",
+            "classes": "flex items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all border-[#e5e7eb] bg-white hover:border-[#d1d5db] hover:bg-gray-50/50",
+            "height": 70,
+            "width": 448,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(8, 6, 7)",
+            "radius": "14px",
+            "padding": "14px",
+            "visible": true
+          },
+          {
+            "text": "Create account",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:sh",
+            "height": 54,
+            "width": 448,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "12px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": false
+        },
+        "screenshot": "register_1440x900.png"
+      },
+      "cart_1440x900": {
+        "name": "cart",
+        "url": "/cart",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors fo",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "9999px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visibl",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": false
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 36,
+            "width": 48,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "0px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 69,
+          "bg": "rgba(255, 255, 255, 0.95)",
+          "links": [
+            "KingdomDashSWIFT IN MOTIO",
+            "Home",
+            "About",
+            "Services",
+            "Food",
+            "Grocery",
+            "Courier",
+            "Contact"
+          ]
+        },
+        "screenshot": "cart_1440x900.png"
+      },
+      "homepage_mob_390x844": {
+        "name": "homepage_mob",
+        "url": "/",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors fo",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "9999px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visibl",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": true
+          },
+          {
+            "text": "Order Now",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 44,
+            "width": 338,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "14px",
+            "padding": "12px 28px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 36,
+            "width": 48,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "0px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 69,
+          "bg": "rgba(255, 255, 255, 0.95)",
+          "links": [
+            "KingdomDashSWIFT IN MOTIO",
+            "Home",
+            "About",
+            "Services",
+            "Food",
+            "Grocery",
+            "Courier",
+            "Contact"
+          ]
+        },
+        "screenshot": "homepage_mob_390x844.png"
+      },
+      "food_mob_390x844": {
+        "name": "food_mob",
+        "url": "/food",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors fo",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "9999px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visibl",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": true
+          },
+          {
+            "text": "Find Food",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 44,
+            "width": 105,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "14px",
+            "padding": "12px 24px",
+            "visible": true
+          },
+          {
+            "text": "View all categories →",
+            "classes": "text-xs font-bold text-primary hover:underline",
+            "height": 16,
+            "width": 124,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(229, 9, 20)",
+            "radius": "0px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "AllAll dishes",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-primary bg-primary/5 ring-1 ring-primary shad",
+            "height": 104,
+            "width": 173,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "AfricanNigerian specialties",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-neutral-200 bg-white hover:border-neutral-300",
+            "height": 104,
+            "width": 173,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "Fast FoodBurgers & grills",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-neutral-200 bg-white hover:border-neutral-300",
+            "height": 104,
+            "width": 173,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "PizzaOven-baked pizzas",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-neutral-200 bg-white hover:border-neutral-300",
+            "height": 104,
+            "width": 173,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "ShawarmaWraps & quick bites",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-neutral-200 bg-white hover:border-neutral-300",
+            "height": 104,
+            "width": 173,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "ContinentalGlobal delicacies",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-neutral-200 bg-white hover:border-neutral-300",
+            "height": 104,
+            "width": 173,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "HealthySalads & bowls",
+            "classes": "flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center group border-neutral-200 bg-white hover:border-neutral-300",
+            "height": 104,
+            "width": 173,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(23, 23, 23)",
+            "radius": "16px",
+            "padding": "16px",
+            "visible": true
+          },
+          {
+            "text": "Cuisine",
+            "classes": "inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-",
+            "height": 30,
+            "width": 88,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "14px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Rating",
+            "classes": "inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-",
+            "height": 30,
+            "width": 81,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "14px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Delivery Time",
+            "classes": "inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-",
+            "height": 30,
+            "width": 124,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "14px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 36,
+            "width": 48,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "0px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 69,
+          "bg": "rgba(255, 255, 255, 0.95)",
+          "links": [
+            "KingdomDashSWIFT IN MOTIO",
+            "Home",
+            "About",
+            "Services",
+            "Food",
+            "Grocery",
+            "Courier",
+            "Contact"
+          ]
+        },
+        "screenshot": "food_mob_390x844.png"
+      },
+      "groceries_mob_390x844": {
+        "name": "groceries_mob",
+        "url": "/groceries",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors fo",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "9999px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visibl",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": true
+          },
+          {
+            "text": "Find Stores",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:shadow-none f",
+            "height": 44,
+            "width": 340,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "14px",
+            "padding": "12px 28px",
+            "visible": true
+          },
+          {
+            "text": "All Items",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all bg-neutral-900 text-white shadow-md",
+            "height": 36,
+            "width": 107,
+            "bg": "rgb(23, 23, 23)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Fresh Produce",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 143,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Dairy & Eggs",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 133,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Pantry Staples",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 143,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Meat & Poultry",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 144,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Beverages",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 121,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Household",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 122,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "Bakery & Snacks",
+            "classes": "flex shrink-0 items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-medium transition-all border border-border bg-white text-neutral-700 hover:bo",
+            "height": 38,
+            "width": 156,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(64, 64, 64)",
+            "radius": "9999px",
+            "padding": "10px 16px",
+            "visible": true
+          },
+          {
+            "text": "All Stores (0)",
+            "classes": "rounded-full px-4 py-2 text-xs font-medium transition-all bg-neutral-900 text-white",
+            "height": 32,
+            "width": 106,
+            "bg": "rgb(23, 23, 23)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "9999px",
+            "padding": "8px 16px",
+            "visible": true
+          },
+          {
+            "text": "Open Now",
+            "classes": "rounded-full px-4 py-2 text-xs font-medium transition-all border border-border bg-white text-neutral-600 hover:bg-neutral-50",
+            "height": 34,
+            "width": 94,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(82, 82, 82)",
+            "radius": "9999px",
+            "padding": "8px 16px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 36,
+            "width": 48,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "0px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 69,
+          "bg": "rgba(255, 255, 255, 0.95)",
+          "links": [
+            "KingdomDashSWIFT IN MOTIO",
+            "Home",
+            "About",
+            "Services",
+            "Food",
+            "Grocery",
+            "Courier",
+            "Contact"
+          ]
+        },
+        "screenshot": "groceries_mob_390x844.png"
+      },
+      "courier_mob_390x844": {
+        "name": "courier_mob",
+        "url": "/courier",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors fo",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "9999px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visibl",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": true
+          },
+          {
+            "text": "Send Booking via WhatsApp",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:shadow-none f",
+            "height": 48,
+            "width": 292,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "14px",
+            "padding": "16px 24px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 36,
+            "width": 48,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "0px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 69,
+          "bg": "rgba(255, 255, 255, 0.95)",
+          "links": [
+            "KingdomDashSWIFT IN MOTIO",
+            "Home",
+            "About",
+            "Services",
+            "Food",
+            "Grocery",
+            "Courier",
+            "Contact"
+          ]
+        },
+        "screenshot": "courier_mob_390x844.png"
+      },
+      "contact_mob_390x844": {
+        "name": "contact_mob",
+        "url": "/contact",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors fo",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "9999px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visibl",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": true
+          },
+          {
+            "text": "Send Message",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:trans",
+            "height": 48,
+            "width": 308,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "9999px",
+            "padding": "0px 24px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 36,
+            "width": 48,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "0px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 69,
+          "bg": "rgba(255, 255, 255, 0.95)",
+          "links": [
+            "KingdomDashSWIFT IN MOTIO",
+            "Home",
+            "About",
+            "Services",
+            "Food",
+            "Grocery",
+            "Courier",
+            "Contact"
+          ]
+        },
+        "screenshot": "contact_mob_390x844.png"
+      },
+      "login_mob_390x844": {
+        "name": "login_mob",
+        "url": "/auth/login",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#6b7280] focus-visible:outline-none transition-colors",
+            "height": 20,
+            "width": 20,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(156, 163, 175)",
+            "radius": "0px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "Sign in",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:sh",
+            "height": 54,
+            "width": 310,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "12px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": false
+        },
+        "screenshot": "login_mob_390x844.png"
+      },
+      "register_mob_390x844": {
+        "name": "register_mob",
+        "url": "/auth/register",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#6b7280] focus-visible:outline-none transition-colors",
+            "height": 20,
+            "width": 20,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(156, 163, 175)",
+            "radius": "0px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "CustomerOrder food, groceries, and courier service",
+            "classes": "flex items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all border-[#E50914] bg-red-50/40 shadow-sm ring-1 ring-[#E50914]",
+            "height": 87,
+            "width": 310,
+            "bg": "rgba(254, 242, 242, 0.4)",
+            "color": "rgb(8, 6, 7)",
+            "radius": "14px",
+            "padding": "14px",
+            "visible": true
+          },
+          {
+            "text": "RiderDeliver orders and courier packages.",
+            "classes": "flex items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all border-[#e5e7eb] bg-white hover:border-[#d1d5db] hover:bg-gray-50/50",
+            "height": 70,
+            "width": 310,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(8, 6, 7)",
+            "radius": "14px",
+            "padding": "14px",
+            "visible": true
+          },
+          {
+            "text": "VendorSell food or groceries through KingdomDash.",
+            "classes": "flex items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all border-[#e5e7eb] bg-white hover:border-[#d1d5db] hover:bg-gray-50/50",
+            "height": 87,
+            "width": 310,
+            "bg": "rgb(255, 255, 255)",
+            "color": "rgb(8, 6, 7)",
+            "radius": "14px",
+            "padding": "14px",
+            "visible": true
+          },
+          {
+            "text": "Create account",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:sh",
+            "height": 54,
+            "width": 310,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "12px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": false
+        },
+        "screenshot": "register_mob_390x844.png"
+      },
+      "cart_mob_390x844": {
+        "name": "cart_mob",
+        "url": "/cart",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors fo",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "9999px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visibl",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 36,
+            "width": 48,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "0px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 69,
+          "bg": "rgba(255, 255, 255, 0.95)",
+          "links": [
+            "KingdomDashSWIFT IN MOTIO",
+            "Home",
+            "About",
+            "Services",
+            "Food",
+            "Grocery",
+            "Courier",
+            "Contact"
+          ]
+        },
+        "screenshot": "cart_mob_390x844.png"
+      },
+      "homepage_tablet_768x1024": {
+        "name": "homepage_tablet",
+        "url": "/",
+        "vp": "768x1024",
+        "overflow": {
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "",
+            "classes": "relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors fo",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "9999px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visibl",
+            "height": 40,
+            "width": 40,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": true
+          },
+          {
+            "text": "Order Now",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 44,
+            "width": 129,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "14px",
+            "padding": "12px 28px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 ac",
+            "height": 36,
+            "width": 48,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "0px",
+            "padding": "0px 16px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 69,
+          "bg": "rgba(255, 255, 255, 0.95)",
+          "links": [
+            "KingdomDashSWIFT IN MOTIO",
+            "Home",
+            "About",
+            "Services",
+            "Food",
+            "Grocery",
+            "Courier",
+            "Contact"
+          ]
+        },
+        "screenshot": "homepage_tablet_768x1024.png"
+      },
+      "cust_dashboard_1440x900": {
+        "name": "cust_dashboard",
+        "url": "/dashboard",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "Orders",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all bg-primary text-white font-bold shadow-xs",
+            "height": 42,
+            "width": 215,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": true
+          },
+          {
+            "text": "Addresses",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 42,
+            "width": 215,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": true
+          },
+          {
+            "text": "Profile",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 42,
+            "width": 215,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": true
+          },
+          {
+            "text": "Notifications",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 42,
+            "width": 215,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": true
+          },
+          {
+            "text": "Settings",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 42,
+            "width": 215,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": true
+          },
+          {
+            "text": "Sign Out",
+            "classes": "inline-flex items-center whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:shado",
+            "height": 36,
+            "width": 207,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px 12px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-muted hover:bg-surface-muted hover:text-text-primary -ml-1.5",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": false
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:trans",
+            "height": 44,
+            "width": 44,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:trans",
+            "height": 44,
+            "width": 44,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "Sign Out",
+            "classes": "items-center justify-center whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:sh",
+            "height": 36,
+            "width": 110,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px 12px",
+            "visible": true
+          },
+          {
+            "text": "Refresh",
+            "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_2p",
+            "height": 36,
+            "width": 104,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "6px",
+            "padding": "0px 12px",
+            "visible": true
+          },
+          {
+            "text": "All Orders0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 bg-primary text-white shadow-xs",
+            "height": 28,
+            "width": 106,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Awaiting Payment0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 text-text-secondary hover:bg-surface-muted ",
+            "height": 28,
+            "width": 153,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "In Progress0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 text-text-secondary hover:bg-surface-muted ",
+            "height": 28,
+            "width": 114,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Past Orders0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 text-text-secondary hover:bg-surface-muted ",
+            "height": 28,
+            "width": 117,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Orders",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-primary font-bold",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(229, 9, 20)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": false
+          },
+          {
+            "text": "Addresses",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": false
+          },
+          {
+            "text": "Profile",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": false
+          },
+          {
+            "text": "Notifications",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": false
+          },
+          {
+            "text": "Settings",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": false
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 248,
+          "bg": "rgba(0, 0, 0, 0)",
+          "links": []
+        },
+        "screenshot": "cust_dashboard_1440x900.png"
+      },
+      "cust_orders_1440x900": {
+        "name": "cust_orders",
+        "url": "/dashboard/orders",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [],
+        "nav": {
+          "found": false
+        },
+        "screenshot": "cust_orders_1440x900.png"
+      },
+      "cust_addresses_1440x900": {
+        "name": "cust_addresses",
+        "url": "/dashboard/addresses",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "Orders",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all bg-primary text-white font-bold shadow-xs",
+            "height": 42,
+            "width": 215,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": true
+          },
+          {
+            "text": "Addresses",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 42,
+            "width": 215,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": true
+          },
+          {
+            "text": "Profile",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 42,
+            "width": 215,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": true
+          },
+          {
+            "text": "Notifications",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 42,
+            "width": 215,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": true
+          },
+          {
+            "text": "Settings",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 42,
+            "width": 215,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": true
+          },
+          {
+            "text": "Sign Out",
+            "classes": "inline-flex items-center whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:shado",
+            "height": 36,
+            "width": 207,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px 12px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-muted hover:bg-surface-muted hover:text-text-primary -ml-1.5",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": false
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:trans",
+            "height": 44,
+            "width": 44,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:trans",
+            "height": 44,
+            "width": 44,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "Sign Out",
+            "classes": "items-center justify-center whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:sh",
+            "height": 36,
+            "width": 110,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px 12px",
+            "visible": true
+          },
+          {
+            "text": "Refresh",
+            "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_2p",
+            "height": 36,
+            "width": 104,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "6px",
+            "padding": "0px 12px",
+            "visible": true
+          },
+          {
+            "text": "All Orders0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 bg-primary text-white shadow-xs",
+            "height": 28,
+            "width": 106,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Awaiting Payment0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 text-text-secondary hover:bg-surface-muted ",
+            "height": 28,
+            "width": 153,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "In Progress0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 text-text-secondary hover:bg-surface-muted ",
+            "height": 28,
+            "width": 114,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Past Orders0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 text-text-secondary hover:bg-surface-muted ",
+            "height": 28,
+            "width": 117,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Orders",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-primary font-bold",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(229, 9, 20)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": false
+          },
+          {
+            "text": "Addresses",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": false
+          },
+          {
+            "text": "Profile",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": false
+          },
+          {
+            "text": "Notifications",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": false
+          },
+          {
+            "text": "Settings",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": false
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 248,
+          "bg": "rgba(0, 0, 0, 0)",
+          "links": []
+        },
+        "screenshot": "cust_addresses_1440x900.png"
+      },
+      "cust_profile_1440x900": {
+        "name": "cust_profile",
+        "url": "/dashboard/profile",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [],
+        "nav": {
+          "found": false
+        },
+        "screenshot": "cust_profile_1440x900.png"
+      },
+      "cust_notifications_1440x900": {
+        "name": "cust_notifications",
+        "url": "/dashboard/notifications",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [],
+        "nav": {
+          "found": false
+        },
+        "screenshot": "cust_notifications_1440x900.png"
+      },
+      "cust_settings_1440x900": {
+        "name": "cust_settings",
+        "url": "/dashboard/settings",
+        "vp": "1440x900",
+        "overflow": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [],
+        "nav": {
+          "found": false
+        },
+        "screenshot": "cust_settings_1440x900.png"
+      },
+      "cust_dashboard_mob_390x844": {
+        "name": "cust_dashboard_mob",
+        "url": "/dashboard",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [],
+        "nav": {
+          "found": false
+        },
+        "screenshot": "cust_dashboard_mob_390x844.png"
+      },
+      "cust_orders_mob_390x844": {
+        "name": "cust_orders_mob",
+        "url": "/dashboard/orders",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "Orders",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all bg-primary text-white font-bold shadow-xs",
+            "height": 0,
+            "width": 0,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": false
+          },
+          {
+            "text": "Addresses",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": false
+          },
+          {
+            "text": "Profile",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": false
+          },
+          {
+            "text": "Notifications",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": false
+          },
+          {
+            "text": "Settings",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": false
+          },
+          {
+            "text": "Sign Out",
+            "classes": "inline-flex items-center whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:shado",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px 12px",
+            "visible": false
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-muted hover:bg-surface-muted hover:text-text-primary -ml-1.5",
+            "height": 36,
+            "width": 36,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:trans",
+            "height": 44,
+            "width": 44,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:trans",
+            "height": 44,
+            "width": 44,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "Sign Out",
+            "classes": "items-center justify-center whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:sh",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px 12px",
+            "visible": false
+          },
+          {
+            "text": "Refresh",
+            "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_2p",
+            "height": 36,
+            "width": 104,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "6px",
+            "padding": "0px 12px",
+            "visible": true
+          },
+          {
+            "text": "All Orders0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 bg-primary text-white shadow-xs",
+            "height": 28,
+            "width": 106,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Awaiting Payment0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 text-text-secondary hover:bg-surface-muted ",
+            "height": 28,
+            "width": 153,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "In Progress0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 text-text-secondary hover:bg-surface-muted ",
+            "height": 28,
+            "width": 114,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Past Orders0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 text-text-secondary hover:bg-surface-muted ",
+            "height": 28,
+            "width": 117,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Orders",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-primary font-bold",
+            "height": 49,
+            "width": 75,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(229, 9, 20)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": true
+          },
+          {
+            "text": "Addresses",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 49,
+            "width": 75,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": true
+          },
+          {
+            "text": "Profile",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 49,
+            "width": 75,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": true
+          },
+          {
+            "text": "Notifications",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 49,
+            "width": 75,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": true
+          },
+          {
+            "text": "Settings",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 49,
+            "width": 75,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 0,
+          "bg": "rgba(0, 0, 0, 0)",
+          "links": []
+        },
+        "screenshot": "cust_orders_mob_390x844.png"
+      },
+      "cust_addresses_mob_390x844": {
+        "name": "cust_addresses_mob",
+        "url": "/dashboard/addresses",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [],
+        "nav": {
+          "found": false
+        },
+        "screenshot": "cust_addresses_mob_390x844.png"
+      },
+      "cust_profile_mob_390x844": {
+        "name": "cust_profile_mob",
+        "url": "/dashboard/profile",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [],
+        "nav": {
+          "found": false
+        },
+        "screenshot": "cust_profile_mob_390x844.png"
+      },
+      "cust_notifications_mob_390x844": {
+        "name": "cust_notifications_mob",
+        "url": "/dashboard/notifications",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [
+          {
+            "text": "Orders",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all bg-primary text-white font-bold shadow-xs",
+            "height": 0,
+            "width": 0,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": false
+          },
+          {
+            "text": "Addresses",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": false
+          },
+          {
+            "text": "Profile",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": false
+          },
+          {
+            "text": "Notifications",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": false
+          },
+          {
+            "text": "Settings",
+            "classes": "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all text-text-secondary hover:bg-page-background hov",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "14px",
+            "padding": "10px 14px",
+            "visible": false
+          },
+          {
+            "text": "Sign Out",
+            "classes": "inline-flex items-center whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:shado",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px 12px",
+            "visible": false
+          },
+          {
+            "text": "",
+            "classes": "lg:hidden rounded-lg p-2 text-text-muted hover:bg-surface-muted hover:text-text-primary -ml-1.5",
+            "height": 36,
+            "width": 36,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "10px",
+            "padding": "8px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:trans",
+            "height": 44,
+            "width": 44,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "",
+            "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:trans",
+            "height": 44,
+            "width": 44,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px",
+            "visible": true
+          },
+          {
+            "text": "Sign Out",
+            "classes": "items-center justify-center whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:sh",
+            "height": 0,
+            "width": 0,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "6px",
+            "padding": "0px 12px",
+            "visible": false
+          },
+          {
+            "text": "Refresh",
+            "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-md transition-shadow duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_2p",
+            "height": 36,
+            "width": 104,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "6px",
+            "padding": "0px 12px",
+            "visible": true
+          },
+          {
+            "text": "All Orders0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 bg-primary text-white shadow-xs",
+            "height": 28,
+            "width": 106,
+            "bg": "rgb(229, 9, 20)",
+            "color": "rgb(255, 255, 255)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Awaiting Payment0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 text-text-secondary hover:bg-surface-muted ",
+            "height": 28,
+            "width": 153,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "In Progress0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 text-text-secondary hover:bg-surface-muted ",
+            "height": 28,
+            "width": 114,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Past Orders0",
+            "classes": "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 text-text-secondary hover:bg-surface-muted ",
+            "height": 28,
+            "width": 117,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(75, 85, 99)",
+            "radius": "10px",
+            "padding": "6px 12px",
+            "visible": true
+          },
+          {
+            "text": "Orders",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-primary font-bold",
+            "height": 49,
+            "width": 75,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(229, 9, 20)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": true
+          },
+          {
+            "text": "Addresses",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 49,
+            "width": 75,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": true
+          },
+          {
+            "text": "Profile",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 49,
+            "width": 75,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": true
+          },
+          {
+            "text": "Notifications",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 49,
+            "width": 75,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": true
+          },
+          {
+            "text": "Settings",
+            "classes": "flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors text-text-muted hover:text-text-primary",
+            "height": 49,
+            "width": 75,
+            "bg": "rgba(0, 0, 0, 0)",
+            "color": "rgb(107, 114, 128)",
+            "radius": "0px",
+            "padding": "4px 0px",
+            "visible": true
+          }
+        ],
+        "nav": {
+          "found": true,
+          "height": 0,
+          "bg": "rgba(0, 0, 0, 0)",
+          "links": []
+        },
+        "screenshot": "cust_notifications_mob_390x844.png"
+      },
+      "cust_settings_mob_390x844": {
+        "name": "cust_settings_mob",
+        "url": "/dashboard/settings",
+        "vp": "390x844",
+        "overflow": {
+          "scrollWidth": 390,
+          "clientWidth": 390,
+          "hasHorizontalOverflow": false,
+          "overflowAmount": 0
+        },
+        "buttons": [],
+        "nav": {
+          "found": false
+        },
+        "screenshot": "cust_settings_mob_390x844.png"
+      }
+    }
+  },
+  "overflowMatrix": {
+    "/": {
+      "320x568": "OK",
+      "375x667": "OK",
+      "390x844": "OK",
+      "414x896": "OK",
+      "768x1024": "OK",
+      "820x1180": "OK",
+      "1024x768": "OK",
+      "1280x800": "OK",
+      "1440x900": "OK",
+      "1920x1080": "OK"
+    },
+    "/food": {
+      "320x568": "OK",
+      "375x667": "OK",
+      "390x844": "OK",
+      "414x896": "OK",
+      "768x1024": "OK",
+      "820x1180": "OK",
+      "1024x768": "OK",
+      "1280x800": "OK",
+      "1440x900": "OK",
+      "1920x1080": "OK"
+    },
+    "/groceries": {
+      "320x568": "OK",
+      "375x667": "OK",
+      "390x844": "OK",
+      "414x896": "OK",
+      "768x1024": "OK",
+      "820x1180": "OK",
+      "1024x768": "OK",
+      "1280x800": "OK",
+      "1440x900": "OK",
+      "1920x1080": "OK"
+    },
+    "/auth/login": {
+      "320x568": "OK",
+      "375x667": "OK",
+      "390x844": "OK",
+      "414x896": "OK",
+      "768x1024": "OK",
+      "820x1180": "OK",
+      "1024x768": "OK",
+      "1280x800": "OK",
+      "1440x900": "OK",
+      "1920x1080": "OK"
+    },
+    "/cart": {
+      "320x568": "OK",
+      "375x667": "OK",
+      "390x844": "OK",
+      "414x896": "OK",
+      "768x1024": "OK",
+      "820x1180": "OK",
+      "1024x768": "OK",
+      "1280x800": "OK",
+      "1440x900": "OK",
+      "1920x1080": "OK"
+    }
+  }
+}

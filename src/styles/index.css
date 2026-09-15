@@ -1,0 +1,315 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400;1,14..32,600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #E50914;
+  --color-primary-hover: #c90812;
+  --color-primary-active: #a8060f;
+  --color-primary-soft: #fff1f1;
+  --color-primary-foreground: #ffffff;
+
+  --color-black: #080607;
+  --color-near-black: #080607;
+  --color-dark-surface: #101114;
+  --color-dark-border: #222222;
+  --color-white: #ffffff;
+  --color-page-background: #ffffff;
+  --color-light-surface: #f9f9f9;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f9f9f9;
+
+  --color-text: #080607;
+  --color-text-primary: #080607;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #6b7280;
+  --color-border: #ebebeb;
+
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-error: #dc2626;
+  --color-danger: #dc2626;
+  --color-info: #2563eb;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-pill: 9999px;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+    background-color: var(--color-page-background);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    min-height: 100svh;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary-active);
+    outline-offset: 2px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* ── Auth-specific styles (glass card, left logo column, dark inputs, red pill button) ── */
+@layer components {
+  .auth-input {
+    background: rgba(18, 18, 18, 0.6);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    box-shadow:
+      inset 0 6px 12px rgba(0, 0, 0, 0.7),
+      0 10px 30px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
+    border-radius: 8px;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .auth-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .auth-card-left {
+    background: linear-gradient(
+      180deg,
+      rgba(12, 12, 12, 0.9),
+      rgba(18, 18, 18, 0.8)
+    );
+  }
+
+  .auth-btn {
+    background: linear-gradient(180deg, #b71c1c 0%, var(--color-primary) 100%);
+    color: #ffffff !important;
+    border-radius: 9999px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    box-shadow:
+      inset 0 -10px 18px rgba(0, 0, 0, 0.45),
+      0 12px 30px rgba(0, 0, 0, 0.5);
+    transition:
+      transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      box-shadow 180ms,
+      filter 180ms;
+  }
+
+  .auth-btn * {
+    color: #ffffff !important;
+  }
+
+  .auth-btn:hover {
+    transform: translateY(-2px);
+    color: #ffffff !important;
+    text-shadow: none;
+  }
+
+  .auth-card-accent {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.02),
+      rgba(255, 255, 255, 0.01)
+    );
+    border-radius: 10px;
+  }
+
+  /* Ensure anchors and role=button elements animate color/transform by default */
+  a,
+  [role="button"],
+  [tabindex]:not([tabindex="-1"]) {
+    transition-property:
+      background-color, color, border-color, box-shadow, transform;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+}
+
+/* ── Premium image placeholder ──────────────────────────────────────────────── */
+@layer components {
+  .img-placeholder {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--color-dark-surface);
+  }
+
+  /* Subtle grain texture overlay for cinematic feel */
+  .img-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(10, 10, 10, 0.85) 0%,
+      rgba(10, 10, 10, 0.15) 50%,
+      transparent 100%
+    );
+  }
+
+  /* ──── Global Polished Button & Interactive Transitions ──────────────────── */
+  /* These utilities provide consistent, smooth transitions for all interactive elements */
+
+  /* Base button transitions - use on custom button elements */
+  .btn-transition {
+    /* Explicitly animate colors and transforms to ensure smooth color swaps */
+    @apply transition-colors transition-transform duration-200 ease-out;
+  }
+
+  .btn-transition:hover {
+    transform: translateY(-0.125rem);
+  }
+
+  .btn-transition:active {
+    transform: translateY(0);
+    transition-duration: 80ms;
+  }
+
+  .btn-transition:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2;
+  }
+
+  .btn-transition:disabled,
+  .btn-transition[disabled] {
+    @apply pointer-events-none opacity-60 grayscale-[0.3];
+    transform: none;
+    transition: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-transition {
+      transition: none;
+    }
+    .btn-transition:hover,
+    .btn-transition:active {
+      transform: none;
+    }
+  }
+
+  /* Link transitions - smooth hover and focus effects */
+  a:not([class*="no-transition"]) {
+    @apply transition-colors duration-200 ease-out;
+  }
+
+  a:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 rounded-sm;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a:not([class*="no-transition"]) {
+      transition: none;
+    }
+  }
+
+  /* Native button/input focus styles for elements not using component classes */
+  button:not([class*="no-transition"]):not(
+      [class*="btn-transition"]
+    ):focus-visible,
+  input:not([class*="no-transition"]):focus-visible,
+  textarea:not([class*="no-transition"]):focus-visible,
+  select:not([class*="no-transition"]):focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2;
+  }
+
+  /* Ensure all interactive elements respect motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    button:not([class*="no-transition"]),
+    input:not([class*="no-transition"]),
+    textarea:not([class*="no-transition"]),
+    select:not([class*="no-transition"]) {
+      transition: none;
+    }
+  }
+
+  /* Force smooth color/transform transitions for buttons and btn-transition utilities
+     This helps when classes are composed dynamically (e.g., via asChild) so transitions
+     are always applied to background/color changes. */
+  button,
+  input[type="button"],
+  input[type="submit"],
+  .btn-transition,
+  [class*="btn-transition"] {
+    transition-property:
+      background-color, color, border-color, box-shadow, transform;
+    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button,
+    input[type="button"],
+    input[type="submit"],
+    .btn-transition,
+    [class*="btn-transition"] {
+      transition: none !important;
+    }
+  }
+}
+
+/* ── Hide scrollbars globally (still allow scrolling) ───────────────────────── */
+/* Applies to desktop and mobile across major browsers while preserving scroll behavior */
+@layer base {
+  /* Firefox */
+  html,
+  body,
+  #root,
+  * {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  /* WebKit browsers (Chrome, Safari, Edge Chromium) */
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
+    display: none;
+  }
+}

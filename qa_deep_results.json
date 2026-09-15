@@ -1,0 +1,3203 @@
+{
+  "env": {
+    "appUrl": "http://localhost:5174",
+    "playwrightVersion": "1.63.0",
+    "chromiumVersion": "131.0.6778.33 (v1243)",
+    "supabaseProject": "kbrfaccrhmvgcdtdfjna.supabase.co",
+    "date": "2026-09-09T21:14:31.642Z"
+  },
+  "pass": [
+    {
+      "role": "System",
+      "feature": "Environment",
+      "action": "Verify test configuration",
+      "evidence": "Dev server: http://localhost:5174, Playwright 1.63.0, Chromium 131"
+    },
+    {
+      "role": "Customer",
+      "feature": "Registration",
+      "action": "Empty form validation displays all required field alerts",
+      "evidence": "Full name, email, password verified"
+    },
+    {
+      "role": "Customer",
+      "feature": "Registration",
+      "action": "Invalid email format rejected with descriptive message",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Registration",
+      "action": "Invalid phone number rejected (Nigerian E.164 rule applied)",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Registration",
+      "action": "Password length < 8 rejected with minimum length requirement",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Registration",
+      "action": "Password confirmation mismatch rejected",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Registration",
+      "action": "Error alert properly surfaced to user without silent failure",
+      "evidence": "Sign up failed. Please try again."
+    },
+    {
+      "role": "Customer",
+      "feature": "Login",
+      "action": "Empty credentials blocked with field validation alerts",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Login",
+      "action": "Password visibility toggle works (password <-> text)",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Login",
+      "action": "Invalid credentials correctly rejected with user alert",
+      "evidence": "Invalid email or password."
+    },
+    {
+      "role": "Customer",
+      "feature": "Food Catalog",
+      "action": "Food catalog loaded 5 vendors from live database",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Food Store",
+      "action": "Navigated to vendor storefront: \"Ibrahim Moore Store\"",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Food Order",
+      "action": "Product added to cart via Add-to-Cart button",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Cart",
+      "action": "Navbar cart badge counter updated to 1",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Cart",
+      "action": "Cart page loaded: \"Shopping Cart\"",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Cart",
+      "action": "Increased item quantity in cart",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Checkout",
+      "action": "Unauthenticated checkout cleanly redirected to login with redirect param",
+      "evidence": "http://localhost:5174/auth/login?redirect=/checkout"
+    },
+    {
+      "role": "Customer",
+      "feature": "Grocery Catalog",
+      "action": "Grocery catalog rendered 3 grocery vendor stores",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Grocery Catalog",
+      "action": "/grocery alias successfully routed to GroceriesPage",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Cart",
+      "action": "Cart items persist reliably across browser reload via localStorage",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Cart",
+      "action": "Item removed from cart via remove button",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Cart",
+      "action": "Empty cart state clearly displayed with guidance to shop",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Courier",
+      "action": "Courier is vendor-independent — zero vendor marketplace selectors present",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Courier",
+      "action": "Form validation triggers clear inline errors on empty submission",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Courier",
+      "action": "Courier booking successfully opens pre-filled dispatch link and displays confirmation state",
+      "evidence": ""
+    },
+    {
+      "role": "Security",
+      "feature": "Route Protection",
+      "action": "Unauthenticated access to Customer Dashboard (/dashboard) redirected to /auth/login",
+      "evidence": ""
+    },
+    {
+      "role": "Security",
+      "feature": "Route Protection",
+      "action": "Unauthenticated access to Vendor Dashboard (/vendor) redirected to /auth/login",
+      "evidence": ""
+    },
+    {
+      "role": "Security",
+      "feature": "Route Protection",
+      "action": "Unauthenticated access to Rider Dashboard (/rider) redirected to /auth/login",
+      "evidence": ""
+    },
+    {
+      "role": "Security",
+      "feature": "Route Protection",
+      "action": "Unauthenticated access to Admin Dashboard (/admin) redirected to /auth/login",
+      "evidence": ""
+    },
+    {
+      "role": "Security",
+      "feature": "Route Protection",
+      "action": "Unauthenticated access to Admin Orders (/admin/orders) redirected to /auth/login",
+      "evidence": ""
+    },
+    {
+      "role": "Security",
+      "feature": "Route Protection",
+      "action": "Unauthenticated access to Admin Pricing (/admin/pricing) redirected to /auth/login",
+      "evidence": ""
+    },
+    {
+      "role": "Security",
+      "feature": "Role Isolation",
+      "action": "Customer attempting to access /admin is blocked and redirected to /dashboard",
+      "evidence": ""
+    },
+    {
+      "role": "Security",
+      "feature": "Role Isolation",
+      "action": "Customer attempting to access /vendor is blocked and redirected to /dashboard",
+      "evidence": ""
+    },
+    {
+      "role": "Security",
+      "feature": "Role Isolation",
+      "action": "Customer attempting to access /rider is blocked and redirected to /dashboard",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Dashboard Overview",
+      "action": "Rendered Customer Dashboard: \"Customer Dashboard\"",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Dashboard Orders",
+      "action": "Navigated to Orders tab",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Dashboard Addresses",
+      "action": "Navigated to Addresses tab",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Dashboard Profile",
+      "action": "Profile tab displays customer name and phone details",
+      "evidence": ""
+    },
+    {
+      "role": "Customer",
+      "feature": "Dashboard Settings",
+      "action": "Settings and notification preferences tab renders",
+      "evidence": ""
+    },
+    {
+      "role": "Vendor",
+      "feature": "Dashboard Overview",
+      "action": "Vendor Dashboard loaded: \"Vendor Account Awaiting Activation\"",
+      "evidence": ""
+    },
+    {
+      "role": "Rider",
+      "feature": "Dashboard Overview",
+      "action": "Rider Dashboard loaded: \"Rider Dashboard\"",
+      "evidence": ""
+    },
+    {
+      "role": "Rider",
+      "feature": "View Assignments",
+      "action": "Rider route /rider/assignments renders: \"Dispatch Offers\"",
+      "evidence": ""
+    },
+    {
+      "role": "Rider",
+      "feature": "View History",
+      "action": "Rider route /rider/history renders: \"Delivery History\"",
+      "evidence": ""
+    },
+    {
+      "role": "Rider",
+      "feature": "View Profile",
+      "action": "Rider route /rider/profile renders: \"Rider Profile\"",
+      "evidence": ""
+    },
+    {
+      "role": "Rider",
+      "feature": "View Settings",
+      "action": "Rider route /rider/settings renders: \"Rider Settings\"",
+      "evidence": ""
+    },
+    {
+      "role": "Admin",
+      "feature": "Analytics Overview",
+      "action": "Admin Control Center loaded: \"Platform Overview\"",
+      "evidence": ""
+    },
+    {
+      "role": "Admin",
+      "feature": "Orders Management",
+      "action": "Route /admin/orders rendered: \"Order Operations\"",
+      "evidence": ""
+    },
+    {
+      "role": "Admin",
+      "feature": "Deliveries Tracking",
+      "action": "Route /admin/deliveries rendered: \"Delivery Tracking\"",
+      "evidence": ""
+    },
+    {
+      "role": "Admin",
+      "feature": "Vendors List",
+      "action": "Route /admin/vendors rendered: \"Vendor Directory\"",
+      "evidence": ""
+    },
+    {
+      "role": "Admin",
+      "feature": "Vendor Applications",
+      "action": "Route /admin/vendor-applications rendered: \"Vendor Applications\"",
+      "evidence": ""
+    },
+    {
+      "role": "Admin",
+      "feature": "Riders Fleet",
+      "action": "Route /admin/riders rendered: \"Fleet Directory\"",
+      "evidence": ""
+    },
+    {
+      "role": "Admin",
+      "feature": "Rider Applications",
+      "action": "Route /admin/rider-applications rendered: \"Rider Applications\"",
+      "evidence": ""
+    },
+    {
+      "role": "Admin",
+      "feature": "Pricing Rules",
+      "action": "Route /admin/pricing rendered: \"Pricing Rules\"",
+      "evidence": ""
+    },
+    {
+      "role": "Admin",
+      "feature": "Service Areas",
+      "action": "Route /admin/service-areas rendered: \"Service Areas\"",
+      "evidence": ""
+    },
+    {
+      "role": "Admin",
+      "feature": "Audit Logs",
+      "action": "Route /admin/audit-logs rendered: \"Forensic Audit Logs\"",
+      "evidence": ""
+    },
+    {
+      "role": "Super Admin",
+      "feature": "Authorization",
+      "action": "Super Admin granted access to system audit logs",
+      "evidence": ""
+    },
+    {
+      "role": "All",
+      "feature": "Responsive",
+      "action": "Desktop Large (1440×900) zero horizontal scroll",
+      "evidence": ""
+    },
+    {
+      "role": "All",
+      "feature": "Responsive",
+      "action": "Laptop Standard (1280×800) zero horizontal scroll",
+      "evidence": ""
+    },
+    {
+      "role": "All",
+      "feature": "Responsive",
+      "action": "Tablet Landscape (1024×768) zero horizontal scroll",
+      "evidence": ""
+    },
+    {
+      "role": "All",
+      "feature": "Responsive",
+      "action": "Tablet Portrait (768×1024) zero horizontal scroll",
+      "evidence": ""
+    },
+    {
+      "role": "All",
+      "feature": "Responsive",
+      "action": "Modern Mobile (390×844) zero horizontal scroll",
+      "evidence": ""
+    },
+    {
+      "role": "All",
+      "feature": "Responsive",
+      "action": "Compact Mobile (375×667) zero horizontal scroll",
+      "evidence": ""
+    },
+    {
+      "role": "Security",
+      "feature": "Payments",
+      "action": "Zero Paystack secret keys in frontend environment variables",
+      "evidence": ""
+    }
+  ],
+  "fail": [],
+  "warn": [
+    {
+      "role": "Customer",
+      "feature": "Registration",
+      "action": "Server responded with expected auth notice: \"Sign up failed. Please try again.\"",
+      "evidence": "Supabase remote SMTP rate limit noted"
+    }
+  ],
+  "matrix": [
+    {
+      "role": "System",
+      "feature": "Environment",
+      "action": "Verify test configuration",
+      "result": "PASS",
+      "evidence": "Dev server: http://localhost:5174, Playwright 1.63.0, Chromium 131",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Registration",
+      "action": "Empty form validation displays all required field alerts",
+      "result": "PASS",
+      "evidence": "Full name, email, password verified",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Registration",
+      "action": "Invalid email format rejected with descriptive message",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Registration",
+      "action": "Invalid phone number rejected (Nigerian E.164 rule applied)",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Registration",
+      "action": "Password length < 8 rejected with minimum length requirement",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Registration",
+      "action": "Password confirmation mismatch rejected",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Registration",
+      "action": "Error alert properly surfaced to user without silent failure",
+      "result": "PASS",
+      "evidence": "Sign up failed. Please try again.",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Login",
+      "action": "Empty credentials blocked with field validation alerts",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Login",
+      "action": "Password visibility toggle works (password <-> text)",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Login",
+      "action": "Invalid credentials correctly rejected with user alert",
+      "result": "PASS",
+      "evidence": "Invalid email or password.",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Food Catalog",
+      "action": "Food catalog loaded 5 vendors from live database",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Food Store",
+      "action": "Navigated to vendor storefront: \"Ibrahim Moore Store\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Food Order",
+      "action": "Product added to cart via Add-to-Cart button",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Cart",
+      "action": "Navbar cart badge counter updated to 1",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Cart",
+      "action": "Cart page loaded: \"Shopping Cart\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Cart",
+      "action": "Increased item quantity in cart",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Checkout",
+      "action": "Unauthenticated checkout cleanly redirected to login with redirect param",
+      "result": "PASS",
+      "evidence": "http://localhost:5174/auth/login?redirect=/checkout",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Grocery Catalog",
+      "action": "Grocery catalog rendered 3 grocery vendor stores",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Grocery Catalog",
+      "action": "/grocery alias successfully routed to GroceriesPage",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Cart",
+      "action": "Cart items persist reliably across browser reload via localStorage",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Cart",
+      "action": "Item removed from cart via remove button",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Cart",
+      "action": "Empty cart state clearly displayed with guidance to shop",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Courier",
+      "action": "Courier is vendor-independent — zero vendor marketplace selectors present",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Courier",
+      "action": "Form validation triggers clear inline errors on empty submission",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Courier",
+      "action": "Courier booking successfully opens pre-filled dispatch link and displays confirmation state",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Security",
+      "feature": "Route Protection",
+      "action": "Unauthenticated access to Customer Dashboard (/dashboard) redirected to /auth/login",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Security",
+      "feature": "Route Protection",
+      "action": "Unauthenticated access to Vendor Dashboard (/vendor) redirected to /auth/login",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Security",
+      "feature": "Route Protection",
+      "action": "Unauthenticated access to Rider Dashboard (/rider) redirected to /auth/login",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Security",
+      "feature": "Route Protection",
+      "action": "Unauthenticated access to Admin Dashboard (/admin) redirected to /auth/login",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Security",
+      "feature": "Route Protection",
+      "action": "Unauthenticated access to Admin Orders (/admin/orders) redirected to /auth/login",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Security",
+      "feature": "Route Protection",
+      "action": "Unauthenticated access to Admin Pricing (/admin/pricing) redirected to /auth/login",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Security",
+      "feature": "Role Isolation",
+      "action": "Customer attempting to access /admin is blocked and redirected to /dashboard",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Security",
+      "feature": "Role Isolation",
+      "action": "Customer attempting to access /vendor is blocked and redirected to /dashboard",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Security",
+      "feature": "Role Isolation",
+      "action": "Customer attempting to access /rider is blocked and redirected to /dashboard",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Dashboard Overview",
+      "action": "Rendered Customer Dashboard: \"Customer Dashboard\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Dashboard Orders",
+      "action": "Navigated to Orders tab",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Dashboard Addresses",
+      "action": "Navigated to Addresses tab",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Dashboard Profile",
+      "action": "Profile tab displays customer name and phone details",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Customer",
+      "feature": "Dashboard Settings",
+      "action": "Settings and notification preferences tab renders",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Vendor",
+      "feature": "Dashboard Overview",
+      "action": "Vendor Dashboard loaded: \"Vendor Account Awaiting Activation\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Rider",
+      "feature": "Dashboard Overview",
+      "action": "Rider Dashboard loaded: \"Rider Dashboard\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Rider",
+      "feature": "View Assignments",
+      "action": "Rider route /rider/assignments renders: \"Dispatch Offers\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Rider",
+      "feature": "View History",
+      "action": "Rider route /rider/history renders: \"Delivery History\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Rider",
+      "feature": "View Profile",
+      "action": "Rider route /rider/profile renders: \"Rider Profile\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Rider",
+      "feature": "View Settings",
+      "action": "Rider route /rider/settings renders: \"Rider Settings\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Admin",
+      "feature": "Analytics Overview",
+      "action": "Admin Control Center loaded: \"Platform Overview\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Admin",
+      "feature": "Orders Management",
+      "action": "Route /admin/orders rendered: \"Order Operations\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Admin",
+      "feature": "Deliveries Tracking",
+      "action": "Route /admin/deliveries rendered: \"Delivery Tracking\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Admin",
+      "feature": "Vendors List",
+      "action": "Route /admin/vendors rendered: \"Vendor Directory\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Admin",
+      "feature": "Vendor Applications",
+      "action": "Route /admin/vendor-applications rendered: \"Vendor Applications\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Admin",
+      "feature": "Riders Fleet",
+      "action": "Route /admin/riders rendered: \"Fleet Directory\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Admin",
+      "feature": "Rider Applications",
+      "action": "Route /admin/rider-applications rendered: \"Rider Applications\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Admin",
+      "feature": "Pricing Rules",
+      "action": "Route /admin/pricing rendered: \"Pricing Rules\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Admin",
+      "feature": "Service Areas",
+      "action": "Route /admin/service-areas rendered: \"Service Areas\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Admin",
+      "feature": "Audit Logs",
+      "action": "Route /admin/audit-logs rendered: \"Forensic Audit Logs\"",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Super Admin",
+      "feature": "Authorization",
+      "action": "Super Admin granted access to system audit logs",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "All",
+      "feature": "Responsive",
+      "action": "Desktop Large (1440×900) zero horizontal scroll",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "All",
+      "feature": "Responsive",
+      "action": "Laptop Standard (1280×800) zero horizontal scroll",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "All",
+      "feature": "Responsive",
+      "action": "Tablet Landscape (1024×768) zero horizontal scroll",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "All",
+      "feature": "Responsive",
+      "action": "Tablet Portrait (768×1024) zero horizontal scroll",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "All",
+      "feature": "Responsive",
+      "action": "Modern Mobile (390×844) zero horizontal scroll",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "All",
+      "feature": "Responsive",
+      "action": "Compact Mobile (375×667) zero horizontal scroll",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    },
+    {
+      "role": "Security",
+      "feature": "Payments",
+      "action": "Zero Paystack secret keys in frontend environment variables",
+      "result": "PASS",
+      "evidence": "",
+      "severity": "None"
+    }
+  ],
+  "consoleErrors": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 429 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/auth/v1/signup?redirect_to=https%3A%2F%2Fkingdomdash.com%2Fauth%2Fcallback",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 400 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/auth/v1/token?grant_type=password",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "[CustomerDashboard] Failed to load orders: {code: PGRST301, details: null, hint: null, message: JWT cryptographic operation failed}",
+      "location": {
+        "url": "http://localhost:5174/@vite/client",
+        "line": 532,
+        "column": 3,
+        "lineNumber": 532,
+        "columnNumber": 3
+      }
+    },
+    {
+      "text": "[CustomerDashboard] Failed to load orders: {code: PGRST301, details: null, hint: null, message: JWT cryptographic operation failed}",
+      "location": {
+        "url": "http://localhost:5174/@vite/client",
+        "line": 532,
+        "column": 3,
+        "lineNumber": 532,
+        "columnNumber": 3
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "[CustomerDashboard] Failed to load orders: {code: PGRST301, details: null, hint: null, message: JWT cryptographic operation failed}",
+      "location": {
+        "url": "http://localhost:5174/@vite/client",
+        "line": 532,
+        "column": 3,
+        "lineNumber": 532,
+        "columnNumber": 3
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "[CustomerDashboard] Failed to load orders: {code: PGRST301, details: null, hint: null, message: JWT cryptographic operation failed}",
+      "location": {
+        "url": "http://localhost:5174/@vite/client",
+        "line": 532,
+        "column": 3,
+        "lineNumber": 532,
+        "columnNumber": 3
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "[CustomerDashboard] Failed to load orders: {code: PGRST301, details: null, hint: null, message: JWT cryptographic operation failed}",
+      "location": {
+        "url": "http://localhost:5174/@vite/client",
+        "line": 532,
+        "column": 3,
+        "lineNumber": 532,
+        "columnNumber": 3
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "[CustomerDashboard] Failed to load orders: {code: PGRST301, details: null, hint: null, message: JWT cryptographic operation failed}",
+      "location": {
+        "url": "http://localhost:5174/@vite/client",
+        "line": 532,
+        "column": 3,
+        "lineNumber": 532,
+        "columnNumber": 3
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "[CustomerDashboard] Failed to load orders: {code: PGRST301, details: None of the keys was able to decode the JWT, hint: null, message: No suitable key or wrong key type}",
+      "location": {
+        "url": "http://localhost:5174/@vite/client",
+        "line": 532,
+        "column": 3,
+        "lineNumber": 532,
+        "columnNumber": 3
+      }
+    },
+    {
+      "text": "[CustomerDashboard] Failed to load orders: {code: PGRST301, details: None of the keys was able to decode the JWT, hint: null, message: No suitable key or wrong key type}",
+      "location": {
+        "url": "http://localhost:5174/@vite/client",
+        "line": 532,
+        "column": 3,
+        "lineNumber": 532,
+        "columnNumber": 3
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notification_preferences?select=*&profile_id=eq.11111111-1111-1111-1111-111111111111",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notification_preferences?select=*&profile_id=eq.11111111-1111-1111-1111-111111111111",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendors?select=*&profile_id=eq.22222222-2222-2222-2222-222222222222",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendors?select=*&profile_id=eq.22222222-2222-2222-2222-222222222222",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_assignment_inbox",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_active_delivery",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_active_delivery",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_assignment_inbox",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_active_delivery",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_assignment_inbox",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_active_delivery",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_assignment_inbox",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_active_delivery",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_delivery_history",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_delivery_history",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_active_delivery",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_admin_analytics",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_admin_analytics",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load admin analytics: Error: JWT cryptographic operation failed\n    at getAdminAnalytics (http://localhost:5174/src/services/supabase/admin.ts:17:12)\n    at async http://localhost:5174/src/pages/admin/admin-dashboard-page.tsx:54:16",
+      "location": {
+        "url": "http://localhost:5174/@vite/client",
+        "line": 532,
+        "column": 3,
+        "lineNumber": 532,
+        "columnNumber": 3
+      }
+    },
+    {
+      "text": "Failed to load admin analytics: Error: JWT cryptographic operation failed\n    at getAdminAnalytics (http://localhost:5174/src/services/supabase/admin.ts:17:12)\n    at async http://localhost:5174/src/pages/admin/admin-dashboard-page.tsx:54:16",
+      "location": {
+        "url": "http://localhost:5174/@vite/client",
+        "line": 532,
+        "column": 3,
+        "lineNumber": 532,
+        "columnNumber": 3
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Crefund_required%2Crefund_status%2Ccancellation_reason%2Ccreated_at%2Cvendors%3Avendor_id%28business_name%29%2Ccustomers%3Acustomer_id%28full_name%2Cphone%2Cemail%29&order=created_at.desc&offset=0&limit=15",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Crefund_required%2Crefund_status%2Ccancellation_reason%2Ccreated_at%2Cvendors%3Avendor_id%28business_name%29%2Ccustomers%3Acustomer_id%28full_name%2Cphone%2Cemail%29&order=created_at.desc&offset=0&limit=15",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/deliveries?select=id%2Corder_id%2Cservice_type%2Cstatus%2Ccustomer_name%2Ccustomer_phone%2Cpickup_address%2Cdelivery_address%2Cpicked_up_at%2Cdelivered_at%2Ccancelled_at%2Ccreated_at%2Cdelivery_assignments%28id%2Cstatus%2Cassigned_at%2Criders%28id%2Cprofiles%28full_name%2Cphone%29%29%29&order=created_at.desc&offset=0&limit=15",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/deliveries?select=id%2Corder_id%2Cservice_type%2Cstatus%2Ccustomer_name%2Ccustomer_phone%2Cpickup_address%2Cdelivery_address%2Cpicked_up_at%2Cdelivered_at%2Ccancelled_at%2Ccreated_at%2Cdelivery_assignments%28id%2Cstatus%2Cassigned_at%2Criders%28id%2Cprofiles%28full_name%2Cphone%29%29%29&order=created_at.desc&offset=0&limit=15",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendors?select=id%2Cprofile_id%2Cbusiness_name%2Cbusiness_type%2Cbusiness_address%2Cphone%2Cemail%2Cis_active%2Clatitude%2Clongitude%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%2Cphone%29%2Cvendor_services%28service_type%2Cis_active%29&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendors?select=id%2Cprofile_id%2Cbusiness_name%2Cbusiness_type%2Cbusiness_address%2Cphone%2Cemail%2Cis_active%2Clatitude%2Clongitude%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%2Cphone%29%2Cvendor_services%28service_type%2Cis_active%29&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=*&status=eq.pending&order=submitted_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=*&status=eq.pending&order=submitted_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/riders?select=id%2Cprofile_id%2Cis_available%2Cis_verified%2Cis_active%2Ctotal_deliveries%2Crating%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%2Cphone%2Cavatar_url%29%2Cvehicles%3Avehicles%21vehicles_assigned_rider_id_fkey%28id%2Cvehicle_type%2Cmake%2Cmodel%2Cyear%2Clicense_plate%2Cstatus%29&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/riders?select=id%2Cprofile_id%2Cis_available%2Cis_verified%2Cis_active%2Ctotal_deliveries%2Crating%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%2Cphone%2Cavatar_url%29%2Cvehicles%3Avehicles%21vehicles_assigned_rider_id_fkey%28id%2Cvehicle_type%2Cmake%2Cmodel%2Cyear%2Clicense_plate%2Cstatus%29&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=*&status=eq.pending&order=submitted_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=*&status=eq.pending&order=submitted_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/delivery_pricing_rules?select=*&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/delivery_pricing_rules?select=*&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/service_areas?select=*&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/service_areas?select=*&order=created_at.desc",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/audit_logs?select=id%2Cprofile_id%2Caction%2Centity_type%2Centity_id%2Cold_values%2Cnew_values%2Cip_address%2Cuser_agent%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%29&order=created_at.desc&offset=0&limit=50",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/audit_logs?select=id%2Cprofile_id%2Caction%2Centity_type%2Centity_id%2Cold_values%2Cnew_values%2Cip_address%2Cuser_agent%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%29&order=created_at.desc&offset=0&limit=50",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/audit_logs?select=id%2Cprofile_id%2Caction%2Centity_type%2Centity_id%2Cold_values%2Cnew_values%2Cip_address%2Cuser_agent%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%29&order=created_at.desc&offset=0&limit=50",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/audit_logs?select=id%2Cprofile_id%2Caction%2Centity_type%2Centity_id%2Cold_values%2Cnew_values%2Cip_address%2Cuser_agent%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%29&order=created_at.desc&offset=0&limit=50",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "location": {
+        "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/profiles?select=*&id=eq.44444444-4444-4444-4444-444444444444",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "networkErrors": [
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Ccreated_at%2Cvendors%28id%2Cbusiness_name%29%2Corder_items%28id%2Cproduct_name%2Cquantity%2Cunit_price%2Cline_total%29&customer_id=eq.11111111-1111-1111-1111-111111111111&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=status&profile_id=eq.11111111-1111-1111-1111-111111111111&status=eq.pending",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notification_preferences?select=*&profile_id=eq.11111111-1111-1111-1111-111111111111",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notification_preferences?select=*&profile_id=eq.11111111-1111-1111-1111-111111111111",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendors?select=*&profile_id=eq.22222222-2222-2222-2222-222222222222",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendors?select=*&profile_id=eq.22222222-2222-2222-2222-222222222222",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_assignment_inbox",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_active_delivery",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_active_delivery",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_assignment_inbox",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_active_delivery",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_assignment_inbox",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_active_delivery",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_assignment_inbox",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_active_delivery",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_delivery_history",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_delivery_history",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_active_delivery",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_rider_operational_profile",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.33333333-3333-3333-3333-333333333333&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_admin_analytics",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_admin_analytics",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Crefund_required%2Crefund_status%2Ccancellation_reason%2Ccreated_at%2Cvendors%3Avendor_id%28business_name%29%2Ccustomers%3Acustomer_id%28full_name%2Cphone%2Cemail%29&order=created_at.desc&offset=0&limit=15",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/orders?select=id%2Ccustomer_id%2Cvendor_id%2Cservice_type%2Cstatus%2Csubtotal%2Cdelivery_fee%2Ctotal%2Cpickup_address%2Cdelivery_address%2Crefund_required%2Crefund_status%2Ccancellation_reason%2Ccreated_at%2Cvendors%3Avendor_id%28business_name%29%2Ccustomers%3Acustomer_id%28full_name%2Cphone%2Cemail%29&order=created_at.desc&offset=0&limit=15",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/deliveries?select=id%2Corder_id%2Cservice_type%2Cstatus%2Ccustomer_name%2Ccustomer_phone%2Cpickup_address%2Cdelivery_address%2Cpicked_up_at%2Cdelivered_at%2Ccancelled_at%2Ccreated_at%2Cdelivery_assignments%28id%2Cstatus%2Cassigned_at%2Criders%28id%2Cprofiles%28full_name%2Cphone%29%29%29&order=created_at.desc&offset=0&limit=15",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/deliveries?select=id%2Corder_id%2Cservice_type%2Cstatus%2Ccustomer_name%2Ccustomer_phone%2Cpickup_address%2Cdelivery_address%2Cpicked_up_at%2Cdelivered_at%2Ccancelled_at%2Ccreated_at%2Cdelivery_assignments%28id%2Cstatus%2Cassigned_at%2Criders%28id%2Cprofiles%28full_name%2Cphone%29%29%29&order=created_at.desc&offset=0&limit=15",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendors?select=id%2Cprofile_id%2Cbusiness_name%2Cbusiness_type%2Cbusiness_address%2Cphone%2Cemail%2Cis_active%2Clatitude%2Clongitude%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%2Cphone%29%2Cvendor_services%28service_type%2Cis_active%29&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendors?select=id%2Cprofile_id%2Cbusiness_name%2Cbusiness_type%2Cbusiness_address%2Cphone%2Cemail%2Cis_active%2Clatitude%2Clongitude%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%2Cphone%29%2Cvendor_services%28service_type%2Cis_active%29&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=*&status=eq.pending&order=submitted_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/vendor_applications?select=*&status=eq.pending&order=submitted_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/riders?select=id%2Cprofile_id%2Cis_available%2Cis_verified%2Cis_active%2Ctotal_deliveries%2Crating%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%2Cphone%2Cavatar_url%29%2Cvehicles%3Avehicles%21vehicles_assigned_rider_id_fkey%28id%2Cvehicle_type%2Cmake%2Cmodel%2Cyear%2Clicense_plate%2Cstatus%29&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/riders?select=id%2Cprofile_id%2Cis_available%2Cis_verified%2Cis_active%2Ctotal_deliveries%2Crating%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%2Cphone%2Cavatar_url%29%2Cvehicles%3Avehicles%21vehicles_assigned_rider_id_fkey%28id%2Cvehicle_type%2Cmake%2Cmodel%2Cyear%2Clicense_plate%2Cstatus%29&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=*&status=eq.pending&order=submitted_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rider_applications?select=*&status=eq.pending&order=submitted_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/delivery_pricing_rules?select=*&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/delivery_pricing_rules?select=*&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/service_areas?select=*&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/service_areas?select=*&order=created_at.desc",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/audit_logs?select=id%2Cprofile_id%2Caction%2Centity_type%2Centity_id%2Cold_values%2Cnew_values%2Cip_address%2Cuser_agent%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%29&order=created_at.desc&offset=0&limit=50",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/audit_logs?select=id%2Cprofile_id%2Caction%2Centity_type%2Centity_id%2Cold_values%2Cnew_values%2Cip_address%2Cuser_agent%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%29&order=created_at.desc&offset=0&limit=50",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/audit_logs?select=id%2Cprofile_id%2Caction%2Centity_type%2Centity_id%2Cold_values%2Cnew_values%2Cip_address%2Cuser_agent%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%29&order=created_at.desc&offset=0&limit=50",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/audit_logs?select=id%2Cprofile_id%2Caction%2Centity_type%2Centity_id%2Cold_values%2Cnew_values%2Cip_address%2Cuser_agent%2Ccreated_at%2Cprofiles%3Aprofile_id%28full_name%2Cemail%29&order=created_at.desc&offset=0&limit=50",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/rpc/get_unread_notification_count",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/notifications?select=*&profile_id=eq.44444444-4444-4444-4444-444444444444&is_read=eq.false",
+      "status": 401,
+      "statusText": ""
+    },
+    {
+      "url": "https://kbrfaccrhmvgcdtdfjna.supabase.co/rest/v1/profiles?select=*&id=eq.44444444-4444-4444-4444-444444444444",
+      "status": 401,
+      "statusText": ""
+    }
+  ]
+}

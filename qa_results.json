@@ -1,0 +1,337 @@
+{
+  "pass": [
+    {
+      "area": "Homepage",
+      "detail": "H1 heading is visible"
+    },
+    {
+      "area": "Homepage",
+      "detail": "Navigation bar is visible"
+    },
+    {
+      "area": "Homepage",
+      "detail": "Footer is visible"
+    },
+    {
+      "area": "Homepage",
+      "detail": "Title: \"Food, Groceries & Courier Delivery in Ijebu-Ode | KingdomDash — SWIFT IN MOTION.\""
+    },
+    {
+      "area": "Homepage",
+      "detail": "KingdomDash brand name present"
+    },
+    {
+      "area": "Homepage",
+      "detail": "22 primary CTA links found"
+    },
+    {
+      "area": "Homepage",
+      "detail": "No horizontal overflow at 1440px"
+    },
+    {
+      "area": "Navigation",
+      "detail": "Nav link \"/food\" present"
+    },
+    {
+      "area": "Navigation",
+      "detail": "Nav link \"/groceries\" present"
+    },
+    {
+      "area": "Navigation",
+      "detail": "Nav link \"/courier\" present"
+    },
+    {
+      "area": "Navigation",
+      "detail": "Nav link \"/services\" present"
+    },
+    {
+      "area": "Navigation",
+      "detail": "Nav link \"/contact\" present"
+    },
+    {
+      "area": "Navigation",
+      "detail": "Mobile hamburger menu visible at 390px"
+    },
+    {
+      "area": "Food",
+      "detail": "Page title: \"Food Delivery — Swift in Motion | KingdomDash | KingdomDash — SWIFT IN MOTION.\""
+    },
+    {
+      "area": "Food",
+      "detail": "Food page heading is visible"
+    },
+    {
+      "area": "Food",
+      "detail": "3 vendor/store cards rendered"
+    },
+    {
+      "area": "Food",
+      "detail": "Search/filter UI present"
+    },
+    {
+      "area": "Grocery",
+      "detail": "Grocery page heading is visible"
+    },
+    {
+      "area": "Grocery",
+      "detail": "1 vendor/store cards rendered"
+    },
+    {
+      "area": "Courier",
+      "detail": "Courier hero H1 is visible"
+    },
+    {
+      "area": "Courier",
+      "detail": "Booking form is present"
+    },
+    {
+      "area": "Courier",
+      "detail": "Form field #senderName exists"
+    },
+    {
+      "area": "Courier",
+      "detail": "Form field #senderPhone exists"
+    },
+    {
+      "area": "Courier",
+      "detail": "Form field #pickupAddress exists"
+    },
+    {
+      "area": "Courier",
+      "detail": "Form field #recipientName exists"
+    },
+    {
+      "area": "Courier",
+      "detail": "Form field #recipientPhone exists"
+    },
+    {
+      "area": "Courier",
+      "detail": "Form field #deliveryAddress exists"
+    },
+    {
+      "area": "Courier",
+      "detail": "Form field #packageType exists"
+    },
+    {
+      "area": "Courier",
+      "detail": "Courier form correctly has NO vendor selection"
+    },
+    {
+      "area": "Cart",
+      "detail": "Page title: \"Shopping Cart — KingdomDash\""
+    },
+    {
+      "area": "Cart",
+      "detail": "Cart heading visible"
+    },
+    {
+      "area": "Auth",
+      "detail": "Login form visible"
+    },
+    {
+      "area": "Auth",
+      "detail": "Login email field present"
+    },
+    {
+      "area": "Auth",
+      "detail": "Login password field present"
+    },
+    {
+      "area": "Auth",
+      "detail": "Register form visible"
+    },
+    {
+      "area": "Security",
+      "detail": "Unauthenticated /dashboard redirect works"
+    },
+    {
+      "area": "Contact",
+      "detail": "Contact page heading is visible"
+    },
+    {
+      "area": "Contact",
+      "detail": "WhatsApp CTA link present"
+    },
+    {
+      "area": "Footer",
+      "detail": "Footer has 17 links"
+    },
+    {
+      "area": "Multi-Service",
+      "detail": "Food page renders 3 vendor entries"
+    },
+    {
+      "area": "Multi-Service",
+      "detail": "Grocery page renders 1 vendor entries"
+    },
+    {
+      "area": "Multi-Service",
+      "detail": "Courier page has no vendor marketplace — correct"
+    },
+    {
+      "area": "Routing",
+      "detail": "Refresh on /food renders correctly"
+    },
+    {
+      "area": "Routing",
+      "detail": "Refresh on /groceries renders correctly"
+    },
+    {
+      "area": "Routing",
+      "detail": "Refresh on /courier renders correctly"
+    },
+    {
+      "area": "Routing",
+      "detail": "Refresh on /contact renders correctly"
+    },
+    {
+      "area": "Routing",
+      "detail": "Refresh on /login renders correctly"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 1440×900 on home"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 1440×900 on /food"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 1440×900 on /courier"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 1280×800 on home"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 1280×800 on /food"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 1280×800 on /courier"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 1024×768 on home"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 1024×768 on /food"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 1024×768 on /courier"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 768×1024 on home"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 768×1024 on /food"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 768×1024 on /courier"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 390×844 on home"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 390×844 on /food"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 390×844 on /courier"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 375×667 on home"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 375×667 on /food"
+    },
+    {
+      "area": "Responsive",
+      "detail": "No horizontal overflow at 375×667 on /courier"
+    },
+    {
+      "area": "Visual",
+      "detail": "Screenshot taken: home_full"
+    },
+    {
+      "area": "Visual",
+      "detail": "Screenshot taken: food_full"
+    },
+    {
+      "area": "Visual",
+      "detail": "Screenshot taken: grocery_full"
+    },
+    {
+      "area": "Visual",
+      "detail": "Screenshot taken: courier_full"
+    },
+    {
+      "area": "Visual",
+      "detail": "Screenshot taken: services_full"
+    },
+    {
+      "area": "Visual",
+      "detail": "Screenshot taken: about_full"
+    },
+    {
+      "area": "Visual",
+      "detail": "Screenshot taken: contact_full"
+    },
+    {
+      "area": "Visual",
+      "detail": "Screenshot taken: become_vendor_full"
+    },
+    {
+      "area": "Visual",
+      "detail": "Screenshot taken: become_rider_full"
+    },
+    {
+      "area": "Visual",
+      "detail": "Screenshot taken: faq_full"
+    },
+    {
+      "area": "Visual",
+      "detail": "Screenshot taken: login_full"
+    },
+    {
+      "area": "Visual",
+      "detail": "Screenshot taken: register_full"
+    }
+  ],
+  "fail": [],
+  "warn": [
+    {
+      "area": "Navigation",
+      "detail": "Mobile nav opened but food link not clearly visible"
+    },
+    {
+      "area": "Courier",
+      "detail": "Form validation errors not clearly visible after empty submit"
+    },
+    {
+      "area": "Cart",
+      "detail": "Empty state not clearly visible"
+    },
+    {
+      "area": "Contact",
+      "detail": "Official email not found on contact page"
+    },
+    {
+      "area": "Routing",
+      "detail": "No clear 404 message for invalid route"
+    }
+  ],
+  "consoleErrors": [],
+  "networkErrors": []
+}
