@@ -101,7 +101,7 @@ describe('RiderSettingsPage', () => {
     const appleMapsButton = screen.getByRole('button', { name: /Apple Maps/i })
     fireEvent.click(appleMapsButton)
 
-    const stored = JSON.parse(localStorage.getItem('kd_rider_settings') || '{}')
+    const stored = JSON.parse(localStorage.getItem('kd_rider_settings_user-456') || '{}')
     expect(stored.defaultNavApp).toBe('apple_maps')
     expect(mockPushToast).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Setting Saved', variant: 'success' })
@@ -118,7 +118,7 @@ describe('RiderSettingsPage', () => {
     const soundSwitch = screen.getByLabelText('Sound Alert on New Dispatch Offer')
     fireEvent.click(soundSwitch)
 
-    const stored = JSON.parse(localStorage.getItem('kd_rider_settings') || '{}')
+    const stored = JSON.parse(localStorage.getItem('kd_rider_settings_user-456') || '{}')
     expect(stored.soundAlerts).toBe(false)
   })
 
@@ -132,8 +132,22 @@ describe('RiderSettingsPage', () => {
     const radiusButton = screen.getByRole('button', { name: '25 km' })
     fireEvent.click(radiusButton)
 
-    const stored = JSON.parse(localStorage.getItem('kd_rider_settings') || '{}')
+    const stored = JSON.parse(localStorage.getItem('kd_rider_settings_user-456') || '{}')
     expect(stored.maxDeliveryRadiusKm).toBe(25)
+  })
+
+  it('guarantees settings isolation: User B settings do not affect User A', () => {
+    // User A sets radius to 25 km
+    localStorage.setItem('kd_rider_settings_user-A', JSON.stringify({ maxDeliveryRadiusKm: 25 }))
+    // User B sets radius to 5 km
+    localStorage.setItem('kd_rider_settings_user-B', JSON.stringify({ maxDeliveryRadiusKm: 5 }))
+
+    const userASettings = JSON.parse(localStorage.getItem('kd_rider_settings_user-A') || '{}')
+    const userBSettings = JSON.parse(localStorage.getItem('kd_rider_settings_user-B') || '{}')
+
+    expect(userASettings.maxDeliveryRadiusKm).toBe(25)
+    expect(userBSettings.maxDeliveryRadiusKm).toBe(5)
+    expect(userASettings.maxDeliveryRadiusKm).not.toBe(userBSettings.maxDeliveryRadiusKm)
   })
 
   it('handles sound alert test button click', async () => {

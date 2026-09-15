@@ -39,7 +39,9 @@ export interface RiderSettingsState {
   offlineTripCache: boolean
 }
 
-const STORAGE_KEY = 'kd_rider_settings'
+export function getRiderSettingsStorageKey(userId: string | null | undefined): string {
+  return userId ? `kd_rider_settings_${userId}` : 'kd_rider_settings_guest'
+}
 
 const DEFAULT_SETTINGS: RiderSettingsState = {
   defaultNavApp: 'google_maps',
@@ -59,15 +61,32 @@ export default function RiderSettingsPage() {
   const { profile, session, signOut } = useAuthStore()
   const { pushToast } = useUiStore()
 
+  const userId = profile?.id || session?.user?.id || rider?.profile_id
+  const storageKey = getRiderSettingsStorageKey(userId)
+
   // Local settings state
   const [settings, setSettings] = useState<RiderSettingsState>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY)
+      const stored = localStorage.getItem(storageKey)
       return stored ? { ...DEFAULT_SETTINGS, ...JSON.parse(stored) } : DEFAULT_SETTINGS
     } catch {
       return DEFAULT_SETTINGS
     }
   })
+
+  // Synchronize when active user changes
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(storageKey)
+      if (stored) {
+        setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(stored) })
+      } else {
+        setSettings(DEFAULT_SETTINGS)
+      }
+    } catch {
+      setSettings(DEFAULT_SETTINGS)
+    }
+  }, [storageKey])
 
   // Phone number state
   const [phone, setPhone] = useState(rider?.phone || '')
@@ -90,7 +109,7 @@ export default function RiderSettingsPage() {
     setSettings((prev) => {
       const next = { ...prev, [key]: value }
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+        localStorage.setItem(storageKey, JSON.stringify(next))
       } catch (err) {
         console.error('Failed to persist rider settings', err)
       }

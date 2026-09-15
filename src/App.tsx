@@ -47,6 +47,7 @@ const RegisterPage = lazy(() => import('@/pages/auth/register'))
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/forgot-password'))
 const AuthCallbackPage = lazy(() => import('@/pages/auth/callback'))
 const UpdatePasswordPage = lazy(() => import('@/pages/auth/update-password'))
+const VerifyEmailPage = lazy(() => import('@/pages/auth/verify-email'))
 
 // ── Dashboard pages (protected by RouteGuard) ─────────────────────────────────
 const CustomerDashboardPage = lazy(() => import('@/pages/dashboard/customer-dashboard'))
@@ -107,6 +108,7 @@ export default function App() {
         {/* ── Direct auth aliases (preserving query parameters) ─────────────── */}
         <Route path="/login" element={<RedirectWithQuery to="/auth/login" />} />
         <Route path="/register" element={<RedirectWithQuery to="/auth/register" />} />
+        <Route path="/verify-email" element={<RedirectWithQuery to="/auth/verify-email" />} />
         <Route path="/forgot-password" element={<RedirectWithQuery to="/auth/forgot-password" />} />
         <Route path="/callback" element={<RedirectWithQuery to="/auth/callback" />} />
         <Route path="/update-password" element={<RedirectWithQuery to="/auth/update-password" />} />
@@ -114,6 +116,7 @@ export default function App() {
         {/* ── Full-screen auth routes — no PublicLayout ───────────────────────── */}
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
+        <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
         <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/auth/update-password" element={<UpdatePasswordPage />} />

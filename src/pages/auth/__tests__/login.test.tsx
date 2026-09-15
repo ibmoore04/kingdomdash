@@ -35,6 +35,7 @@ describe('LoginPage tests (P3, P4, P15)', () => {
       <MemoryRouter initialEntries={[initialPath]}>
         <Routes>
           <Route path="/auth/login" element={<LoginPage />} />
+          <Route path="/auth/verify-email" element={<div>Verify Email Page</div>} />
           <Route path="/dashboard" element={<div>Customer Dashboard</div>} />
           <Route path="/vendor" element={<div>Vendor Dashboard</div>} />
         </Routes>
@@ -150,7 +151,7 @@ describe('LoginPage tests (P3, P4, P15)', () => {
     }
 
     useAuthStore.setState({
-      session: { access_token: 'tk', user: { id: 'cust-1' } } as any,
+      session: { access_token: 'tk', user: { id: 'cust-1', email_confirmed_at: '2026-09-01T00:00:00Z' } } as any,
       profile: customerProfile,
       isLoading: false,
     })
@@ -174,7 +175,7 @@ describe('LoginPage tests (P3, P4, P15)', () => {
     }
 
     useAuthStore.setState({
-      session: { access_token: 'tk', user: { id: 'cust-1' } } as any,
+      session: { access_token: 'tk', user: { id: 'cust-1', email_confirmed_at: '2026-09-01T00:00:00Z' } } as any,
       profile: customerProfile,
       isLoading: false,
     })
@@ -182,5 +183,36 @@ describe('LoginPage tests (P3, P4, P15)', () => {
     // Customer requesting /vendor -> blocked to /dashboard
     renderLoginPage('/auth/login?redirect=%2Fvendor')
     expect(screen.getByText('Customer Dashboard')).toBeInTheDocument()
+  })
+
+  it('Email Verification: redirects unconfirmed user on login to /auth/verify-email', () => {
+    useAuthStore.setState({
+      session: { access_token: 'tk', user: { id: 'cust-unconfirmed', email_confirmed_at: null } } as any,
+      profile: { id: 'cust-unconfirmed', is_active: true, role: 'customer' } as any,
+      isLoading: false,
+    })
+
+    renderLoginPage('/auth/login')
+    expect(screen.getByText('Verify Email Page')).toBeInTheDocument()
+  })
+
+  it('Email Verification: submits credentials and redirects to /auth/verify-email if returned session is unconfirmed', async () => {
+    mockSignInWithPassword.mockResolvedValueOnce({
+      data: {
+        session: { access_token: 'tk', user: { id: 'cust-unconfirmed', email_confirmed_at: null } },
+      },
+      error: null,
+    })
+
+    renderLoginPage('/auth/login')
+
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'unconfirmed@example.com' } })
+    fireEvent.change(screen.getByLabelText(/^password/i), { target: { value: 'password123' } })
+    fireEvent.click(screen.getByRole('button', { name: /login/i }))
+
+    await waitFor(() => {
+      expect(mockSignInWithPassword).toHaveBeenCalledTimes(1)
+      expect(screen.getByText('Verify Email Page')).toBeInTheDocument()
+    })
   })
 })

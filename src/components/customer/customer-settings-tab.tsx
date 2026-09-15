@@ -32,20 +32,39 @@ const DEFAULT_SETTINGS: CustomerSettingsState = {
   preferredDeliveryType: 'doorstep',
 }
 
-const STORAGE_KEY = 'kd_customer_settings'
+export function getCustomerSettingsStorageKey(userId: string | null | undefined): string {
+  return userId ? `customer_settings_${userId}` : 'customer_settings_guest'
+}
 
 export function CustomerSettingsTab() {
   const { profile, session } = useAuthStore()
   const { pushToast } = useToast()
 
+  const userId = session?.user?.id || profile?.id
+  const storageKey = getCustomerSettingsStorageKey(userId)
+
   const [settings, setSettings] = useState<CustomerSettingsState>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY)
+      const saved = localStorage.getItem(storageKey)
       return saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : DEFAULT_SETTINGS
     } catch {
       return DEFAULT_SETTINGS
     }
   })
+
+  // Synchronize when active user changes
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey)
+      if (saved) {
+        setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) })
+      } else {
+        setSettings(DEFAULT_SETTINGS)
+      }
+    } catch {
+      setSettings(DEFAULT_SETTINGS)
+    }
+  }, [storageKey])
 
   useEffect(() => {
     let isMounted = true
@@ -72,7 +91,7 @@ export function CustomerSettingsTab() {
     setSettings((prev) => {
       const next = { ...prev, [key]: !prev[key] }
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+        localStorage.setItem(storageKey, JSON.stringify(next))
       } catch (err) {
         console.error('Failed to save customer settings', err)
       }
@@ -98,7 +117,7 @@ export function CustomerSettingsTab() {
     setSettings((prev) => {
       const next = { ...prev, preferredDeliveryType: type }
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+        localStorage.setItem(storageKey, JSON.stringify(next))
       } catch (err) {
         console.error('Failed to save customer settings', err)
       }
@@ -113,8 +132,8 @@ export function CustomerSettingsTab() {
 
   const handleSaveContactInfo = async (e: React.FormEvent) => {
     e.preventDefault()
-    const userId = profile?.id || session?.user?.id
-    if (!userId) {
+    const activeUserId = profile?.id || session?.user?.id
+    if (!activeUserId) {
       pushToast({
         title: 'Authentication Required',
         message: 'Please sign in to update your profile.',
@@ -131,7 +150,7 @@ export function CustomerSettingsTab() {
           full_name: fullName.trim(),
           phone: phone.trim(),
         })
-        .eq('id', userId)
+        .eq('id', activeUserId)
 
       if (error) throw error
 
@@ -163,7 +182,7 @@ export function CustomerSettingsTab() {
 
   const handleSaveDeliveryNotes = () => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+      localStorage.setItem(storageKey, JSON.stringify(settings))
       pushToast({
         title: 'Delivery Notes Saved',
         message: 'Default drop-off instructions have been updated.',

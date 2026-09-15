@@ -55,7 +55,7 @@ vi.mock('@/services/rider/custody-service', () => ({
 
 const mockSession = {
   access_token: 'fake-token',
-  user: { id: 'user-vendor-1', email: 'vendor@example.com' },
+  user: { id: 'user-vendor-1', email: 'vendor@example.com', email_confirmed_at: '2026-09-01T00:00:00Z' },
 } as Session
 
 const mockVendorProfile: Profile = {

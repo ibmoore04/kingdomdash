@@ -55,21 +55,27 @@ export function RouteGuard({ allowedRoles }: RouteGuardProps) {
     return <Navigate to={`/auth/login?redirect=${redirectParam}`} replace />
   }
 
-  // 3. Unresolvable profile error (P9)
+  // 3. Email verification guard: An authenticated Supabase session is NOT sufficient
+  // for normal KingdomDash application access. email_confirmed_at must be present.
+  if (!session.user?.email_confirmed_at) {
+    return <Navigate to="/auth/verify-email" replace />
+  }
+
+  // 4. Unresolvable profile error (P9)
   if (profile === null && profileError !== null) {
     return <Navigate to="/auth/login" replace />
   }
 
-  // 4. Inactive account (P13)
+  // 5. Inactive account (P13)
   if (profile && !profile.is_active) {
     return <Navigate to="/auth/login?error=inactive" replace />
   }
 
-  // 5. Wrong role -> redirect to own dashboard (P11)
+  // 6. Wrong role -> redirect to own dashboard (P11)
   if (profile && allowedRoles && !allowedRoles.includes(profile.role)) {
     return <Navigate to={roleDashboardPath(profile.role)} replace />
   }
 
-  // 6. Authorized -> render outlet (P9)
+  // 7. Authorized -> render outlet (P9)
   return <Outlet />
 }

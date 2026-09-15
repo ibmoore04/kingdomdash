@@ -8,7 +8,7 @@ import { useAuthStore, type Profile } from '@/stores/auth-store'
 describe('Phase 6 Route & RBAC Protection', () => {
   const sampleSession = {
     access_token: 'tk',
-    user: { id: 'usr-1', email: 'test@example.com' },
+    user: { id: 'usr-1', email: 'test@example.com', email_confirmed_at: '2026-09-01T00:00:00Z' },
   } as Session
 
   const customerProfile: Profile = {
@@ -42,6 +42,7 @@ describe('Phase 6 Route & RBAC Protection', () => {
       profile: null,
       isLoading: false,
       isRecoverySession: false,
+      isEmailConfirmed: false,
       profileError: null,
     })
   })
@@ -51,6 +52,7 @@ describe('Phase 6 Route & RBAC Protection', () => {
       <MemoryRouter initialEntries={[initialPath]}>
         <Routes>
           <Route path="/auth/login" element={<div>Login Page</div>} />
+          <Route path="/auth/verify-email" element={<div>Verify Email Page</div>} />
           <Route path="/vendor" element={<div>Vendor Dashboard</div>} />
           <Route path="/cart" element={<div>Public Cart Page</div>} />
 
@@ -103,6 +105,22 @@ describe('Phase 6 Route & RBAC Protection', () => {
 
     renderPhase6App('/checkout')
     expect(screen.getByText('Vendor Dashboard')).toBeDefined()
+    expect(screen.queryByText('Customer Checkout Page')).toBeNull()
+  })
+
+  it('redirects unconfirmed customer accessing /checkout to /auth/verify-email', () => {
+    const unconfirmedSession = {
+      access_token: 'tk-unconfirmed',
+      user: { id: 'usr-unconfirmed', email: 'unconfirmed@kingdomdash.com', email_confirmed_at: null },
+    } as unknown as Session
+
+    useAuthStore.setState({
+      session: unconfirmedSession,
+      profile: customerProfile,
+    })
+
+    renderPhase6App('/checkout')
+    expect(screen.getByText('Verify Email Page')).toBeDefined()
     expect(screen.queryByText('Customer Checkout Page')).toBeNull()
   })
 })

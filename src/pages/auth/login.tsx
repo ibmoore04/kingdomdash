@@ -44,9 +44,15 @@ export default function LoginPage() {
 
   // Already-authenticated redirect (P4)
   useEffect(() => {
-    if (session && profile?.is_active) {
-      const redirectParam = new URLSearchParams(location.search).get('redirect')
-      navigate(resolvePostLoginTarget(redirectParam, profile), { replace: true })
+    if (session) {
+      if (!session.user?.email_confirmed_at) {
+        navigate('/auth/verify-email', { replace: true })
+        return
+      }
+      if (profile?.is_active) {
+        const redirectParam = new URLSearchParams(location.search).get('redirect')
+        navigate(resolvePostLoginTarget(redirectParam, profile), { replace: true })
+      }
     }
   }, [session, profile, location.search, navigate])
 
@@ -86,15 +92,21 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       })
 
       if (signInError) {
         setError(mapAuthError(signInError, 'Sign in'))
+        return
       }
-      // On success: onAuthStateChange emits SIGNED_IN -> AuthStore fetches profile -> redirect effect runs
+
+      if (signInData?.session && !signInData.session.user?.email_confirmed_at) {
+        navigate('/auth/verify-email', { replace: true })
+        return
+      }
+      // On success with confirmed email: onAuthStateChange emits SIGNED_IN -> AuthStore fetches profile -> redirect effect runs
     } catch (err) {
       setError(mapAuthError(err, 'Sign in'))
     } finally {

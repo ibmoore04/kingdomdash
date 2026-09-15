@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useCartStore, type CartVendor, type CartItem } from '../cart-store'
+import {
+  useCartStore,
+  getCartStorageKey,
+  loadCartFromStorage,
+  removeLegacyGlobalCart,
+  type CartVendor,
+  type CartItem,
+} from '../cart-store'
 
 const mockVendorA: CartVendor = {
   id: 'vendor-111',
@@ -204,5 +211,117 @@ describe('CartStore', () => {
 
     expect(res51.conflict).toBe(false)
     expect(useCartStore.getState().items).toHaveLength(50)
+  })
+
+  describe('Strict Per-User Cart Isolation', () => {
+    const userA_Id = 'user-uuid-aaaa-1111'
+    const userB_Id = 'user-uuid-bbbb-2222'
+
+    beforeEach(() => {
+      localStorage.clear()
+      useCartStore.getState().setUser(null)
+      useCartStore.getState().clearCart()
+    })
+
+    it('generates deterministic storage keys for authenticated users and guests', () => {
+      expect(getCartStorageKey(userA_Id)).toBe(`kingdomdash_cart_${userA_Id}`)
+      expect(getCartStorageKey(userB_Id)).toBe(`kingdomdash_cart_${userB_Id}`)
+      expect(getCartStorageKey(null)).toBe('kingdomdash_cart_guest')
+    })
+
+    it('cleans up legacy global cart key kingdomdash_cart_v1', () => {
+      localStorage.setItem('kingdomdash_cart_v1', JSON.stringify({ items: [mockItemA1] }))
+      removeLegacyGlobalCart()
+      expect(localStorage.getItem('kingdomdash_cart_v1')).toBeNull()
+    })
+
+    it('Test A & B: User A adds product -> logs out -> active cart empty -> User B sees clean cart', () => {
+      // 1. User A logs in
+      useCartStore.getState().setUser(userA_Id)
+      expect(useCartStore.getState().activeUserId).toBe(userA_Id)
+
+      // 2. User A adds Product A
+      useCartStore.getState().addItem(mockItemA1, mockVendorA)
+      expect(useCartStore.getState().items).toHaveLength(1)
+      expect(useCartStore.getState().items[0].name).toBe(mockItemA1.name)
+
+      // Verify User A cart is saved in user-specific key
+      const rawUserA = localStorage.getItem(`kingdomdash_cart_${userA_Id}`)
+      expect(rawUserA).toBeTruthy()
+      expect(JSON.parse(rawUserA!).items[0].productId).toBe(mockItemA1.productId)
+
+      // 3. User A logs out
+      useCartStore.getState().setUser(null)
+
+      // Verify active in-memory cart is empty
+      expect(useCartStore.getState().items).toEqual([])
+      expect(useCartStore.getState().vendor).toBeNull()
+      expect(useCartStore.getState().activeUserId).toBeNull()
+
+      // Verify guest storage does not inherit User A items
+      const rawGuest = localStorage.getItem('kingdomdash_cart_guest')
+      expect(rawGuest ? JSON.parse(rawGuest).items : []).toEqual([])
+
+      // 4. User B logs in
+      useCartStore.getState().setUser(userB_Id)
+      expect(useCartStore.getState().activeUserId).toBe(userB_Id)
+
+      // User B MUST NOT see User A's products
+      expect(useCartStore.getState().items).toEqual([])
+      expect(useCartStore.getState().vendor).toBeNull()
+      expect(useCartStore.getState().getItemCount()).toBe(0)
+    })
+
+    it('Test C & D: User B adds product -> logs out -> User A logs back in -> User A cart restored', () => {
+      // 1. User A logs in and adds Product A
+      useCartStore.getState().setUser(userA_Id)
+      useCartStore.getState().addItem(mockItemA1, mockVendorA)
+      expect(useCartStore.getState().items[0].productId).toBe('prod-1')
+
+      // 2. User A logs out
+      useCartStore.getState().setUser(null)
+
+      // 3. User B logs in and adds Product B
+      useCartStore.getState().setUser(userB_Id)
+      expect(useCartStore.getState().items).toHaveLength(0)
+      useCartStore.getState().addItem(mockItemB1, mockVendorB)
+      expect(useCartStore.getState().items[0].productId).toBe('prod-3')
+
+      // 4. User B logs out
+      useCartStore.getState().setUser(null)
+      expect(useCartStore.getState().items).toHaveLength(0)
+
+      // 5. User A logs back in
+      useCartStore.getState().setUser(userA_Id)
+
+      // Verify User A has ONLY Product A, NOT Product B
+      expect(useCartStore.getState().items).toHaveLength(1)
+      expect(useCartStore.getState().items[0].productId).toBe('prod-1')
+      expect(useCartStore.getState().vendor?.id).toBe(mockVendorA.id)
+
+      // 6. User B logs back in
+      useCartStore.getState().setUser(userB_Id)
+
+      // Verify User B has ONLY Product B, NOT Product A
+      expect(useCartStore.getState().items).toHaveLength(1)
+      expect(useCartStore.getState().items[0].productId).toBe('prod-3')
+      expect(useCartStore.getState().vendor?.id).toBe(mockVendorB.id)
+    })
+
+    it('Test E & F: User cart remains intact on page reload/rehydration', () => {
+      // User A logs in and adds items
+      useCartStore.getState().setUser(userA_Id)
+      useCartStore.getState().addItem(mockItemA1, mockVendorA)
+      useCartStore.getState().addItem(mockItemA2, mockVendorA)
+
+      // Simulate rehydration by loading directly from user storage
+      const rehydrated = loadCartFromStorage(userA_Id)
+      expect(rehydrated.items).toHaveLength(2)
+      expect(rehydrated.vendor?.id).toBe(mockVendorA.id)
+
+      // User B storage is still empty
+      const userBData = loadCartFromStorage(userB_Id)
+      expect(userBData.items).toHaveLength(0)
+    })
   })
 })

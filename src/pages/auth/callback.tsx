@@ -72,9 +72,15 @@ export default function AuthCallbackPage() {
       return
     }
 
-    if (session && profile) {
-      navigate(roleDashboardPath(profile.role), { replace: true })
-      return
+    if (session) {
+      if (!session.user?.email_confirmed_at) {
+        navigate('/auth/verify-email', { replace: true })
+        return
+      }
+      if (profile) {
+        navigate(roleDashboardPath(profile.role), { replace: true })
+        return
+      }
     }
   }, [isRecoverySession, session, profile, isLoading, navigate])
   // ── End frozen logic ────────────────────────────────────────────────────

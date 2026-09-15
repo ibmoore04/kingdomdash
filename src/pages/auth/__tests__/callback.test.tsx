@@ -235,7 +235,7 @@ describe('AuthCallbackPage', () => {
     it('navigates to role dashboard when session and profile resolved', async () => {
       vi.mocked(supabase.auth.exchangeCodeForSession).mockResolvedValue({ error: null } as any)
       vi.mocked(useAuthStore).mockReturnValue({
-        session: { user: { id: 'test-id' } } as any,
+        session: { user: { id: 'test-id', email_confirmed_at: '2026-09-01T00:00:00Z' } } as any,
         profile: { 
           role: 'customer',
           full_name: 'Test User',
@@ -265,7 +265,7 @@ describe('AuthCallbackPage', () => {
     it('navigates to vendor dashboard for vendor role', async () => {
       vi.mocked(supabase.auth.exchangeCodeForSession).mockResolvedValue({ error: null } as any)
       vi.mocked(useAuthStore).mockReturnValue({
-        session: { user: { id: 'test-id' } } as any,
+        session: { user: { id: 'test-id', email_confirmed_at: '2026-09-01T00:00:00Z' } } as any,
         profile: { 
           role: 'vendor',
           full_name: 'Test Vendor',
@@ -289,6 +289,36 @@ describe('AuthCallbackPage', () => {
 
       await waitFor(() => {
         expect(history.location.pathname).toBe('/vendor')
+      })
+    })
+
+    it('navigates to verify-email if session is unconfirmed', async () => {
+      vi.mocked(supabase.auth.exchangeCodeForSession).mockResolvedValue({ error: null } as any)
+      vi.mocked(useAuthStore).mockReturnValue({
+        session: { user: { id: 'test-id', email_confirmed_at: null } } as any,
+        profile: { 
+          role: 'customer',
+          full_name: 'Test User',
+          is_active: true,
+        } as any,
+        isLoading: false,
+        isRecoverySession: false,
+        profileError: null,
+        signOut: vi.fn(),
+      })
+
+      const history = createMemoryHistory({ 
+        initialEntries: ['/auth/callback?code=test_code'] 
+      })
+      
+      render(
+        <Router location={history.location} navigator={history}>
+          <AuthCallbackPage />
+        </Router>
+      )
+
+      await waitFor(() => {
+        expect(history.location.pathname).toBe('/auth/verify-email')
       })
     })
 

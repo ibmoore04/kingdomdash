@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { Session, Subscription } from '@supabase/supabase-js'
 import { supabase } from '@/services/supabase/client'
 import type { Database } from '@/types/database.types'
+import { useCartStore } from './cart-store'
 
 export type UserRole = Database['public']['Enums']['user_role']
 
@@ -22,6 +23,7 @@ export interface AuthState {
   profile: Profile | null
   isLoading: boolean
   isRecoverySession: boolean
+  isEmailConfirmed: boolean
   profileError: Error | null
   signOut: () => Promise<void>
 }
@@ -83,11 +85,15 @@ export const useAuthStore = create<AuthState>((set) => ({
   profile: null,
   isLoading: true,
   isRecoverySession: false,
+  isEmailConfirmed: false,
   profileError: null,
 
   signOut: async () => {
     // Invalidate any in-flight profile fetch immediately (P7)
     invalidateFetch()
+
+    // Explicitly reset active in-memory cart and isolate guest state
+    useCartStore.getState().setUser(null)
 
     // Remote sign-out: ignore network errors so user is never trapped client-side (P14)
     try {
@@ -102,6 +108,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       profile: null,
       profileError: null,
       isRecoverySession: false,
+      isEmailConfirmed: false,
       isLoading: false,
     })
   },
@@ -123,47 +130,73 @@ export function initAuthListener(): void {
     switch (event) {
       case 'INITIAL_SESSION':
         if (session) {
-          set({ session, isLoading: true })
+          useCartStore.getState().setUser(session.user.id)
+          set({
+            session,
+            isLoading: true,
+            isEmailConfirmed: Boolean(session.user?.email_confirmed_at),
+          })
           const gen = ++fetchGeneration
           await startProfileFetch(session.user.id, gen, set)
         } else {
+          useCartStore.getState().setUser(null)
           set({
             session: null,
             profile: null,
             isLoading: false,
             isRecoverySession: false,
+            isEmailConfirmed: false,
           })
         }
         break
 
       case 'SIGNED_IN': {
-        set({ session, isRecoverySession: false, isLoading: true })
         if (session) {
+          useCartStore.getState().setUser(session.user.id)
+          set({
+            session,
+            isRecoverySession: false,
+            isLoading: true,
+            isEmailConfirmed: Boolean(session.user?.email_confirmed_at),
+          })
           const gen = ++fetchGeneration
           await startProfileFetch(session.user.id, gen, set)
+        } else {
+          useCartStore.getState().setUser(null)
         }
         break
       }
 
       case 'SIGNED_OUT':
         invalidateFetch()
+        useCartStore.getState().setUser(null)
         set({
           session: null,
           profile: null,
           profileError: null,
           isRecoverySession: false,
+          isEmailConfirmed: false,
           isLoading: false,
         })
         break
 
       case 'TOKEN_REFRESHED':
         // Session token updated without re-fetching profile
-        set({ session })
+        set({
+          session,
+          isEmailConfirmed: Boolean(session?.user?.email_confirmed_at),
+        })
         break
 
       case 'PASSWORD_RECOVERY': {
-        set({ session, isRecoverySession: true, isLoading: true })
+        set({
+          session,
+          isRecoverySession: true,
+          isLoading: true,
+          isEmailConfirmed: Boolean(session?.user?.email_confirmed_at),
+        })
         if (session) {
+          useCartStore.getState().setUser(session.user.id)
           const gen = ++fetchGeneration
           await startProfileFetch(session.user.id, gen, set)
         }
@@ -171,8 +204,13 @@ export function initAuthListener(): void {
       }
 
       case 'USER_UPDATED': {
-        set({ session, isLoading: true })
         if (session) {
+          useCartStore.getState().setUser(session.user.id)
+          set({
+            session,
+            isLoading: true,
+            isEmailConfirmed: Boolean(session.user?.email_confirmed_at),
+          })
           const gen = ++fetchGeneration
           await startProfileFetch(session.user.id, gen, set)
         }
@@ -201,6 +239,7 @@ export function cleanupAuthListener(): void {
     profile: null,
     isLoading: true,
     isRecoverySession: false,
+    isEmailConfirmed: false,
     profileError: null,
   })
 }

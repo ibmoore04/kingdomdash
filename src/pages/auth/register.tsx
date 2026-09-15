@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Eye,
   EyeOff,
@@ -26,6 +26,8 @@ import { supabase } from '@/services/supabase/client'
 import { appConfig } from '@/config/app.config'
 import { mapAuthError } from '@/utils/auth-errors'
 import { validatePhoneNumber } from '@/utils/phone'
+import { useAuthStore } from '@/stores/auth-store'
+import { roleDashboardPath } from '@/utils/safe-redirect'
 import {
   AuthShell,
   AuthField,
@@ -88,6 +90,21 @@ export default function RegisterPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   const errorRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
+  const { session, profile } = useAuthStore()
+
+  // Prevent authenticated / unconfirmed users from accessing registration form
+  useEffect(() => {
+    if (session) {
+      if (!session.user?.email_confirmed_at) {
+        navigate(`/auth/verify-email?email=${encodeURIComponent(session.user?.email || '')}`, { replace: true })
+        return
+      }
+      if (profile?.is_active) {
+        navigate(roleDashboardPath(profile.role), { replace: true })
+      }
+    }
+  }, [session, profile, navigate])
 
   // Move focus to error alert for accessibility (P15)
   useEffect(() => {
@@ -162,7 +179,11 @@ export default function RegisterPage() {
       if (signUpError) {
         setError(mapAuthError(signUpError, 'Sign up'))
       } else {
-        setIsSubmitted(true)
+        if (accountType === 'customer') {
+          navigate(`/auth/verify-email?email=${encodeURIComponent(email.trim())}`, { replace: true })
+        } else {
+          setIsSubmitted(true)
+        }
       }
     } catch (err) {
       setError(mapAuthError(err, 'Sign up'))

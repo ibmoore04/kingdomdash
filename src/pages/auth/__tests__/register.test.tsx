@@ -10,7 +10,12 @@ vi.mock('@/services/supabase/client', () => ({
   supabase: {
     auth: {
       signUp: vi.fn(),
+      onAuthStateChange: vi.fn(() => ({
+        data: { subscription: { unsubscribe: vi.fn() } },
+      })),
+      signOut: vi.fn(),
     },
+    from: vi.fn(),
   },
 }))
 

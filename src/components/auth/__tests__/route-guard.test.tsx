@@ -5,10 +5,10 @@ import type { Session } from '@supabase/supabase-js'
 import { RouteGuard } from '@/components/auth/route-guard'
 import { useAuthStore, type Profile, type UserRole } from '@/stores/auth-store'
 
-describe('RouteGuard tests (P9, P10, P11, P13)', () => {
+describe('RouteGuard tests (P9, P10, P11, P13, Email Verification)', () => {
   const sampleSession = {
     access_token: 'tk',
-    user: { id: 'usr-1', email: 'test@example.com' },
+    user: { id: 'usr-1', email: 'test@example.com', email_confirmed_at: '2026-09-01T00:00:00Z' },
   } as Session
 
   const activeCustomer: Profile = {
@@ -32,6 +32,7 @@ describe('RouteGuard tests (P9, P10, P11, P13)', () => {
       profile: null,
       isLoading: false,
       isRecoverySession: false,
+      isEmailConfirmed: false,
       profileError: null,
       signOut: mockSignOut,
     })
@@ -42,6 +43,7 @@ describe('RouteGuard tests (P9, P10, P11, P13)', () => {
       <MemoryRouter initialEntries={[initialPath]}>
         <Routes>
           <Route path="/auth/login" element={<div>Login Page</div>} />
+          <Route path="/auth/verify-email" element={<div>Verify Email Page</div>} />
           <Route path="/vendor" element={<div>Vendor Dashboard</div>} />
           <Route path="/rider" element={<div>Rider Dashboard</div>} />
           <Route path="/admin" element={<div>Admin Dashboard</div>} />
@@ -176,5 +178,42 @@ describe('RouteGuard tests (P9, P10, P11, P13)', () => {
     renderGuardedRoute('/dashboard/orders', ['customer'])
 
     expect(screen.getByText('Customer Orders')).toBeInTheDocument()
+  })
+
+  it('Email Verification: redirects unconfirmed user (email_confirmed_at == null) to /auth/verify-email', () => {
+    const unconfirmedSession = {
+      access_token: 'tk-unconfirmed',
+      user: { id: 'usr-unconfirmed', email: 'unconfirmed@example.com', email_confirmed_at: null },
+    } as unknown as Session
+
+    useAuthStore.setState({
+      session: unconfirmedSession,
+      profile: activeCustomer,
+      isLoading: false,
+    })
+    renderGuardedRoute('/protected')
+
+    expect(screen.getByText('Verify Email Page')).toBeInTheDocument()
+    expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
+  })
+
+  it('Email Verification: blocks unconfirmed users from accessing vendor, rider, and admin routes', () => {
+    const unconfirmedSession = {
+      access_token: 'tk-unconfirmed',
+      user: { id: 'usr-unconfirmed', email: 'unconfirmed@example.com', email_confirmed_at: null },
+    } as unknown as Session
+
+    const roles: UserRole[] = ['vendor', 'rider', 'admin', 'super_admin']
+    for (const role of roles) {
+      useAuthStore.setState({
+        session: unconfirmedSession,
+        profile: { ...activeCustomer, role },
+        isLoading: false,
+      })
+      const { unmount } = renderGuardedRoute('/protected', [role])
+      expect(screen.getByText('Verify Email Page')).toBeInTheDocument()
+      expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
+      unmount()
+    }
   })
 })
