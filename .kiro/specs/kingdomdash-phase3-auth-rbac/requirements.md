@@ -52,7 +52,7 @@ Phase 3 delivers a complete authentication and role-based access control (RBAC) 
 
 #### Acceptance Criteria
 
-1. THE Supabase client SHALL be initialized in `src/services/supabase/client.ts` with `flowType: 'pkce'`, `persistSession: true`, `autoRefreshToken: true`, and `detectSessionInUrl: true` in the `auth` configuration option.
+1. THE Supabase client SHALL be initialized in `src/services/supabase/client.ts` with `flowType: 'pkce'`, `persistSession: true`, `autoRefreshToken: true`, and `detectSessionInUrl: false` in the `auth` configuration option. `detectSessionInUrl` is explicitly set to `false` because the `/auth/callback` route performs a manual, deduplicated `exchangeCodeForSession(code)` call to eliminate race conditions.
 2. THE `flowType: 'pkce'` setting SHALL be applied consistently so that `resetPasswordForEmail()`, `signUp()`, and all other auth operations that produce redirect URLs generate PKCE-flow callbacks — not implicit-flow hash fragments.
 3. THE Supabase client configuration SHALL be verified by the implementation to confirm these values are set before any auth operation is called; a missing or incorrect configuration SHALL cause an explicit initialization error at startup.
 4. THE `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` environment variables remain the only credentials used by the client; the service-role key must never appear in browser code.
@@ -163,7 +163,7 @@ Phase 3 delivers a complete authentication and role-based access control (RBAC) 
 
 **Sign-out:**
 
-14. THE Auth_Store `signOut()` action SHALL call `Auth_Service.signOut()`, then immediately clear `session`, `profile`, `profileError`, and `isRecoverySession`, and navigate the user to `/`. If `Auth_Service.signOut()` returns an error, the store SHALL still clear all local state and navigate — a remote sign-out failure must not leave the user stuck in an authenticated state client-side.
+14. THE Auth_Store `signOut()` action SHALL call `Auth_Service.signOut()`, then immediately clear `session`, `profile`, `profileError`, `isRecoverySession`, `isEmailConfirmed`, and reset in-memory cart state. If `Auth_Service.signOut()` returns an error, the store SHALL still clear all local state — a remote sign-out failure must not leave the user stuck in an authenticated state client-side. Navigation following sign-out belongs to UI callers, button handlers, and RouteGuard redirection, preserving clean architectural separation between state management and routing.
 
 ---
 

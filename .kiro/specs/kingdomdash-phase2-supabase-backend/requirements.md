@@ -234,13 +234,13 @@ Phase 2 establishes the secure and scalable Supabase/PostgreSQL backend foundati
 19. THE `products` table SHALL allow the owning vendor to INSERT, UPDATE, and DELETE their own products.
 20. THE `products` table SHALL allow `admin` and `super_admin` roles to SELECT, INSERT, UPDATE, and DELETE all rows.
 21. THE `addresses` table SHALL allow an authenticated user to SELECT, INSERT, UPDATE, and DELETE only their own address rows (where `profile_id = auth.uid()`).
-22. THE `orders` table SHALL allow an authenticated customer to INSERT an order where `customer_id = auth.uid()`.
+22. THE `orders` table SHALL prohibit direct client INSERT from authenticated customers. All order creation SHALL flow exclusively through the authoritative `public.create_order_secure()` SECURITY DEFINER RPC.
 23. THE `orders` table SHALL allow an authenticated customer to SELECT only their own orders (where `customer_id = auth.uid()`).
 24. THE `orders` table SHALL allow the owning vendor to SELECT orders where `vendor_id` matches their vendor profile.
 25. THE `orders` table SHALL allow the owning vendor to UPDATE `status` on orders belonging to their vendor (for preparing/ready_for_pickup transitions).
 26. THE `orders` table SHALL allow `admin` and `super_admin` roles to SELECT, INSERT, UPDATE, and DELETE all rows.
 27. THE `order_items` table SHALL allow SELECT to any principal who can SELECT the parent `orders` row.
-28. THE `order_items` table SHALL allow INSERT only during order creation (by the authenticated customer or admin).
+28. THE `order_items` table SHALL prohibit direct client INSERT from authenticated customers. Order items SHALL be created exclusively within the transactional context of `public.create_order_secure()`.
 29. THE `payments` table SHALL allow a customer to SELECT their own payment (via the linked order's `customer_id`).
 30. THE `payments` table SHALL allow `admin` and `super_admin` roles to SELECT all rows and UPDATE any row.
 31. THE `payments` table SHALL NOT allow any frontend role to directly INSERT or UPDATE a payment row's `status` to `successful` — payment status transitions are server-side only.

@@ -1122,9 +1122,9 @@ All role-based policies use `get_current_user_role()` (Section 11.3). This funct
 
 Users MUST NOT be able to change their own `role` or `is_active` flag through normal self-service profile updates. The RLS UPDATE policy on `profiles` must restrict which columns a user can modify:
 
-- A user's self-service UPDATE policy uses `WITH CHECK` to enforce that `role = OLD.role` and `is_active = OLD.is_active` — they cannot change their own role or active status.
-- Role changes are a server-side administrative operation only (Phase 3 admin tooling or SECURITY DEFINER function).
-- The implementation must explicitly test that a customer cannot self-promote to `vendor`, `rider`, `admin`, or `super_admin`.
+- A user's self-service UPDATE policy `profiles_update_own` uses `WITH CHECK` coupled with the `get_own_profile_flags()` SECURITY DEFINER helper to enforce that `role = (SELECT p_role FROM public.get_own_profile_flags())` and `is_active = (SELECT p_is_active FROM public.get_own_profile_flags())` — users cannot self-escalate their role or reactivate suspended accounts.
+- Administrative role changes and status toggles are server-side operations managed exclusively through dedicated SECURITY DEFINER RPCs (`admin_set_user_role` and `admin_toggle_user_active`), with standard admins having zero direct UPDATE access to `profiles`.
+- The implementation explicitly tests that a customer cannot self-promote to `vendor`, `rider`, `admin`, or `super_admin`.
 
 ### 12.4 Per-Table Access Matrix
 
