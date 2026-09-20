@@ -1,9 +1,16 @@
 import { useState, useMemo } from 'react'
-import { Plus, Search, Filter, Edit, Trash2, Package } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import type { Category, Product } from '@/types'
 import { formatNgn } from '@/utils/formatting'
 
@@ -91,34 +98,39 @@ export function VendorProductsTab({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-text-muted" aria-hidden="true" />
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="h-10 rounded-md border border-border bg-white px-3 py-1.5 text-body-small focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <option value="all">All Categories ({products.length})</option>
+          <Select
+            value={selectedCategory}
+            onValueChange={(val) => setSelectedCategory(val)}
+          >
+            <SelectTrigger className="h-10 rounded-md border border-border bg-white px-3 py-1.5 text-body-small focus-visible:ring-primary w-auto min-w-[170px]">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories ({products.length})</SelectItem>
               {categories.map((c) => {
                 const count = products.filter((p) => p.category_id === c.id).length
                 return (
-                  <option key={c.id} value={c.id}>
+                  <SelectItem key={c.id} value={c.id}>
                     {c.name} ({count})
-                  </option>
+                  </SelectItem>
                 )
               })}
-            </select>
-          </div>
+            </SelectContent>
+          </Select>
 
-          <select
+          <Select
             value={availabilityFilter}
-            onChange={(e) => setAvailabilityFilter(e.target.value as 'all' | 'available' | 'unavailable')}
-            className="h-10 rounded-md border border-border bg-white px-3 py-1.5 text-body-small focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            onValueChange={(val) => setAvailabilityFilter(val as 'all' | 'available' | 'unavailable')}
           >
-            <option value="all">All Status</option>
-            <option value="available">In Stock</option>
-            <option value="unavailable">Out of Stock</option>
-          </select>
+            <SelectTrigger className="h-10 rounded-md border border-border bg-white px-3 py-1.5 text-body-small focus-visible:ring-primary w-auto min-w-[130px]">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="available">In Stock</SelectItem>
+              <SelectItem value="unavailable">Out of Stock</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

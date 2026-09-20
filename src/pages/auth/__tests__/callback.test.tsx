@@ -232,7 +232,7 @@ describe('AuthCallbackPage', () => {
   })
 
   describe('Deterministic routing - Email confirmation', () => {
-    it('navigates to role dashboard when session and profile resolved', async () => {
+    it('navigates to public homepage when session and profile resolved without redirect param', async () => {
       vi.mocked(supabase.auth.exchangeCodeForSession).mockResolvedValue({ error: null } as any)
       vi.mocked(useAuthStore).mockReturnValue({
         session: { user: { id: 'test-id', email_confirmed_at: '2026-09-01T00:00:00Z' } } as any,
@@ -258,11 +258,11 @@ describe('AuthCallbackPage', () => {
       )
 
       await waitFor(() => {
-        expect(history.location.pathname).toBe('/dashboard')
+        expect(history.location.pathname).toBe('/')
       })
     })
 
-    it('navigates to vendor dashboard for vendor role', async () => {
+    it('navigates to vendor dashboard for vendor role when redirect param is specified', async () => {
       vi.mocked(supabase.auth.exchangeCodeForSession).mockResolvedValue({ error: null } as any)
       vi.mocked(useAuthStore).mockReturnValue({
         session: { user: { id: 'test-id', email_confirmed_at: '2026-09-01T00:00:00Z' } } as any,
@@ -278,7 +278,7 @@ describe('AuthCallbackPage', () => {
       })
 
       const history = createMemoryHistory({ 
-        initialEntries: ['/auth/callback?code=test_code'] 
+        initialEntries: ['/auth/callback?code=test_code&redirect=%2Fvendor'] 
       })
       
       render(

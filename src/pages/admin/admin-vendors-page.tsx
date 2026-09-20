@@ -6,7 +6,6 @@ import type { AdminVendorRow } from '../../types/admin';
 import {
   Store,
   Search,
-  Filter,
   CheckCircle2,
   XCircle,
   AlertCircle,
@@ -16,6 +15,13 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { DirectOnboardVendorModal } from '@/components/admin/onboarding/direct-onboard-vendor-modal';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export const AdminVendorsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -188,32 +194,36 @@ export const AdminVendorsPage: React.FC = () => {
           />
         </div>
 
-        <div className="relative">
-          <Filter className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-white border border-border rounded-xl text-xs text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary capitalize shadow-xs"
-          >
-            <option value="">All Business Types</option>
-            <option value="restaurant">Restaurant</option>
-            <option value="grocery">Grocery Store</option>
-            <option value="pharmacy">Pharmacy</option>
-          </select>
-        </div>
-
-        <select
-          value={activeFilter === undefined ? '' : String(activeFilter)}
-          onChange={(e) => {
-            const v = e.target.value;
-            setActiveFilter(v === '' ? undefined : v === 'true');
-          }}
-          className="w-full px-3 py-2 bg-white border border-border rounded-xl text-xs text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs"
+        <Select
+          value={typeFilter || 'all'}
+          onValueChange={(val) => setTypeFilter(val === 'all' ? '' : val)}
         >
-          <option value="">All Store Statuses</option>
-          <option value="true">Active & Visible Stores</option>
-          <option value="false">Suspended Stores</option>
-        </select>
+          <SelectTrigger className="w-full bg-white border border-border rounded-xl text-xs text-text-primary focus:border-primary shadow-xs capitalize h-9">
+            <SelectValue placeholder="All Business Types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Business Types</SelectItem>
+            <SelectItem value="restaurant">Restaurant</SelectItem>
+            <SelectItem value="grocery">Grocery Store</SelectItem>
+            <SelectItem value="pharmacy">Pharmacy</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={activeFilter === undefined ? 'all' : String(activeFilter)}
+          onValueChange={(val) => {
+            setActiveFilter(val === 'all' ? undefined : val === 'true');
+          }}
+        >
+          <SelectTrigger className="w-full bg-white border border-border rounded-xl text-xs text-text-primary focus:border-primary shadow-xs h-9">
+            <SelectValue placeholder="All Store Statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Store Statuses</SelectItem>
+            <SelectItem value="true">Active & Visible Stores</SelectItem>
+            <SelectItem value="false">Suspended Stores</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {error && (

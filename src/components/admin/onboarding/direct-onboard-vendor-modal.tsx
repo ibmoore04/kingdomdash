@@ -22,6 +22,13 @@ import {
   adminDirectOnboardVendor,
   getEligibleUserProfiles,
 } from '@/services/supabase/admin'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface DirectOnboardVendorModalProps {
   isOpen: boolean
@@ -445,18 +452,22 @@ export const DirectOnboardVendorModal: React.FC<DirectOnboardVendorModalProps> =
                   onChange={(e) => setProfileSearch(e.target.value)}
                   className="w-full px-3 py-1.5 bg-neutral-50 border border-neutral-200 rounded-lg text-xs"
                 />
-                <select
-                  value={selectedProfileId}
-                  onChange={(e) => handleSelectProfile(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-neutral-200 rounded-lg text-xs font-medium text-neutral-900 truncate"
+                <Select
+                  value={selectedProfileId || 'none'}
+                  onValueChange={(val) => handleSelectProfile(val === 'none' ? '' : val)}
                 >
-                  <option value="">-- Choose registered customer to elevate --</option>
-                  {profiles.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.full_name || 'Unnamed'} ({p.email}) - {p.role}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full px-3 py-2 bg-white border border-neutral-200 rounded-lg text-xs font-medium text-neutral-900 truncate h-10">
+                    <SelectValue placeholder="-- Choose registered customer to elevate --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">-- Choose registered customer to elevate --</SelectItem>
+                    {profiles.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.full_name || 'Unnamed'} ({p.email}) - {p.role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {loadingProfiles && (
                   <p className="text-[10px] text-neutral-400 italic">Searching profiles...</p>
                 )}

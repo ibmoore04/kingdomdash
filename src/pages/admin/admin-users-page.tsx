@@ -3,9 +3,15 @@ import { getUsers, toggleUserActive } from '../../services/supabase/admin';
 import type { AdminUserRow } from '../../types/admin';
 import { useAuthStore } from '@/stores/auth-store';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Users,
   Search,
-  Filter,
   Shield,
   CheckCircle2,
   XCircle,
@@ -120,38 +126,44 @@ export const AdminUsersPage: React.FC = () => {
 
         {/* Role Filter */}
         <div className="relative">
-          <Filter className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
-          <select
-            value={roleFilter}
-            onChange={(e) => {
-              setRoleFilter(e.target.value);
+          <Select
+            value={roleFilter || 'all'}
+            onValueChange={(val) => {
+              setRoleFilter(val === 'all' ? '' : val);
               setPage(1);
             }}
-            className="w-full pl-9 pr-3 py-2 bg-white border border-border rounded-xl text-xs text-text-primary focus:outline-hidden focus:border-primary shadow-xs transition-colors capitalize"
           >
-            <option value="">All Roles</option>
-            <option value="customer">Customer</option>
-            <option value="rider">Rider</option>
-            <option value="vendor">Vendor</option>
-            <option value="admin">Admin</option>
-            {isSuperAdmin && <option value="super_admin">Super Admin</option>}
-          </select>
+            <SelectTrigger className="w-full bg-white border border-border rounded-xl text-xs text-text-primary focus:border-primary shadow-xs transition-colors capitalize h-9">
+              <SelectValue placeholder="All Roles" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Roles</SelectItem>
+              <SelectItem value="customer">Customer</SelectItem>
+              <SelectItem value="rider">Rider</SelectItem>
+              <SelectItem value="vendor">Vendor</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+              {isSuperAdmin && <SelectItem value="super_admin">Super Admin</SelectItem>}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Active status filter */}
-        <select
-          value={activeFilter === undefined ? '' : String(activeFilter)}
-          onChange={(e) => {
-            const val = e.target.value;
-            setActiveFilter(val === '' ? undefined : val === 'true');
+        <Select
+          value={activeFilter === undefined ? 'all' : String(activeFilter)}
+          onValueChange={(val) => {
+            setActiveFilter(val === 'all' ? undefined : val === 'true');
             setPage(1);
           }}
-          className="w-full px-3 py-2 bg-white border border-border rounded-xl text-xs text-text-primary focus:outline-hidden focus:border-primary shadow-xs transition-colors"
         >
-          <option value="">All Account States</option>
-          <option value="true">Active Accounts Only</option>
-          <option value="false">Suspended / Deactivated Only</option>
-        </select>
+          <SelectTrigger className="w-full bg-white border border-border rounded-xl text-xs text-text-primary focus:border-primary shadow-xs transition-colors h-9">
+            <SelectValue placeholder="All Account States" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Account States</SelectItem>
+            <SelectItem value="true">Active Accounts Only</SelectItem>
+            <SelectItem value="false">Suspended / Deactivated Only</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Error display */}

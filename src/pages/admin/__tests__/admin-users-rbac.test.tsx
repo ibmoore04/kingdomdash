@@ -77,9 +77,12 @@ describe('AdminUsersPage RBAC & Super Admin Isolation', () => {
     })
 
     const roleSelect = screen.getAllByRole('combobox')[0]
-    expect(roleSelect).not.toHaveTextContent('Super Admin')
-    expect(roleSelect).toHaveTextContent('Admin')
-    expect(roleSelect).toHaveTextContent('Customer')
+    fireEvent.pointerDown(roleSelect, { pointerId: 1 })
+    fireEvent.keyDown(roleSelect, { key: 'ArrowDown' })
+
+    expect(screen.queryByRole('option', { name: 'Super Admin' })).not.toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'Admin' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'Customer' })).toBeInTheDocument()
   })
 
   it('Super Admin DOES see Super Admin option in role filter', async () => {
@@ -93,6 +96,10 @@ describe('AdminUsersPage RBAC & Super Admin Isolation', () => {
     await waitFor(() => {
       expect(screen.getByText('John Customer')).toBeInTheDocument()
     })
+
+    const roleSelect = screen.getAllByRole('combobox')[0]
+    fireEvent.pointerDown(roleSelect, { pointerId: 1 })
+    fireEvent.keyDown(roleSelect, { key: 'ArrowDown' })
 
     expect(screen.getByRole('option', { name: 'Super Admin' })).toBeInTheDocument()
   })

@@ -4,7 +4,7 @@ import { Mail, ArrowLeft, Loader2, CheckCircle2, AlertCircle } from 'lucide-reac
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/services/supabase/client'
 import { useAuthStore } from '@/stores/auth-store'
-import { roleDashboardPath } from '@/utils/safe-redirect'
+import { resolvePostLoginTarget } from '@/utils/safe-redirect'
 import {
   AuthShell,
   AuthIconBadge,
@@ -28,16 +28,17 @@ export default function VerifyEmailPage() {
 
   const statusRef = useRef<HTMLDivElement>(null)
 
-  // If the user's email is already confirmed and profile is loaded, send them to their dashboard
+  // If the user's email is already confirmed and profile is loaded, send them to public homepage
   useEffect(() => {
     if (session && isEmailConfirmed) {
+      const redirectParam = new URLSearchParams(location.search).get('redirect')
       if (profile) {
-        navigate(roleDashboardPath(profile.role), { replace: true })
+        navigate(resolvePostLoginTarget(redirectParam, profile), { replace: true })
       } else {
-        navigate('/dashboard', { replace: true })
+        navigate('/', { replace: true })
       }
     }
-  }, [session, isEmailConfirmed, profile, navigate])
+  }, [session, isEmailConfirmed, profile, location.search, navigate])
 
   // Resend cooldown timer countdown
   useEffect(() => {

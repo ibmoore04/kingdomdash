@@ -50,7 +50,7 @@ describe('safe-redirect unit tests', () => {
     const customer = { role: 'customer' as UserRole }
     expect(resolvePostLoginTarget('/dashboard/orders', customer, origin)).toBe('/dashboard/orders')
     expect(resolvePostLoginTarget('/food', customer, origin)).toBe('/food')
-    expect(resolvePostLoginTarget(null, customer, origin)).toBe('/dashboard')
+    expect(resolvePostLoginTarget(null, customer, origin)).toBe('/')
   })
 
   it('resolvePostLoginTarget blocks cross-role redirects (P16)', () => {

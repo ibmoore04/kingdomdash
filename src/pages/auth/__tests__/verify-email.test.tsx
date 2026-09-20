@@ -39,6 +39,7 @@ describe('VerifyEmailPage tests', () => {
     return render(
       <MemoryRouter initialEntries={[initialPath]}>
         <Routes>
+          <Route path="/" element={<div>Public Homepage</div>} />
           <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
           <Route path="/auth/login" element={<div>Login Page</div>} />
           <Route path="/dashboard" element={<div>Customer Dashboard</div>} />
@@ -136,7 +137,7 @@ describe('VerifyEmailPage tests', () => {
     renderVerifyEmailPage('/auth/verify-email')
 
     await waitFor(() => {
-      expect(screen.getByText('Customer Dashboard')).toBeInTheDocument()
+      expect(screen.getByText('Public Homepage')).toBeInTheDocument()
     })
   })
 })

@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth-store';
 import {
   LayoutDashboard,
@@ -21,6 +21,7 @@ import {
   ChevronRight,
   LogOut,
   Bell,
+  Globe,
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -201,7 +202,19 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         </div>
 
         {/* User Info & Footer */}
-        <div className="p-3 border-t border-border shrink-0 bg-white">
+        <div className="p-3 border-t border-border shrink-0 bg-white space-y-2">
+          <Link
+            to="/"
+            onClick={onCloseMobile}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-text-secondary hover:text-primary hover:bg-page-background border border-transparent hover:border-border transition-all ${
+              collapsed ? 'justify-center px-0' : ''
+            }`}
+            title="Public Website"
+          >
+            <Globe className="w-4 h-4 text-primary shrink-0" />
+            {!collapsed && <span>Public Website</span>}
+          </Link>
+
           <div
             className={`flex items-center gap-3 px-2 py-2 rounded-xl bg-light-surface border border-border ${
               collapsed ? 'justify-center' : ''

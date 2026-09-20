@@ -20,6 +20,8 @@ import {
   RefreshCw,
   CreditCard,
   Utensils,
+  Globe,
+  ChevronRight,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth-store'
@@ -384,70 +386,112 @@ export default function CustomerDashboardPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-page-background">
       {/* Desktop Sidebar */}
-      <aside className="hidden w-60 shrink-0 border-r border-border bg-white lg:flex lg:flex-col justify-between overflow-y-auto">
-        <div>
-          <div className="flex h-16 items-center border-b border-border px-5">
-            <Link to="/" className="flex items-center gap-2">
-              <span className="text-body-large font-bold text-text-primary">KingdomDash</span>
-              <span className="text-caption font-semibold text-primary">Customer</span>
-            </Link>
-          </div>
-
-          <div className="p-4 border-b border-border/70">
-            <span className="text-caption font-semibold text-text-muted uppercase tracking-wider block">
-              My Account
-            </span>
-            <span className="text-body-small font-bold text-text-primary truncate block mt-1">
-              {profile?.full_name || 'Customer Account'}
-            </span>
-            <span className="text-caption text-text-secondary truncate block">
-              {profile?.email}
-            </span>
-          </div>
-
-            <nav className="flex flex-col gap-1 p-3" aria-label="Dashboard navigation">
-              {NAV_ITEMS.map(({ id, icon: Icon, label }) => {
-                const isActive = activeTab === id
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => handleSelectTab(id)}
-                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all ${
-                      isActive
-                        ? 'bg-primary text-white font-bold shadow-xs'
-                        : 'text-text-secondary hover:bg-page-background hover:text-text-primary'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                      <span>{label}</span>
-                    </div>
-                    {id === 'orders' && pendingOrdersCount > 0 && (
-                      <span
-                        className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                          isActive ? 'bg-white text-primary' : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {pendingOrdersCount}
-                      </span>
-                    )}
-                  </button>
-                )
-              })}
-            </nav>
+      <aside
+        className="
+          group/sidebar
+          hidden lg:flex lg:flex-col
+          shrink-0 overflow-hidden overflow-y-auto
+          border-r border-border bg-white
+          w-[72px] hover:w-60
+          transition-all duration-300 ease-in-out
+          relative z-10
+        "
+        aria-label="Customer dashboard sidebar"
+      >
+        {/* Brand header */}
+        <div className="flex h-16 items-center justify-between border-b border-border px-3.5 shrink-0">
+          <Link to="/" className="flex items-center gap-2.5 overflow-hidden">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white font-bold shrink-0">
+              <User className="h-5 w-5" />
+            </div>
+            <div className="overflow-hidden whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
+              <div className="font-bold text-text-primary text-sm">KingdomDash</div>
+              <div className="text-[10px] text-primary font-semibold uppercase tracking-wider">Customer</div>
+            </div>
+          </Link>
+          <ChevronRight
+            className="w-4 h-4 shrink-0 text-text-muted group-hover/sidebar:opacity-0 transition-opacity duration-200 absolute right-3"
+            aria-hidden="true"
+          />
         </div>
 
-        <div className="p-4 border-t border-border">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => signOut()}
-            className="w-full justify-start gap-2 text-text-muted hover:text-text-primary"
+        {/* Account info strip */}
+        <div className="px-3.5 py-3 border-b border-border/70 shrink-0 overflow-hidden">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-page-background border border-border flex items-center justify-center shrink-0">
+              <User className="h-3.5 w-3.5 text-text-muted" />
+            </div>
+            <div className="overflow-hidden whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
+              <p className="text-body-small font-bold text-text-primary truncate leading-tight">
+                {profile?.full_name || 'Customer Account'}
+              </p>
+              <p className="text-caption text-text-secondary truncate leading-tight">
+                {profile?.email}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex flex-col gap-1 px-2 py-3 flex-1" aria-label="Dashboard navigation">
+          {NAV_ITEMS.map(({ id, icon: Icon, label }) => {
+            const isActive = activeTab === id
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => handleSelectTab(id)}
+                title={label}
+                className={`flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-body-small font-medium transition-all w-full group/item ${
+                  isActive
+                    ? 'bg-primary text-white font-bold shadow-xs'
+                    : 'text-text-secondary hover:bg-page-background hover:text-text-primary'
+                }`}
+              >
+                <Icon
+                  className={`h-5 w-5 shrink-0 ${isActive ? 'text-white' : 'text-text-muted group-hover/item:text-text-primary'}`}
+                  aria-hidden="true"
+                />
+                <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate flex-1 text-left">
+                  {label}
+                </span>
+                {id === 'orders' && pendingOrdersCount > 0 && (
+                  <span
+                    className={`shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 ${
+                      isActive ? 'bg-white text-primary' : 'bg-amber-100 text-amber-800'
+                    }`}
+                  >
+                    {pendingOrdersCount}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div className="border-t border-border px-2 py-3 shrink-0 space-y-1">
+          <Link
+            to="/"
+            title="Back to Public Website"
+            className="flex items-center gap-3 px-2.5 py-2 rounded-xl text-body-small font-semibold text-text-secondary hover:bg-page-background hover:text-primary transition-colors group/item"
           >
-            <LogOut className="h-4 w-4" aria-hidden="true" />
-            Sign Out
-          </Button>
+            <Globe className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+            <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate">
+              Public Website
+            </span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => signOut()}
+            title="Sign Out"
+            className="flex w-full items-center gap-3 px-2.5 py-2 rounded-xl text-body-small font-semibold text-text-muted hover:bg-page-background hover:text-text-primary transition-colors group/item"
+          >
+            <LogOut className="h-5 w-5 shrink-0" aria-hidden="true" />
+            <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate">
+              Sign Out
+            </span>
+          </button>
         </div>
       </aside>
 
@@ -525,6 +569,13 @@ export default function CustomerDashboardPage() {
             </div>
 
             <div className="p-4 border-t border-border space-y-2">
+              <Button asChild variant="outline" size="sm" className="w-full justify-start gap-2 text-text-secondary hover:text-primary">
+                <Link to="/" onClick={() => setMobileNavOpen(false)}>
+                  <Globe className="h-4 w-4 text-primary" />
+                  Public Website
+                </Link>
+              </Button>
+
               <Button asChild variant="primary" size="sm" className="w-full gap-1.5 justify-center font-bold text-white bg-primary hover:bg-primary-hover">
                 <Link to="/food" onClick={() => setMobileNavOpen(false)} className="text-white">
                   Order Food Now
@@ -598,6 +649,19 @@ export default function CustomerDashboardPage() {
             </Button>
 
             <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-8 px-2.5 sm:px-3 text-xs font-semibold text-text-secondary hover:text-primary shrink-0"
+            >
+              <Link to="/" title="Back to Public Website">
+                <Globe className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                <span className="hidden sm:inline">Website</span>
+                <span className="sm:hidden">Website</span>
+              </Link>
+            </Button>
+
+            <Button
               variant="ghost"
               size="sm"
               onClick={() => signOut()}
@@ -607,7 +671,7 @@ export default function CustomerDashboardPage() {
               <span>Sign Out</span>
             </Button>
 
-            <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex gap-1.5 ml-2">
+            <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex gap-1.5">
               <Link to="/food">
                 Order Food
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />

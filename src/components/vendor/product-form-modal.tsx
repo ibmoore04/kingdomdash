@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import type { Category, Product, ProductInsert, ProductUpdate } from '@/types'
 import { ImageIcon } from 'lucide-react'
 
@@ -161,19 +168,25 @@ export function ProductFormModal({
               <Label htmlFor="product-category" className="text-label font-semibold text-text-primary">
                 Category
               </Label>
-              <select
-                id="product-category"
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="mt-1 flex h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-body-small focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              <Select
+                value={categoryId || 'none'}
+                onValueChange={(val) => setCategoryId(val === 'none' ? '' : val)}
               >
-                <option value="">No Category</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name} {cat.service_type ? `(${cat.service_type.toUpperCase()})` : ''}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger
+                  id="product-category"
+                  className="mt-1 h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-body-small focus-visible:ring-primary"
+                >
+                  <SelectValue placeholder="No Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Category</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name} {cat.service_type ? `(${cat.service_type.toUpperCase()})` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>

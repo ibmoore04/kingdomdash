@@ -9,7 +9,6 @@ import type { AdminRiderRow } from '../../types/admin';
 import {
   Bike,
   Search,
-  Filter,
   CheckCircle2,
   XCircle,
   AlertCircle,
@@ -19,6 +18,13 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { DirectOnboardRiderModal } from '@/components/admin/onboarding/direct-onboard-rider-modal';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export const AdminRidersPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -156,47 +162,53 @@ export const AdminRidersPage: React.FC = () => {
           />
         </div>
 
-        <div className="relative">
-          <Filter className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
-          <select
-            value={verifiedFilter === undefined ? '' : String(verifiedFilter)}
-            onChange={(e) => {
-              const v = e.target.value;
-              setVerifiedFilter(v === '' ? undefined : v === 'true');
-            }}
-            className="w-full pl-9 pr-3 py-2 bg-white border border-border rounded-xl text-xs text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs"
-          >
-            <option value="">All Verification States</option>
-            <option value="true">Verified Couriers Only</option>
-            <option value="false">Unverified Couriers Only</option>
-          </select>
-        </div>
-
-        <select
-          value={activeFilter === undefined ? '' : String(activeFilter)}
-          onChange={(e) => {
-            const v = e.target.value;
-            setActiveFilter(v === '' ? undefined : v === 'true');
+        <Select
+          value={verifiedFilter === undefined ? 'all' : String(verifiedFilter)}
+          onValueChange={(val) => {
+            setVerifiedFilter(val === 'all' ? undefined : val === 'true');
           }}
-          className="w-full px-3 py-2 bg-white border border-border rounded-xl text-xs text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs"
         >
-          <option value="">All Active States</option>
-          <option value="true">Active Couriers</option>
-          <option value="false">Suspended Couriers</option>
-        </select>
+          <SelectTrigger className="w-full bg-white border border-border rounded-xl text-xs text-text-primary focus:border-primary shadow-xs h-9">
+            <SelectValue placeholder="All Verification States" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Verification States</SelectItem>
+            <SelectItem value="true">Verified Couriers Only</SelectItem>
+            <SelectItem value="false">Unverified Couriers Only</SelectItem>
+          </SelectContent>
+        </Select>
 
-        <select
-          value={availableFilter === undefined ? '' : String(availableFilter)}
-          onChange={(e) => {
-            const v = e.target.value;
-            setAvailableFilter(v === '' ? undefined : v === 'true');
+        <Select
+          value={activeFilter === undefined ? 'all' : String(activeFilter)}
+          onValueChange={(val) => {
+            setActiveFilter(val === 'all' ? undefined : val === 'true');
           }}
-          className="w-full px-3 py-2 bg-white border border-border rounded-xl text-xs text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs"
         >
-          <option value="">All Availability</option>
-          <option value="true">Online / Available</option>
-          <option value="false">Offline</option>
-        </select>
+          <SelectTrigger className="w-full bg-white border border-border rounded-xl text-xs text-text-primary focus:border-primary shadow-xs h-9">
+            <SelectValue placeholder="All Active States" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Active States</SelectItem>
+            <SelectItem value="true">Active Couriers</SelectItem>
+            <SelectItem value="false">Suspended Couriers</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={availableFilter === undefined ? 'all' : String(availableFilter)}
+          onValueChange={(val) => {
+            setAvailableFilter(val === 'all' ? undefined : val === 'true');
+          }}
+        >
+          <SelectTrigger className="w-full bg-white border border-border rounded-xl text-xs text-text-primary focus:border-primary shadow-xs h-9">
+            <SelectValue placeholder="All Availability" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Availability</SelectItem>
+            <SelectItem value="true">Online / Available</SelectItem>
+            <SelectItem value="false">Offline</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {error && (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth-store';
-import { Menu, Bell, Shield, ExternalLink, RefreshCw } from 'lucide-react';
+import { Menu, Bell, Shield, RefreshCw, Globe } from 'lucide-react';
 import { getUnreadNotificationCount, subscribeToMyNotifications } from '@/services/supabase/notifications';
 
 interface AdminHeaderProps {
@@ -123,15 +123,14 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         )}
 
         {/* Link to public website / consumer portal */}
-        <a
-          href="/"
-          target="_blank"
-          rel="noreferrer"
-          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-text-primary bg-white hover:bg-light-surface border border-border rounded-lg transition-colors shadow-xs"
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-semibold text-text-secondary hover:text-primary bg-white hover:bg-light-surface border border-border rounded-lg transition-colors shadow-xs shrink-0"
+          title="Back to Public Website"
         >
-          <span>Live Store</span>
-          <ExternalLink className="w-3.5 h-3.5" />
-        </a>
+          <Globe className="w-3.5 h-3.5 text-primary shrink-0" />
+          <span className="hidden sm:inline">Live Store</span>
+        </Link>
 
         {/* Admin Notifications Trigger */}
         <button

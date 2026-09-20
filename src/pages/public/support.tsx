@@ -8,6 +8,13 @@ import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { appConfig } from '@/config/app.config'
 import { useToast } from '@/hooks/use-toast'
 import { useSeo } from '@/hooks/use-seo'
@@ -280,18 +287,24 @@ export default function SupportPage() {
 
                   {/* Category Selector */}
                   <FormField id="support-category" label="Inquiry Topic *" error={undefined}>
-                    <select
-                      id="support-category"
+                    <Select
                       value={form.category}
-                      onChange={(e) => handleChange('category', e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-border bg-white text-xs sm:text-sm text-text-primary focus:outline-none focus:border-primary shadow-xs transition-colors"
+                      onValueChange={(val) => handleChange('category', val)}
                     >
-                      {CATEGORIES.map((cat) => (
-                        <option key={cat.value} value={cat.value}>
-                          {cat.label}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger
+                        id="support-category"
+                        className="w-full h-11 px-3.5 rounded-xl border border-border bg-white text-xs sm:text-sm text-text-primary focus:border-primary shadow-xs transition-colors"
+                      >
+                        <SelectValue placeholder="Select topic" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES.map((cat) => (
+                          <SelectItem key={cat.value} value={cat.value}>
+                            {cat.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormField>
 
                   {/* Name and Email */}

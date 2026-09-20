@@ -11,7 +11,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { supabase } from '@/services/supabase/client'
 import { useAuthStore } from '@/stores/auth-store'
-import { roleDashboardPath } from '@/utils/safe-redirect'
+import { resolvePostLoginTarget } from '@/utils/safe-redirect'
 import { AuthShell } from '@/components/auth/auth-shell'
 
 // Idempotency guard: ensure exchangeCodeForSession is called at most once per code
@@ -78,11 +78,13 @@ export default function AuthCallbackPage() {
         return
       }
       if (profile) {
-        navigate(roleDashboardPath(profile.role), { replace: true })
+        const params = new URLSearchParams(location.search)
+        const redirectParam = params.get('redirect')
+        navigate(resolvePostLoginTarget(redirectParam, profile), { replace: true })
         return
       }
     }
-  }, [isRecoverySession, session, profile, isLoading, navigate])
+  }, [isRecoverySession, session, profile, isLoading, location.search, navigate])
   // ── End frozen logic ────────────────────────────────────────────────────
 
   // ── Branded loading UI ────────────────────────────────────────────────

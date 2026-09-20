@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { LogOut, Bike, Settings, Bell } from 'lucide-react'
+import { LogOut, Bike, Settings, Bell, Globe } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -81,7 +81,19 @@ export function RiderHeader({ rider, onToggleAvailability }: RiderHeaderProps) {
           />
         )}
 
-        <div className="flex items-center gap-1 sm:border-l sm:border-border sm:pl-3">
+        <div className="flex items-center gap-1.5 sm:border-l sm:border-border sm:pl-3">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-8 px-2.5 sm:px-3 text-xs font-semibold text-text-secondary hover:text-primary gap-1.5 shrink-0"
+          >
+            <Link to="/" title="Back to Public Website">
+              <Globe className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
+              <span className="hidden sm:inline">Website</span>
+            </Link>
+          </Button>
+
           <Button
             type="button"
             variant="ghost"

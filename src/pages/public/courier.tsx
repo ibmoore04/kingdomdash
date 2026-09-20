@@ -2,7 +2,6 @@ import { useState } from 'react'
 import {
   Package,
   MapPin,
-  Clock,
   ShieldCheck,
   ArrowRight,
   CheckCircle2,
@@ -13,11 +12,17 @@ import {
   MessageSquare,
   Send,
   AlertCircle,
-  ChevronRight,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PageContainer } from '@/components/layout/section'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { appConfig } from '@/config/app.config'
 import { generateWhatsAppLink } from '@/utils/whatsapp'
 import { useSeo } from '@/hooks/use-seo'
@@ -188,54 +193,20 @@ export default function CourierPage() {
   return (
     <div className="bg-white text-neutral-900 overflow-x-hidden">
 
-      {/* ─── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-neutral-950 via-neutral-900 to-neutral-950 pt-16 pb-20 sm:pt-20 sm:pb-28">
-        {/* Ambient glow */}
-        <div
-          className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-96 w-96 rounded-full bg-primary/25 blur-[120px]"
-          aria-hidden="true"
-        />
+      {/* ─── PAGE HEADER (NO HERO BANNER) ─────────────────────────────────── */}
+      <section className="pt-8 pb-4 border-b border-neutral-100 bg-neutral-50/50">
         <PageContainer>
-          <div className="relative z-10 max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-semibold text-primary mb-6">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-semibold text-primary mb-3">
               <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
               <span>Live Dispatch — {appConfig.launchMarket}</span>
             </div>
-
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.08] tracking-tight text-white">
-              Send anything, anywhere
-              <span className="block text-primary mt-2">across Ijebu-Ode.</span>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-neutral-900">
+              Send anything, anywhere <span className="text-primary">across Ijebu-Ode.</span>
             </h1>
-
-            <p className="mt-6 text-base sm:text-lg text-white/65 leading-relaxed max-w-xl mx-auto">
-              Fill the form below, submit, and we'll have a verified rider at your pickup
-              location. Documents, parcels, food — we carry it all.
+            <p className="mt-2 text-xs sm:text-sm text-neutral-500 max-w-lg mx-auto">
+              Book a verified dispatch rider instantly for parcels, documents, and packages across {appConfig.launchMarket}.
             </p>
-
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-5 text-sm text-white/50">
-              <span className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400" aria-hidden="true" />
-                Verified Riders
-              </span>
-              <span className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" aria-hidden="true" />
-                Same-Day Pickup
-              </span>
-              <span className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-                Proof of Delivery
-              </span>
-            </div>
-
-            <div className="mt-10">
-              <a
-                href="#booking-form"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-sm font-bold text-white shadow-lg hover:bg-primary/90 transition-all"
-              >
-                Book a Rider Now
-                <ChevronRight className="h-4 w-4" aria-hidden="true" />
-              </a>
-            </div>
           </div>
         </PageContainer>
       </section>
@@ -506,18 +477,29 @@ export default function CourierPage() {
                     <label htmlFor="packageType" className="block text-xs font-semibold text-neutral-700 mb-1.5">
                       Package Type <span className="text-primary">*</span>
                     </label>
-                    <select
-                      id="packageType"
-                      name="packageType"
+                    <Select
                       value={form.packageType}
-                      onChange={handleChange}
-                      className={`w-full rounded-xl border bg-neutral-50 py-2.5 px-4 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors appearance-none ${errors.packageType ? 'border-red-400 bg-red-50/40' : 'border-neutral-200'} ${!form.packageType ? 'text-neutral-400' : ''}`}
+                      onValueChange={(value) => {
+                        setForm((prev) => ({ ...prev, packageType: value as typeof form.packageType }))
+                        if (errors.packageType) {
+                          setErrors((prev) => ({ ...prev, packageType: undefined }))
+                        }
+                      }}
                     >
-                      <option value="" disabled>Select package type...</option>
-                      {PACKAGE_TYPES.map(pt => (
-                        <option key={pt.value} value={pt.value}>{pt.label}</option>
-                      ))}
-                    </select>
+                      <SelectTrigger
+                        id="packageType"
+                        className={`w-full rounded-xl border bg-neutral-50 py-2.5 px-4 text-sm text-neutral-900 focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors ${errors.packageType ? 'border-red-400 bg-red-50/40' : 'border-neutral-200'} ${!form.packageType ? 'text-neutral-400' : ''}`}
+                      >
+                        <SelectValue placeholder="Select package type..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PACKAGE_TYPES.map((pt) => (
+                          <SelectItem key={pt.value} value={pt.value}>
+                            {pt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {errors.packageType && (
                       <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" aria-hidden="true" />

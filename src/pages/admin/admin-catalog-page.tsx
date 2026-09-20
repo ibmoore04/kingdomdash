@@ -7,6 +7,13 @@ import {
 } from '../../services/supabase/admin';
 import type { CategoryRow, ProductRow } from '../../types/admin';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Layers,
   Plus,
   RefreshCw,
@@ -315,15 +322,19 @@ export const AdminCatalogPage: React.FC = () => {
                 <label className="block text-xs font-semibold text-text-primary mb-1">
                   Target Service Type
                 </label>
-                <select
+                <Select
                   value={catService}
-                  onChange={(e) => setCatService(e.target.value)}
-                  className="w-full p-2.5 bg-white border border-border rounded-xl text-xs text-text-primary focus:outline-hidden focus:border-primary shadow-xs capitalize"
+                  onValueChange={(val) => setCatService(val)}
                 >
-                  <option value="food">Food Delivery</option>
-                  <option value="grocery">Grocery Delivery</option>
-                  <option value="courier">Courier Dispatch</option>
-                </select>
+                  <SelectTrigger className="w-full bg-white border border-border rounded-xl text-xs text-text-primary focus:border-primary shadow-xs capitalize h-9">
+                    <SelectValue placeholder="Target Service Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="food">Food Delivery</SelectItem>
+                    <SelectItem value="grocery">Grocery Delivery</SelectItem>
+                    <SelectItem value="courier">Courier Dispatch</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2">

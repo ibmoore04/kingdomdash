@@ -11,6 +11,8 @@ import {
   ShoppingBag,
   Bell,
   Settings,
+  Globe,
+  ChevronRight,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useCurrentVendor } from '@/hooks/use-current-vendor'
@@ -284,10 +286,23 @@ export default function VendorDashboardPage() {
             <span className="text-label font-bold text-text-primary">KingdomDash</span>
             <span className="text-caption font-semibold text-text-muted">Vendor Portal</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => signOut()} className="gap-2">
-            <LogOut className="h-4 w-4" aria-hidden="true" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-8 px-2.5 sm:px-3 text-xs font-semibold text-text-secondary hover:text-primary"
+            >
+              <Link to="/" title="Back to Public Website">
+                <Globe className="h-3.5 w-3.5 text-primary" />
+                <span>Website</span>
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => signOut()} className="gap-2">
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+              Sign Out
+            </Button>
+          </div>
         </header>
         <VendorPendingView onRefresh={refreshVendor} isLoading={isVendorLoading} />
       </div>
@@ -300,30 +315,51 @@ export default function VendorDashboardPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-page-background">
       {/* ── Desktop Sidebar ──────────────────────────────────────────────────── */}
-      <aside className="hidden w-64 shrink-0 border-r border-border bg-white lg:flex lg:flex-col overflow-y-auto">
+      <aside
+        className="
+          group/sidebar
+          hidden lg:flex lg:flex-col
+          shrink-0 overflow-hidden overflow-y-auto
+          border-r border-border bg-white
+          w-[72px] hover:w-64
+          transition-all duration-300 ease-in-out
+          relative z-10
+        "
+        aria-label="Vendor dashboard sidebar"
+      >
         {/* Brand */}
-        <div className="flex h-16 items-center justify-between border-b border-border px-6">
-          <div className="flex items-center gap-2">
-            <span className="text-h4 font-bold text-primary">KingdomDash</span>
-            <Badge variant="default" className="text-caption">
-              Vendor
-            </Badge>
+        <div className="flex h-16 items-center justify-between border-b border-border px-3.5 shrink-0">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white font-bold shrink-0">
+              <Store className="h-4.5 w-4.5" />
+            </div>
+            <div className="overflow-hidden whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
+              <div className="font-bold text-text-primary text-sm truncate">{vendor.business_name}</div>
+              <div className="text-[10px] text-primary font-semibold uppercase tracking-wider">Vendor Portal</div>
+            </div>
           </div>
+          <ChevronRight
+            className="w-4 h-4 shrink-0 text-text-muted group-hover/sidebar:opacity-0 transition-opacity duration-200 absolute right-3"
+            aria-hidden="true"
+          />
         </div>
 
-        {/* Vendor Summary */}
-        <div className="border-b border-border p-5">
-          <p className="truncate text-label font-bold text-text-primary">{vendor.business_name}</p>
-          <div className="mt-1.5 flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-status-success" aria-hidden="true" />
-            <span className="text-caption text-text-secondary">
+        {/* Store status strip */}
+        <div className="px-3.5 py-3 border-b border-border/70 shrink-0 overflow-hidden">
+          <div className="flex items-center gap-2">
+            <span
+              className={`h-2.5 w-2.5 rounded-full shrink-0 ${vendor.is_active ? 'bg-status-success' : 'bg-amber-400'}`}
+              aria-hidden="true"
+            />
+            <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 text-caption text-text-secondary truncate">
+              {vendor.is_active ? 'Active' : 'Paused'} ·{' '}
               {vendor.business_type === 'restaurant' ? 'Restaurant' : 'Grocery Store'}
             </span>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-4" aria-label="Vendor dashboard sidebar">
+        <nav className="flex flex-col gap-1 px-2 py-3 flex-1" aria-label="Vendor dashboard navigation">
           {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
             const isActive = activeTab === id
             return (
@@ -331,36 +367,60 @@ export default function VendorDashboardPage() {
                 key={id}
                 type="button"
                 onClick={() => setActiveTab(id)}
-                className={`flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-body-small font-medium transition-all ${
+                className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-body-small font-medium transition-all group/item ${
                   isActive
                     ? 'bg-primary text-white shadow-sm'
                     : 'text-text-secondary hover:bg-page-background hover:text-text-primary'
                 }`}
+                title={label}
               >
-                <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                {label}
+                <Icon
+                  className={`h-5 w-5 shrink-0 ${isActive ? 'text-white' : 'text-text-muted group-hover/item:text-text-primary'}`}
+                  aria-hidden="true"
+                />
+                <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate flex-1 text-left">
+                  {label}
+                </span>
               </button>
             )
           })}
         </nav>
 
         {/* Footer Actions */}
-        <div className="border-t border-border p-4 space-y-2">
-          <Button asChild variant="outline" size="sm" className="w-full justify-start gap-2">
-            <Link to={publicStorePath} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-4 w-4" aria-hidden="true" />
-              Public Store
-            </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => signOut()}
-            className="w-full justify-start gap-2 text-text-muted hover:text-text-primary"
+        <div className="border-t border-border px-2 py-3 shrink-0 space-y-1">
+          <Link
+            to="/"
+            title="Back to Public Website"
+            className="flex items-center gap-3 px-2.5 py-2 rounded-xl text-body-small font-semibold text-text-secondary hover:bg-page-background hover:text-primary transition-colors group/item"
           >
-            <LogOut className="h-4 w-4" aria-hidden="true" />
-            Sign Out
-          </Button>
+            <Globe className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
+            <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate">
+              Public Website
+            </span>
+          </Link>
+          <Link
+            to={publicStorePath}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Preview Store"
+            className="flex items-center gap-3 px-2.5 py-2 rounded-xl text-body-small font-semibold text-text-muted hover:bg-page-background hover:text-text-primary transition-colors group/item"
+          >
+            <ExternalLink className="h-5 w-5 shrink-0" aria-hidden="true" />
+            <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate">
+              Preview Store
+            </span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => signOut()}
+            title="Sign Out"
+            className="flex w-full items-center gap-3 px-2.5 py-2 rounded-xl text-body-small font-semibold text-text-muted hover:bg-page-background hover:text-text-primary transition-colors group/item"
+          >
+            <LogOut className="h-5 w-5 shrink-0" aria-hidden="true" />
+            <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate">
+              Sign Out
+            </span>
+          </button>
         </div>
       </aside>
 
@@ -413,6 +473,19 @@ export default function VendorDashboardPage() {
               }`}
             >
               <Settings className="h-4 w-4" aria-hidden="true" />
+            </Button>
+
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-8 px-2.5 sm:px-3 text-xs font-semibold text-text-secondary hover:text-primary shrink-0"
+            >
+              <Link to="/" title="Back to Public Website">
+                <Globe className="h-3.5 w-3.5 text-primary" />
+                <span className="hidden sm:inline">Website</span>
+                <span className="sm:hidden">Website</span>
+              </Link>
             </Button>
 
             <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex gap-1.5 text-caption">
@@ -594,7 +667,24 @@ export default function VendorDashboardPage() {
               })}
             </div>
 
-            <div className="mt-auto border-t border-border pt-4">
+            <div className="mt-auto border-t border-border pt-4 space-y-2">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="w-full justify-start gap-2 text-text-secondary hover:text-primary"
+              >
+                <Link to="/" onClick={() => setMobileNavOpen(false)}>
+                  <Globe className="h-4 w-4 text-primary" />
+                  Public Website
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm" className="w-full justify-start gap-2 text-text-muted hover:text-text-primary">
+                <Link to={publicStorePath} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                  Preview Store
+                </Link>
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"

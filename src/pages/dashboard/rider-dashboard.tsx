@@ -1,4 +1,5 @@
-import { LayoutDashboard, MapPin, DollarSign, Bike, Settings } from 'lucide-react'
+import { LayoutDashboard, MapPin, DollarSign, Bike, Settings, Globe } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { ComingSoonNotice } from '@/components/shared/coming-soon-notice'
 
 const NAV_ITEMS = [
@@ -33,9 +34,19 @@ export default function RiderDashboardPage() {
       <main className="flex flex-1 flex-col overflow-y-auto">
         <header className="flex h-14 items-center justify-between border-b border-border bg-white px-6">
           <h1 className="text-h4 font-semibold text-text-primary">Rider Dashboard</h1>
-          <span className="rounded-pill bg-primary-soft px-3 py-1 text-caption font-medium text-primary-hover">
-            Phase 1 Shell
-          </span>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-text-secondary hover:text-primary bg-white hover:bg-light-surface border border-border rounded-lg transition-colors shadow-xs"
+              title="Back to Public Website"
+            >
+              <Globe className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span>Public Website</span>
+            </Link>
+            <span className="rounded-pill bg-primary-soft px-3 py-1 text-caption font-medium text-primary-hover">
+              Phase 1 Shell
+            </span>
+          </div>
         </header>
         <div className="flex-1 p-6">
           <div className="mx-auto max-w-2xl">

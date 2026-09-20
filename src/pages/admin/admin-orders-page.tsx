@@ -3,9 +3,15 @@ import { useSearchParams } from 'react-router-dom';
 import { getOrders, getOrderDetails } from '../../services/supabase/admin';
 import type { AdminOrderRow, OrderDetailsData, OrderItemLine } from '../../types/admin';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   ShoppingBag,
   Search,
-  Filter,
   RefreshCw,
   AlertCircle,
   Eye,
@@ -167,45 +173,52 @@ export const AdminOrdersPage: React.FC = () => {
           />
         </div>
 
-        <div className="relative">
-          <Filter className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setSearchParams({ status: e.target.value, service: serviceFilter });
-              setPage(1);
-            }}
-            className="w-full pl-9 pr-3 py-2 bg-white border border-border rounded-xl text-xs text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary capitalize shadow-xs"
-          >
-            <option value="">All 10 Order States</option>
-            <option value="placed">placed</option>
-            <option value="confirmed">confirmed</option>
-            <option value="preparing">preparing</option>
-            <option value="ready">ready</option>
-            <option value="dispatched">dispatched</option>
-            <option value="in_transit">in_transit</option>
-            <option value="delivered">delivered</option>
-            <option value="completed">completed</option>
-            <option value="cancelled">cancelled</option>
-            <option value="failed">failed</option>
-          </select>
-        </div>
-
-        <select
-          value={serviceFilter}
-          onChange={(e) => {
-            setServiceFilter(e.target.value);
-            setSearchParams({ status: statusFilter, service: e.target.value });
+        <Select
+          value={statusFilter || 'all'}
+          onValueChange={(val) => {
+            const nextStatus = val === 'all' ? '' : val;
+            setStatusFilter(nextStatus);
+            setSearchParams({ status: nextStatus, service: serviceFilter });
             setPage(1);
           }}
-          className="w-full px-3 py-2 bg-white border border-border rounded-xl text-xs text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary capitalize shadow-xs"
         >
-          <option value="">All Services (Food, Grocery, Courier)</option>
-          <option value="food">Food Delivery</option>
-          <option value="grocery">Grocery Delivery</option>
-          <option value="courier">Courier Dispatch</option>
-        </select>
+          <SelectTrigger className="w-full bg-white border border-border rounded-xl text-xs text-text-primary focus:border-primary shadow-xs capitalize h-9">
+            <SelectValue placeholder="All 10 Order States" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All 10 Order States</SelectItem>
+            <SelectItem value="placed">placed</SelectItem>
+            <SelectItem value="confirmed">confirmed</SelectItem>
+            <SelectItem value="preparing">preparing</SelectItem>
+            <SelectItem value="ready">ready</SelectItem>
+            <SelectItem value="dispatched">dispatched</SelectItem>
+            <SelectItem value="in_transit">in_transit</SelectItem>
+            <SelectItem value="delivered">delivered</SelectItem>
+            <SelectItem value="completed">completed</SelectItem>
+            <SelectItem value="cancelled">cancelled</SelectItem>
+            <SelectItem value="failed">failed</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={serviceFilter || 'all'}
+          onValueChange={(val) => {
+            const nextService = val === 'all' ? '' : val;
+            setServiceFilter(nextService);
+            setSearchParams({ status: statusFilter, service: nextService });
+            setPage(1);
+          }}
+        >
+          <SelectTrigger className="w-full bg-white border border-border rounded-xl text-xs text-text-primary focus:border-primary shadow-xs capitalize h-9">
+            <SelectValue placeholder="All Services (Food, Grocery, Courier)" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Services (Food, Grocery, Courier)</SelectItem>
+            <SelectItem value="food">Food Delivery</SelectItem>
+            <SelectItem value="grocery">Grocery Delivery</SelectItem>
+            <SelectItem value="courier">Courier Dispatch</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {error && (

@@ -4,7 +4,7 @@ import { AdminSidebar } from '../../components/admin/admin-sidebar';
 import { AdminHeader } from '../../components/admin/admin-header';
 
 export const AdminShell: React.FC = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (

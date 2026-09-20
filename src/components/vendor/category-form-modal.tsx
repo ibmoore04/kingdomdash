@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import type { Category, CategoryInsert, CategoryUpdate, ReferenceCategory } from '@/types'
 
 interface CategoryFormModalProps {
@@ -137,19 +144,25 @@ export function CategoryFormModal({
             <Label htmlFor="category-service-type" className="text-label font-semibold text-text-primary">
               Service Type <span className="text-status-error">*</span>
             </Label>
-            <select
-              id="category-service-type"
+            <Select
               value={serviceType}
-              onChange={(e) => setServiceType(e.target.value as 'food' | 'grocery')}
-              className="mt-1 flex h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-body-small focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              onValueChange={(val) => setServiceType(val as 'food' | 'grocery')}
             >
-              {(!vendorServices || vendorServices.includes('food')) && (
-                <option value="food">Food Menu</option>
-              )}
-              {(!vendorServices || vendorServices.includes('grocery')) && (
-                <option value="grocery">Grocery Catalog</option>
-              )}
-            </select>
+              <SelectTrigger
+                id="category-service-type"
+                className="mt-1 flex h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-body-small focus-visible:ring-primary"
+              >
+                <SelectValue placeholder="Select Service Type" />
+              </SelectTrigger>
+              <SelectContent>
+                {(!vendorServices || vendorServices.includes('food')) && (
+                  <SelectItem value="food">Food Menu</SelectItem>
+                )}
+                {(!vendorServices || vendorServices.includes('grocery')) && (
+                  <SelectItem value="grocery">Grocery Catalog</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           {referenceCategories.length > 0 && (
@@ -157,28 +170,34 @@ export function CategoryFormModal({
               <Label htmlFor="reference-category" className="text-label font-semibold text-text-primary">
                 Global Reference Category (Optional)
               </Label>
-              <select
-                id="reference-category"
-                value={referenceCategoryId}
-                onChange={(e) => {
-                  const val = e.target.value
-                  setReferenceCategoryId(val)
-                  const matched = referenceCategories.find((rc) => rc.id === val)
+              <Select
+                value={referenceCategoryId || 'none'}
+                onValueChange={(val) => {
+                  const resolvedVal = val === 'none' ? '' : val
+                  setReferenceCategoryId(resolvedVal)
+                  const matched = referenceCategories.find((rc) => rc.id === resolvedVal)
                   if (matched && matched.service_type) {
                     setServiceType(matched.service_type as 'food' | 'grocery')
                   }
                 }}
-                className="mt-1 flex h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-body-small focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <option value="">None / Custom Category</option>
-                {referenceCategories
-                  .filter((ref) => !ref.service_type || ref.service_type === serviceType)
-                  .map((ref) => (
-                    <option key={ref.id} value={ref.id}>
-                      {ref.name} ({ref.service_type})
-                    </option>
-                  ))}
-              </select>
+                <SelectTrigger
+                  id="reference-category"
+                  className="mt-1 flex h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-body-small focus-visible:ring-primary"
+                >
+                  <SelectValue placeholder="None / Custom Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None / Custom Category</SelectItem>
+                  {referenceCategories
+                    .filter((ref) => !ref.service_type || ref.service_type === serviceType)
+                    .map((ref) => (
+                      <SelectItem key={ref.id} value={ref.id}>
+                        {ref.name} ({ref.service_type})
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 

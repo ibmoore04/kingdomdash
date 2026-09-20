@@ -3,8 +3,14 @@ import { useSearchParams } from 'react-router-dom';
 import { getDeliveries } from '../../services/supabase/admin';
 import type { AdminDeliveryRow } from '../../types/admin';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Truck,
-  Filter,
   RefreshCw,
   AlertCircle,
   Clock,
@@ -123,25 +129,29 @@ export const AdminDeliveriesPage: React.FC = () => {
 
       {/* Filter toolbar */}
       <div className="flex items-center gap-3">
-        <div className="relative w-full max-w-xs">
-          <Filter className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setSearchParams({ status: e.target.value });
+        <div className="w-full max-w-xs">
+          <Select
+            value={statusFilter || 'all'}
+            onValueChange={(val) => {
+              const nextStatus = val === 'all' ? '' : val;
+              setStatusFilter(nextStatus);
+              setSearchParams({ status: nextStatus });
               setPage(1);
             }}
-            className="w-full pl-9 pr-3 py-2 bg-white border border-border rounded-xl text-xs text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary capitalize shadow-xs"
           >
-            <option value="">All 6 Delivery States</option>
-            <option value="pending">Pending</option>
-            <option value="assigned">Assigned</option>
-            <option value="picked_up">Picked Up</option>
-            <option value="in_transit">In Transit</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
+            <SelectTrigger className="w-full bg-white border border-border rounded-xl text-xs text-text-primary focus:border-primary shadow-xs capitalize h-9">
+              <SelectValue placeholder="All 6 Delivery States" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All 6 Delivery States</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="assigned">Assigned</SelectItem>
+              <SelectItem value="picked_up">Picked Up</SelectItem>
+              <SelectItem value="in_transit">In Transit</SelectItem>
+              <SelectItem value="delivered">Delivered</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

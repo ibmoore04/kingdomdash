@@ -34,6 +34,7 @@ describe('LoginPage tests (P3, P4, P15)', () => {
     return render(
       <MemoryRouter initialEntries={[initialPath]}>
         <Routes>
+          <Route path="/" element={<div>Public Homepage</div>} />
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/auth/verify-email" element={<div>Verify Email Page</div>} />
           <Route path="/dashboard" element={<div>Customer Dashboard</div>} />
@@ -137,7 +138,7 @@ describe('LoginPage tests (P3, P4, P15)', () => {
     expect(passwordInput).toHaveAttribute('type', 'password')
   })
 
-  it('P4: already authenticated active user is redirected to their role dashboard on mount', () => {
+  it('P4: already authenticated active user is redirected to public homepage on mount when no redirect param', () => {
     const customerProfile: Profile = {
       id: 'cust-1',
       email: 'c@example.com',
@@ -158,7 +159,7 @@ describe('LoginPage tests (P3, P4, P15)', () => {
 
     renderLoginPage('/auth/login')
 
-    expect(screen.getByText('Customer Dashboard')).toBeInTheDocument()
+    expect(screen.getByText('Public Homepage')).toBeInTheDocument()
   })
 
   it('P4 & P16: already authenticated user respects role-compatible redirect and blocks cross-role', () => {

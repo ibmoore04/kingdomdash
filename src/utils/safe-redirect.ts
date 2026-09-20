@@ -69,7 +69,7 @@ export function resolvePostLoginTarget(
 ): string {
   const safe = validateRedirectPath(redirectParam, currentOrigin)
   const ownDashboard = roleDashboardPath(profile.role)
-  if (!safe) return ownDashboard
+  if (!safe) return '/'
 
   // If redirect points to a dashboard belonging to another role, block cross-role redirect
   const allDashboardRoots = ['/dashboard', '/vendor', '/rider', '/admin']
