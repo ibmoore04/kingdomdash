@@ -89,11 +89,15 @@ export default function RiderActiveDeliveryPage() {
     }
   }
 
-  const handleDelivered = async (notes?: string) => {
+  const handleDelivered = async (notes?: string, pin?: string) => {
     if (!activeDelivery) return
     setIsMutating(true)
     try {
-      const { success, error } = await markDeliveryDelivered(activeDelivery.delivery_id, notes)
+      const { success, error } = await markDeliveryDelivered(
+        activeDelivery.delivery_id,
+        notes,
+        pin
+      )
       if (!success && error) {
         throw error
       }
@@ -336,6 +340,7 @@ export default function RiderActiveDeliveryPage() {
           orderStatus={activeDelivery.order_status}
           serviceType={activeDelivery.service_type}
           isMutating={isMutating}
+          hasDeliveryPin={activeDelivery.has_delivery_pin}
           onPickup={handlePickup}
           onTransit={handleTransit}
           onDelivered={handleDelivered}

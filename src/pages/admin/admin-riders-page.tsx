@@ -218,8 +218,111 @@ export const AdminRidersPage: React.FC = () => {
         </div>
       )}
 
-      {/* Roster Table */}
-      <div className="rounded-2xl bg-white border border-border overflow-hidden shadow-xs">
+      {/* Mobile Fleet Cards (md:hidden) */}
+      <div className="md:hidden space-y-3">
+        {loading ? (
+          <div className="p-8 text-center text-text-muted bg-white border border-border rounded-2xl shadow-xs">
+            <RefreshCw className="w-5 h-5 animate-spin text-primary mx-auto mb-2" />
+            <p className="text-xs">Loading fleet roster...</p>
+          </div>
+        ) : filteredRiders.length === 0 ? (
+          <div className="p-8 text-center text-text-muted bg-white border border-border rounded-2xl shadow-xs">
+            <p className="text-xs">No riders found matching criteria.</p>
+          </div>
+        ) : (
+          filteredRiders.map((rider) => (
+            <div
+              key={rider.id}
+              className="p-4 bg-white border border-border rounded-2xl shadow-xs space-y-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="font-semibold text-text-primary text-sm">
+                    {rider.full_name || (rider as any).profiles?.full_name || 'Courier Rider'}
+                  </div>
+                  <div className="text-[11px] font-mono text-text-secondary">
+                    {rider.phone_number || rider.phone || (rider as any).profiles?.phone || 'No phone'}
+                  </div>
+                </div>
+                <div>
+                  {rider.is_available ? (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Online
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] text-text-muted bg-light-surface border border-border">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                      Offline
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-light-surface border border-border flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5">
+                  <Truck className="w-4 h-4 text-text-muted" />
+                  <span className="font-medium text-text-primary capitalize">
+                    {rider.vehicle?.vehicle_type || 'No vehicle'}
+                  </span>
+                  {rider.vehicle?.plate_number && (
+                    <span className="px-1.5 py-0.5 rounded bg-white text-[10px] font-mono text-text-secondary border border-border">
+                      {rider.vehicle.plate_number}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {rider.is_verified ? (
+                    <span className="text-[10px] font-semibold text-emerald-700 flex items-center gap-0.5">
+                      <ShieldCheck className="w-3 h-3" /> Verified
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-medium text-amber-700 flex items-center gap-0.5">
+                      <AlertCircle className="w-3 h-3" /> Unverified
+                    </span>
+                  )}
+                  <span className="text-text-muted">•</span>
+                  {rider.is_active ? (
+                    <span className="text-[10px] font-semibold text-emerald-700">Active</span>
+                  ) : (
+                    <span className="text-[10px] font-semibold text-primary">Suspended</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-1 border-t border-border">
+                <button
+                  type="button"
+                  disabled={actionId === rider.id}
+                  onClick={() => handleToggleVerified(rider.id, rider.is_verified)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors disabled:opacity-50 ${
+                    rider.is_verified
+                      ? 'bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200'
+                      : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200'
+                  }`}
+                >
+                  {rider.is_verified ? 'Unverify' : 'Verify'}
+                </button>
+                <button
+                  type="button"
+                  disabled={actionId === rider.id}
+                  onClick={() => handleToggleActive(rider.id, rider.is_active)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors disabled:opacity-50 ${
+                    rider.is_active
+                      ? 'bg-rose-50 text-primary hover:bg-rose-100 border border-rose-200'
+                      : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200'
+                  }`}
+                >
+                  {rider.is_active ? 'Suspend' : 'Activate'}
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Roster Table (hidden md:block) */}
+      <div className="hidden md:block rounded-2xl bg-white border border-border overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-text-secondary">
             <thead className="bg-light-surface/80 text-text-secondary font-semibold uppercase tracking-wider border-b border-border text-[11px]">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom';
 import {
   Clock,
   CheckCircle2,
@@ -368,8 +369,8 @@ export const VendorOrdersList: React.FC<VendorOrdersListProps> = ({ vendorId }) 
       )}
 
       {/* Reject Order Modal */}
-      {rejectingOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      {rejectingOrder && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4">
             <h3 className="text-body-large font-bold text-text-primary">Reject Order</h3>
             <p className="text-body-small text-text-secondary">
@@ -411,7 +412,8 @@ export const VendorOrdersList: React.FC<VendorOrdersListProps> = ({ vendorId }) 
               </Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

@@ -73,7 +73,7 @@ describe('AdminUsersPage RBAC & Super Admin Isolation', () => {
     render(<AdminUsersPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('John Customer')).toBeInTheDocument()
+      expect(screen.getAllByText('John Customer').length).toBeGreaterThan(0)
     })
 
     const roleSelect = screen.getAllByRole('combobox')[0]
@@ -94,7 +94,7 @@ describe('AdminUsersPage RBAC & Super Admin Isolation', () => {
     render(<AdminUsersPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('John Customer')).toBeInTheDocument()
+      expect(screen.getAllByText('John Customer').length).toBeGreaterThan(0)
     })
 
     const roleSelect = screen.getAllByRole('combobox')[0]
@@ -113,11 +113,11 @@ describe('AdminUsersPage RBAC & Super Admin Isolation', () => {
     render(<AdminUsersPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Standard Admin')).toBeInTheDocument()
+      expect(screen.getAllByText('Standard Admin').length).toBeGreaterThan(0)
     })
 
     // Find row for admin-1
-    const selfRow = screen.getByText('admin-1').closest('tr')
+    const selfRow = screen.getAllByText('admin-1').map((el) => el.closest('tr')).find(Boolean)
     expect(selfRow).toBeInTheDocument()
 
     const deactivateBtn = selfRow?.querySelector('button')
@@ -139,10 +139,10 @@ describe('AdminUsersPage RBAC & Super Admin Isolation', () => {
     render(<AdminUsersPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('John Customer')).toBeInTheDocument()
+      expect(screen.getAllByText('John Customer').length).toBeGreaterThan(0)
     })
 
-    const customerRow = screen.getByText('cust-1').closest('tr')
+    const customerRow = screen.getAllByText('cust-1').map((el) => el.closest('tr')).find(Boolean)
     const deactivateBtn = customerRow?.querySelector('button')
     expect(deactivateBtn).not.toBeDisabled()
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   getPricingRules,
   savePricingRule,
@@ -139,8 +140,88 @@ export const AdminPricingPage: React.FC = () => {
         </div>
       )}
 
-      {/* Rules Table */}
-      <div className="rounded-2xl bg-white border border-border shadow-xs overflow-hidden">
+      {/* Mobile Cards View (md:hidden) */}
+      <div className="md:hidden space-y-3">
+        {loading ? (
+          <div className="p-8 text-center text-text-muted bg-white border border-border rounded-2xl shadow-xs">
+            <RefreshCw className="w-5 h-5 animate-spin text-primary mx-auto mb-2" />
+            <p className="text-xs">Loading pricing rules...</p>
+          </div>
+        ) : rules.length === 0 ? (
+          <div className="p-8 text-center text-text-muted bg-white border border-border rounded-2xl shadow-xs">
+            <p className="text-xs">No pricing rules registered in database.</p>
+          </div>
+        ) : (
+          rules.map((rule) => (
+            <div
+              key={rule.id}
+              className="p-4 bg-white border border-border rounded-2xl shadow-xs space-y-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-0.5">
+                  <div className="font-bold text-text-primary text-sm uppercase tracking-wide">
+                    {rule.service_type} Delivery
+                  </div>
+                  <div className="text-[11px] font-mono text-amber-600 font-semibold">
+                    Surge: {Number(rule.surge_multiplier).toFixed(2)}x
+                  </div>
+                </div>
+                <div>
+                  {rule.is_active ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Active
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-light-surface text-text-muted border border-border">
+                      <XCircle className="w-3 h-3" />
+                      Inactive
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 py-2 border-y border-border text-center">
+                <div className="bg-light-surface p-2 rounded-xl">
+                  <div className="text-[10px] text-text-muted">Base Fee</div>
+                  <div className="font-mono font-semibold text-text-primary text-xs">
+                    ₦{Number(rule.base_fee).toLocaleString('en-NG')}
+                  </div>
+                </div>
+                <div className="bg-light-surface p-2 rounded-xl">
+                  <div className="text-[10px] text-text-muted">Per KM</div>
+                  <div className="font-mono font-semibold text-text-primary text-xs">
+                    ₦{Number(rule.per_km_fee).toLocaleString('en-NG')}
+                  </div>
+                </div>
+                <div className="bg-light-surface p-2 rounded-xl">
+                  <div className="text-[10px] text-text-muted">Min Fee</div>
+                  <div className="font-mono font-semibold text-text-secondary text-xs">
+                    ₦{Number(rule.min_fee).toLocaleString('en-NG')}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleToggleRule(rule.id, rule.is_active)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors shadow-xs ${
+                    rule.is_active
+                      ? 'bg-rose-50 text-primary hover:bg-rose-100 border border-rose-200'
+                      : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                  }`}
+                >
+                  {rule.is_active ? 'Disable Tier' : 'Enable Tier'}
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View (hidden md:block) */}
+      <div className="hidden md:block rounded-2xl bg-white border border-border shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left text-xs text-text-secondary">
             <thead className="bg-light-surface/80 text-text-secondary font-semibold uppercase tracking-wider border-b border-border text-[11px]">
@@ -221,8 +302,8 @@ export const AdminPricingPage: React.FC = () => {
       </div>
 
       {/* New Rule Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      {isModalOpen && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <h3 className="text-sm font-bold text-text-primary">Create Authoritative Pricing Tier</h3>
             <form onSubmit={handleCreateRule} className="space-y-4">
@@ -323,7 +404,8 @@ export const AdminPricingPage: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

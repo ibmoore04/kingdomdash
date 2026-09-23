@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { supabase } from '@/services/supabase/client'
 
 export interface CartItem {
   productId: string
@@ -29,6 +30,7 @@ export interface CartState {
   vendor: CartVendor | null
   isOpen: boolean
   activeUserId: string | null
+  isSyncing: boolean
 
   // Actions
   addItem: (item: Omit<CartItem, 'quantity'>, vendor: CartVendor) => AddItemResult
@@ -38,10 +40,16 @@ export interface CartState {
   clearCart: () => void
   setCartOpen: (open: boolean) => void
   setUser: (userId: string | null) => void
+  syncFromDatabase: (userId: string) => Promise<void>
 
   // Selectors
   getItemCount: () => number
   getSubtotal: () => number
+}
+
+function isUuid(id: string | null | undefined): boolean {
+  if (!id) return false
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 }
 
 function getLocalStorage(): Storage | null {
@@ -87,6 +95,62 @@ export function saveCartToStorage(userId: string | null, items: CartItem[], vend
   }
 }
 
+/**
+ * Asynchronously persist cart to Supabase user_carts table
+ */
+export async function syncCartToDatabase(
+  userId: string | null,
+  items: CartItem[],
+  vendor: CartVendor | null
+): Promise<void> {
+  if (!userId || !isUuid(userId)) return
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any
+    if (items.length === 0) {
+      await db.from('user_carts').delete().eq('user_id', userId)
+    } else {
+      await db.from('user_carts').upsert({
+        user_id: userId,
+        vendor_id: vendor?.id || null,
+        vendor_data: vendor,
+        items: items,
+        updated_at: new Date().toISOString(),
+      })
+    }
+  } catch (err) {
+    console.warn('[CartStore] Failed to sync cart to Supabase:', err)
+  }
+}
+
+/**
+ * Asynchronously fetch cart from Supabase user_carts table
+ */
+export async function fetchCartFromDatabase(
+  userId: string | null
+): Promise<{ items: CartItem[]; vendor: CartVendor | null } | null> {
+  if (!userId || !isUuid(userId)) return null
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any
+    const { data, error } = await db
+      .from('user_carts')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (!error && data) {
+      return {
+        items: Array.isArray(data.items) ? data.items : [],
+        vendor: (data.vendor_data as CartVendor) || null,
+      }
+    }
+  } catch (err) {
+    console.warn('[CartStore] Failed to fetch cart from Supabase:', err)
+  }
+  return null
+}
+
 export function removeLegacyGlobalCart(): void {
   try {
     const storage = getLocalStorage()
@@ -128,6 +192,24 @@ export const useCartStore = create<CartState>((set, get) => ({
   vendor: initialData.vendor,
   isOpen: false,
   activeUserId: initialUserId,
+  isSyncing: false,
+
+  syncFromDatabase: async (userId: string) => {
+    if (!userId || !isUuid(userId)) return
+    set({ isSyncing: true })
+    try {
+      const remote = await fetchCartFromDatabase(userId)
+      if (remote && remote.items.length > 0) {
+        set({
+          items: remote.items,
+          vendor: remote.vendor,
+        })
+        saveCartToStorage(userId, remote.items, remote.vendor)
+      }
+    } finally {
+      set({ isSyncing: false })
+    }
+  },
 
   setUser: (newUserId: string | null) => {
     const current = get()
@@ -136,16 +218,32 @@ export const useCartStore = create<CartState>((set, get) => ({
     }
 
     if (newUserId) {
-      // Switching to authenticated user: load that user's cart from deterministic storage
+      // 1. Immediately load local store for fast synchronous UI rendering
       const loaded = loadCartFromStorage(newUserId)
       set({
         activeUserId: newUserId,
         items: loaded.items,
         vendor: loaded.vendor,
       })
+
+      // 2. Asynchronously reconcile with Supabase user_carts backend
+      if (isUuid(newUserId)) {
+        void fetchCartFromDatabase(newUserId).then((remote) => {
+          if (remote && remote.items.length > 0) {
+            // Remote cart exists — use authoritative remote cart
+            set({
+              items: remote.items,
+              vendor: remote.vendor,
+            })
+            saveCartToStorage(newUserId, remote.items, remote.vendor)
+          } else if (loaded.items.length > 0) {
+            // Local cart had items, push up to database
+            void syncCartToDatabase(newUserId, loaded.items, loaded.vendor)
+          }
+        })
+      }
     } else {
       // Logging out / switching to guest:
-      // Clear active in-memory cart, and reset guest cart so guest never inherits authenticated cart
       saveCartToStorage(null, [], null)
       set({
         activeUserId: null,
@@ -185,6 +283,7 @@ export const useCartStore = create<CartState>((set, get) => ({
 
     set({ items: newItems, vendor: newVendor })
     saveCartToStorage(state.activeUserId, newItems, newVendor)
+    void syncCartToDatabase(state.activeUserId, newItems, newVendor)
     return { conflict: false }
   },
 
@@ -196,6 +295,7 @@ export const useCartStore = create<CartState>((set, get) => ({
       items: newItems,
     })
     saveCartToStorage(state.activeUserId, newItems, vendor)
+    void syncCartToDatabase(state.activeUserId, newItems, vendor)
   },
 
   updateQuantity: (productId, quantity) => {
@@ -211,6 +311,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     )
     set({ items: updatedItems })
     saveCartToStorage(state.activeUserId, updatedItems, state.vendor)
+    void syncCartToDatabase(state.activeUserId, updatedItems, state.vendor)
   },
 
   removeItem: (productId) => {
@@ -222,12 +323,14 @@ export const useCartStore = create<CartState>((set, get) => ({
       vendor: newVendor,
     })
     saveCartToStorage(state.activeUserId, updatedItems, newVendor)
+    void syncCartToDatabase(state.activeUserId, updatedItems, newVendor)
   },
 
   clearCart: () => {
     const state = get()
     set({ items: [], vendor: null })
     saveCartToStorage(state.activeUserId, [], null)
+    void syncCartToDatabase(state.activeUserId, [], null)
   },
 
   setCartOpen: (open) => {

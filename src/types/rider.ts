@@ -17,7 +17,7 @@ export interface RiderProfile {
 export interface AssignmentInboxOffer {
   assignment_id: string
   delivery_id: string
-  service_type: 'food' | 'grocery' | 'courier'
+  service_type: 'food' | 'grocery' | 'courier' | 'custom' | 'personal_shopper'
   pickup_address: string
   pickup_latitude: number | null
   pickup_longitude: number | null
@@ -33,10 +33,11 @@ export interface ActiveDeliveryDetails {
   assignment_id: string
   delivery_id: string
   order_id: string
-  service_type: 'food' | 'grocery' | 'courier'
+  service_type: 'food' | 'grocery' | 'courier' | 'custom' | 'personal_shopper'
   delivery_status: 'assigned' | 'picked_up' | 'in_transit' | 'delivered' | 'cancelled'
   assignment_status: 'accepted'
   order_status: string
+  has_delivery_pin?: boolean
   pickup_address: string
   pickup_latitude: number | null
   pickup_longitude: number | null
@@ -70,6 +71,7 @@ export interface CompletedDeliveryHistoryItem {
   delivered_at: string | null
   assignment_status: 'completed'
   delivery_status: 'delivered'
+  earnings_amount?: number
 }
 
 export type OperationalIssueType =

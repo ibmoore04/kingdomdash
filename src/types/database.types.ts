@@ -14,7 +14,7 @@ export interface Database {
     Enums: {
       user_role: 'customer' | 'vendor' | 'rider' | 'admin' | 'super_admin'
       business_type: 'restaurant' | 'grocery_store'
-      service_type: 'food' | 'grocery' | 'courier'
+      service_type: 'food' | 'grocery' | 'courier' | 'custom'
       application_status: 'pending' | 'approved' | 'rejected'
       order_status:
         | 'pending'
@@ -339,6 +339,7 @@ export interface Database {
           distance_km: number | null
           pricing_rule_id: string | null
           delivery_address_id: string | null
+          delivery_pin: string | null
           created_at: string
           updated_at: string
         }
@@ -357,6 +358,7 @@ export interface Database {
           distance_km?: number | null
           pricing_rule_id?: string | null
           delivery_address_id?: string | null
+          delivery_pin?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -375,6 +377,7 @@ export interface Database {
           distance_km?: number | null
           pricing_rule_id?: string | null
           delivery_address_id?: string | null
+          delivery_pin?: string | null
           created_at?: string
           updated_at?: string
         }

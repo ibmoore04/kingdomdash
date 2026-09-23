@@ -12,11 +12,14 @@ import {
   CreditCard,
   RotateCcw,
   Loader2,
+  KeyRound,
+  XCircle,
 } from 'lucide-react'
 import { PageContainer, Section } from '@/components/layout/section'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatNgn } from '@/utils/formatting'
+import { supabase } from '@/services/supabase/client'
 import { getOrderById } from '@/services/supabase/orders'
 import {
   verifyPaystackPayment,
@@ -26,6 +29,7 @@ import {
 import type { Order, OrderItem } from '@/types'
 import type { PaymentRow } from '@/services/paystack/types'
 import { OrderStatusTimeline } from '@/components/customer/OrderStatusTimeline'
+import { CancelOrderModal } from '@/components/customer/cancel-order-modal'
 
 interface FullOrder extends Order {
   order_items: OrderItem[]
@@ -43,6 +47,7 @@ export default function OrderConfirmationPage() {
   const [isRetrying, setIsRetrying] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [verificationNotice, setVerificationNotice] = useState<string | null>(null)
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
   useEffect(() => {
     document.title = 'Order Confirmation — KingdomDash'
@@ -113,6 +118,41 @@ export default function OrderConfirmationPage() {
   useEffect(() => {
     fetchOrderAndPayment()
   }, [fetchOrderAndPayment])
+
+  // Realtime subscription + adaptive polling fallback for connectivity resiliency
+  useEffect(() => {
+    if (!orderId) return
+
+    // Supabase Realtime channel for live status updates
+    const channel = supabase
+      .channel(`order_tracking_${orderId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `id=eq.${orderId}`,
+        },
+        () => {
+          fetchOrderAndPayment()
+        }
+      )
+      .subscribe()
+
+    // 6-second adaptive polling fallback (resilient when WebSockets drop on mobile connections)
+    const pollInterval = setInterval(() => {
+      if (order?.status === 'delivered' || order?.status === 'cancelled') {
+        return
+      }
+      fetchOrderAndPayment()
+    }, 6000)
+
+    return () => {
+      supabase.removeChannel(channel)
+      clearInterval(pollInterval)
+    }
+  }, [orderId, fetchOrderAndPayment, order?.status])
 
   const handleRetryPayment = async () => {
     if (!order || isRetrying) return
@@ -309,6 +349,26 @@ export default function OrderConfirmationPage() {
             cancellationReason={(order as unknown as { cancellation_reason?: string }).cancellation_reason}
             refundRequired={(order as unknown as { refund_required?: boolean }).refund_required}
           />
+
+          {/* Delivery Confirmation PIN for Rider Hand-off */}
+          {order.delivery_pin && order.status !== 'delivered' && order.status !== 'cancelled' && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-5 shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <KeyRound className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="text-body font-bold text-text-primary">Delivery Confirmation PIN</p>
+                  <p className="text-caption text-text-secondary">
+                    Provide this 4-digit security code to your dispatch rider upon physical arrival to complete delivery.
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-xl border border-primary/30 bg-white px-5 py-2 font-mono text-2xl font-extrabold tracking-widest text-primary shadow-xs">
+                {order.delivery_pin}
+              </div>
+            </div>
+          )}
 
           {/* Active Verification Spinner if redirecting from Paystack */}
           {isVerifying && (
@@ -534,6 +594,17 @@ export default function OrderConfirmationPage() {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            {['pending', 'payment_pending', 'payment_processing', 'payment_confirmed'].includes(order.status) && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsCancelModalOpen(true)}
+                className="flex-1 rounded-xl text-rose-700 border-rose-200 bg-rose-50/50 hover:bg-rose-100 hover:text-rose-800 gap-2 font-bold"
+              >
+                <XCircle className="h-4 w-4" />
+                <span>Cancel Order</span>
+              </Button>
+            )}
             <Button asChild variant="outline" className="flex-1 rounded-xl">
               <Link to="/" className="inline-flex items-center justify-center gap-2">
                 <Home className="h-4 w-4" aria-hidden="true" />
@@ -549,6 +620,17 @@ export default function OrderConfirmationPage() {
           </div>
         </div>
       </Section>
+
+      <CancelOrderModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        orderId={order.id}
+        orderNumber={order.id.slice(0, 8).toUpperCase()}
+        isPaid={order.status === 'payment_confirmed'}
+        onCancelled={() => {
+          fetchOrderAndPayment()
+        }}
+      />
     </PageContainer>
   )
 }

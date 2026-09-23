@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   getServiceAreas,
   saveServiceArea,
@@ -119,8 +120,68 @@ export const AdminServiceAreasPage: React.FC = () => {
         </div>
       )}
 
-      {/* Areas Table */}
-      <div className="rounded-2xl bg-white border border-border shadow-xs overflow-hidden">
+      {/* Mobile Cards View (md:hidden) */}
+      <div className="md:hidden space-y-3">
+        {loading ? (
+          <div className="p-8 text-center text-text-muted bg-white border border-border rounded-2xl shadow-xs">
+            <RefreshCw className="w-5 h-5 animate-spin text-primary mx-auto mb-2" />
+            <p className="text-xs">Loading service zones...</p>
+          </div>
+        ) : areas.length === 0 ? (
+          <div className="p-8 text-center text-text-muted bg-white border border-border rounded-2xl shadow-xs">
+            <p className="text-xs">No service areas registered in database.</p>
+          </div>
+        ) : (
+          areas.map((area) => (
+            <div
+              key={area.id}
+              className="p-4 bg-white border border-border rounded-2xl shadow-xs space-y-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-0.5">
+                  <div className="font-semibold text-text-primary text-sm">{area.name}</div>
+                  <div className="text-[11px] font-mono text-text-secondary">
+                    {area.center_lat?.toFixed(4)}, {area.center_lng?.toFixed(4)}
+                  </div>
+                </div>
+                <div>
+                  {area.is_active ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Active
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-light-surface text-text-muted border border-border">
+                      <XCircle className="w-3 h-3" />
+                      Suspended
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-xs pt-2 border-t border-border">
+                <div className="text-text-muted text-[11px]">
+                  Coverage: <span className="font-semibold text-text-primary font-mono">{area.radius_km} km radius</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleArea(area.id, area.is_active)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors shadow-xs ${
+                    area.is_active
+                      ? 'bg-rose-50 text-primary hover:bg-rose-100 border border-rose-200'
+                      : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                  }`}
+                >
+                  {area.is_active ? 'Suspend Zone' : 'Activate Zone'}
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View (hidden md:block) */}
+      <div className="hidden md:block rounded-2xl bg-white border border-border shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-text-secondary">
             <thead className="bg-light-surface/80 text-text-secondary font-semibold uppercase tracking-wider border-b border-border text-[11px]">
@@ -191,8 +252,8 @@ export const AdminServiceAreasPage: React.FC = () => {
       </div>
 
       {/* New Zone Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      {isModalOpen && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <h3 className="text-sm font-bold text-text-primary">Register Service Zone</h3>
             <form onSubmit={handleCreateArea} className="space-y-4">
@@ -270,7 +331,8 @@ export const AdminServiceAreasPage: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

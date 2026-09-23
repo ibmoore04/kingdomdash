@@ -313,3 +313,21 @@
     display: none;
   }
 }
+
+/* ── Leaflet Map Stacking Context Containment & Modal Shield ───────────────── */
+/* Clamps Leaflet default internal z-indices (400-1000) so maps never pierce modal dialogs */
+.leaflet-container {
+  z-index: 0 !important;
+  isolation: isolate;
+}
+.leaflet-pane {
+  z-index: 10 !important;
+}
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 20 !important;
+}
+.leaflet-control {
+  z-index: 20 !important;
+}
+

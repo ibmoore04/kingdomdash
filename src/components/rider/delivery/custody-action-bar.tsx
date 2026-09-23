@@ -5,11 +5,12 @@ import { PackageCheck, Bike, CheckCircle, AlertTriangle, Loader2 } from 'lucide-
 interface CustodyActionBarProps {
   deliveryStatus: 'assigned' | 'picked_up' | 'in_transit' | 'delivered' | 'cancelled'
   orderStatus: string
-  serviceType: 'food' | 'grocery' | 'courier'
+  serviceType: 'food' | 'grocery' | 'courier' | 'custom' | 'personal_shopper'
   isMutating: boolean
+  hasDeliveryPin?: boolean
   onPickup: (notes?: string) => Promise<void>
   onTransit: (notes?: string) => Promise<void>
-  onDelivered: (notes?: string) => Promise<void>
+  onDelivered: (notes?: string, pin?: string) => Promise<void>
   onOpenIssueModal: () => void
 }
 
@@ -18,20 +19,22 @@ export function CustodyActionBar({
   orderStatus,
   serviceType,
   isMutating,
+  hasDeliveryPin = false,
   onPickup,
   onTransit,
   onDelivered,
   onOpenIssueModal,
 }: CustodyActionBarProps) {
   const [confirmingDelivered, setConfirmingDelivered] = useState(false)
+  const [pin, setPin] = useState('')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // Vendor readiness gate
+  // Vendor readiness gate — courier/custom/personal_shopper bypass vendor prep entirely
+  const isCourierType =
+    serviceType === 'courier' || serviceType === 'custom' || serviceType === 'personal_shopper'
   const canPickup =
     deliveryStatus === 'assigned' &&
-    (serviceType === 'courier'
-      ? orderStatus === 'payment_confirmed'
-      : orderStatus === 'ready_for_pickup')
+    (isCourierType || orderStatus === 'ready_for_pickup')
 
   const handlePickup = async () => {
     setErrorMessage(null)
@@ -57,9 +60,14 @@ export function CustodyActionBar({
 
   const handleDelivered = async () => {
     setErrorMessage(null)
+    if (hasDeliveryPin && !pin.trim()) {
+      setErrorMessage('Please enter the customer confirmation PIN.')
+      return
+    }
     try {
-      await onDelivered()
+      await onDelivered(undefined, pin.trim() || undefined)
       setConfirmingDelivered(false)
+      setPin('')
     } catch (err) {
       setErrorMessage(
         err instanceof Error ? err.message : 'Failed to complete delivery. Please retry.'
@@ -94,7 +102,7 @@ export function CustodyActionBar({
               )}
               {canPickup ? 'Confirm Physical Pickup' : 'Waiting for Vendor to Finish Prep'}
             </Button>
-            {!canPickup && serviceType !== 'courier' && (
+            {!canPickup && !isCourierType && (
               <p className="text-center text-caption text-text-muted">
                 Pickup unlocks automatically when vendor marks order ready
               </p>
@@ -135,15 +143,36 @@ export function CustodyActionBar({
                 Confirm Order Delivered
               </Button>
             ) : (
-              <div className="rounded-xl border border-success/40 bg-success/10 p-3 space-y-2">
+              <div className="rounded-xl border border-success/40 bg-success/10 p-3.5 space-y-3">
                 <p className="text-body-small font-semibold text-text-primary text-center">
                   Confirm physical handoff to customer?
                 </p>
+
+                <div className="space-y-1.5">
+                  <label htmlFor="delivery-pin-input" className="block text-center text-caption font-semibold text-text-secondary">
+                    {hasDeliveryPin
+                      ? 'Ask customer for 4-digit Delivery PIN:'
+                      : 'Delivery Confirmation PIN (if assigned):'}
+                  </label>
+                  <input
+                    id="delivery-pin-input"
+                    type="text"
+                    maxLength={6}
+                    placeholder="e.g. 1234"
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                    className="w-full text-center text-lg font-mono tracking-widest rounded-lg border border-border bg-white py-2 px-3 focus:outline-none focus:ring-2 focus:ring-success"
+                  />
+                </div>
+
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setConfirmingDelivered(false)}
+                    onClick={() => {
+                      setConfirmingDelivered(false)
+                      setPin('')
+                    }}
                     disabled={isMutating}
                   >
                     Cancel

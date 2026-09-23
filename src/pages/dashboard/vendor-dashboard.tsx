@@ -12,7 +12,6 @@ import {
   Bell,
   Settings,
   Globe,
-  ChevronRight,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useCurrentVendor } from '@/hooks/use-current-vendor'
@@ -75,6 +74,16 @@ const VENDOR_MOBILE_NAV_ITEMS: { id: TabType; label: string; icon: typeof Layout
   { id: 'profile', label: 'Store', icon: Store },
   { id: 'settings', label: 'Settings', icon: Settings },
 ]
+
+const TAB_DESCRIPTIONS: Record<TabType, string> = {
+  overview: 'Store analytics, stock health, and catalog performance overview',
+  orders: 'Incoming orders, kitchen preparation, and courier fulfillment',
+  products: 'Manage menu items, dish pricing, and stock availability',
+  categories: 'Store taxonomy, dish sections, and menu organization',
+  profile: 'Business storefront details, brand profile, and contact information',
+  notifications: 'Platform alerts, customer order updates, and system logs',
+  settings: 'Store configuration, fulfillment preferences, and security controls',
+}
 
 export default function VendorDashboardPage() {
   const [searchParams] = useSearchParams()
@@ -315,111 +324,124 @@ export default function VendorDashboardPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-page-background">
       {/* ── Desktop Sidebar ──────────────────────────────────────────────────── */}
+      {/* ── Desktop Sidebar ──────────────────────────────────────────────────── */}
       <aside
         className="
-          group/sidebar
           hidden lg:flex lg:flex-col
-          shrink-0 overflow-hidden overflow-y-auto
+          shrink-0 h-screen
           border-r border-border bg-white
-          w-[72px] hover:w-64
-          transition-all duration-300 ease-in-out
-          relative z-10
+          w-64
         "
         aria-label="Vendor dashboard sidebar"
       >
-        {/* Brand */}
-        <div className="flex h-16 items-center justify-between border-b border-border px-3.5 shrink-0">
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white font-bold shrink-0">
-              <Store className="h-4.5 w-4.5" />
-            </div>
-            <div className="overflow-hidden whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
-              <div className="font-bold text-text-primary text-sm truncate">{vendor.business_name}</div>
-              <div className="text-[10px] text-primary font-semibold uppercase tracking-wider">Vendor Portal</div>
-            </div>
+        {/* Brand Header - FIXED */}
+        <div className="flex h-16 items-center gap-3 border-b border-border px-4 shrink-0 bg-white">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-primary/10 border border-primary/20 shrink-0 p-1">
+            {vendor.logo_url ? (
+              <img
+                src={vendor.logo_url}
+                alt={vendor.business_name}
+                className="h-full w-full object-cover rounded-lg"
+                onError={(e) => {
+                  e.currentTarget.src = '/KingdomDash-emblem-clean.png'
+                }}
+              />
+            ) : (
+              <img
+                src="/KingdomDash-emblem-clean.png"
+                alt="KingdomDash"
+                className="h-7 w-7 object-contain"
+              />
+            )}
           </div>
-          <ChevronRight
-            className="w-4 h-4 shrink-0 text-text-muted group-hover/sidebar:opacity-0 transition-opacity duration-200 absolute right-3"
-            aria-hidden="true"
-          />
+          <div className="overflow-hidden min-w-0 flex-1">
+            <div className="font-bold text-text-primary text-sm truncate">{vendor.business_name}</div>
+            <div className="text-[10px] text-primary font-bold uppercase tracking-wider">Vendor Portal</div>
+          </div>
         </div>
 
-        {/* Store status strip */}
-        <div className="px-3.5 py-3 border-b border-border/70 shrink-0 overflow-hidden">
-          <div className="flex items-center gap-2">
-            <span
-              className={`h-2.5 w-2.5 rounded-full shrink-0 ${vendor.is_active ? 'bg-status-success' : 'bg-amber-400'}`}
-              aria-hidden="true"
-            />
-            <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 text-caption text-text-secondary truncate">
-              {vendor.is_active ? 'Active' : 'Paused'} ·{' '}
-              {vendor.business_type === 'restaurant' ? 'Restaurant' : 'Grocery Store'}
+        {/* Store status card - FIXED */}
+        <div className="p-3 mx-3 my-2.5 rounded-xl bg-page-background border border-border/80 shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                className={`h-2.5 w-2.5 rounded-full shrink-0 ${
+                  vendor.is_active ? 'bg-status-success animate-pulse' : 'bg-amber-400'
+                }`}
+                aria-hidden="true"
+              />
+              <span className="text-caption font-semibold text-text-primary truncate">
+                {vendor.is_active ? 'Store Active' : 'Store Paused'}
+              </span>
+            </div>
+            <span className="text-[10px] uppercase font-bold text-text-secondary px-2 py-0.5 rounded-md bg-white border border-border shrink-0">
+              {vendor.business_type === 'restaurant' ? 'Restaurant' : 'Grocery'}
             </span>
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex flex-col gap-1 px-2 py-3 flex-1" aria-label="Vendor dashboard navigation">
-          {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
-            const isActive = activeTab === id
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setActiveTab(id)}
-                className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-body-small font-medium transition-all group/item ${
-                  isActive
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'text-text-secondary hover:bg-page-background hover:text-text-primary'
-                }`}
-                title={label}
-              >
-                <Icon
-                  className={`h-5 w-5 shrink-0 ${isActive ? 'text-white' : 'text-text-muted group-hover/item:text-text-primary'}`}
-                  aria-hidden="true"
-                />
-                <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate flex-1 text-left">
-                  {label}
-                </span>
-              </button>
-            )
-          })}
-        </nav>
+        {/* Navigation - SCROLLABLE ONLY */}
+        <div className="flex-1 overflow-y-auto min-h-0 px-3 py-1 space-y-1" aria-label="Vendor dashboard navigation">
+          <div className="px-3 pt-2 pb-1 text-[10px] font-bold text-text-muted uppercase tracking-wider">
+            Store Operations
+          </div>
+          <nav className="flex flex-col gap-1">
+            {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+              const isActive = activeTab === id
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setActiveTab(id)}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all ${
+                    isActive
+                      ? 'bg-primary text-white shadow-xs font-semibold'
+                      : 'text-text-secondary hover:bg-page-background hover:text-text-primary'
+                  }`}
+                  title={label}
+                >
+                  <Icon
+                    className={`h-4.5 w-4.5 shrink-0 ${isActive ? 'text-white' : 'text-text-muted'}`}
+                    aria-hidden="true"
+                  />
+                  <span className="truncate flex-1 text-left">{label}</span>
+                </button>
+              )
+            })}
+          </nav>
+        </div>
 
-        {/* Footer Actions */}
-        <div className="border-t border-border px-2 py-3 shrink-0 space-y-1">
+        {/* Footer Actions - FIXED AT BOTTOM */}
+        <div className="border-t border-border p-3 shrink-0 space-y-1 bg-white">
+          <div className="px-3 py-1 text-[10px] font-bold text-text-muted uppercase tracking-wider">
+            Quick Links
+          </div>
           <Link
             to="/"
             title="Back to Public Website"
-            className="flex items-center gap-3 px-2.5 py-2 rounded-xl text-body-small font-semibold text-text-secondary hover:bg-page-background hover:text-primary transition-colors group/item"
+            className="flex items-center gap-3 px-3 py-2 rounded-xl text-body-small font-semibold text-text-secondary hover:bg-page-background hover:text-primary transition-colors"
           >
-            <Globe className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
-            <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate">
-              Public Website
-            </span>
+            <Globe className="h-4.5 w-4.5 text-primary shrink-0" aria-hidden="true" />
+            <span className="truncate">Public Website</span>
           </Link>
           <Link
             to={publicStorePath}
             target="_blank"
             rel="noopener noreferrer"
             title="Preview Store"
-            className="flex items-center gap-3 px-2.5 py-2 rounded-xl text-body-small font-semibold text-text-muted hover:bg-page-background hover:text-text-primary transition-colors group/item"
+            className="flex items-center gap-3 px-3 py-2 rounded-xl text-body-small font-semibold text-text-muted hover:bg-page-background hover:text-text-primary transition-colors"
           >
-            <ExternalLink className="h-5 w-5 shrink-0" aria-hidden="true" />
-            <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate">
-              Preview Store
-            </span>
+            <ExternalLink className="h-4.5 w-4.5 shrink-0" aria-hidden="true" />
+            <span className="truncate">Preview Store</span>
           </Link>
           <button
             type="button"
             onClick={() => signOut()}
             title="Sign Out"
-            className="flex w-full items-center gap-3 px-2.5 py-2 rounded-xl text-body-small font-semibold text-text-muted hover:bg-page-background hover:text-text-primary transition-colors group/item"
+            className="flex w-full items-center gap-3 px-3 py-2 rounded-xl text-body-small font-semibold text-text-muted hover:bg-error/10 hover:text-error transition-colors"
           >
-            <LogOut className="h-5 w-5 shrink-0" aria-hidden="true" />
-            <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate">
-              Sign Out
-            </span>
+            <LogOut className="h-4.5 w-4.5 shrink-0" aria-hidden="true" />
+            <span className="truncate">Sign Out</span>
           </button>
         </div>
       </aside>
@@ -427,24 +449,37 @@ export default function VendorDashboardPage() {
       {/* ── Main Content Area ────────────────────────────────────────────────── */}
       <div className="flex flex-1 flex-col overflow-hidden min-h-0">
         {/* Top Header */}
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-white px-4 sm:px-6">
-          <div className="flex items-center gap-3">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-white/95 backdrop-blur-md px-4 sm:px-6">
+          <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
               onClick={() => setMobileNavOpen(true)}
-              className="rounded-md p-2 text-text-secondary hover:bg-page-background lg:hidden"
+              className="rounded-xl p-2 text-text-secondary hover:bg-page-background lg:hidden shrink-0 border border-border"
               aria-label="Open navigation menu"
             >
               <Menu className="h-5 w-5" aria-hidden="true" />
             </button>
-            <h1 className="text-base sm:text-h4 font-bold text-text-primary truncate max-w-[170px] sm:max-w-none">
-              {NAV_ITEMS.find((item) => item.id === activeTab)?.label}
-            </h1>
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-lg font-bold text-text-primary truncate">
+                {NAV_ITEMS.find((item) => item.id === activeTab)?.label}
+              </h1>
+              <p className="hidden md:block text-[11px] text-text-secondary truncate">
+                {TAB_DESCRIPTIONS[activeTab]}
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Badge variant={vendor.is_active ? 'success' : 'warning'} className="hidden sm:inline-flex">
-              {vendor.is_active ? 'Active on KingdomDash' : 'Paused'}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <Badge
+              variant={vendor.is_active ? 'success' : 'warning'}
+              className="hidden sm:inline-flex gap-1.5 px-2.5 py-1 text-caption font-semibold"
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  vendor.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
+                }`}
+              />
+              {vendor.is_active ? 'Store Active' : 'Paused'}
             </Badge>
 
             <Button
@@ -454,11 +489,11 @@ export default function VendorDashboardPage() {
               onClick={() => setActiveTab('notifications')}
               title="Store Notifications"
               aria-label="Notifications"
-              className={`text-text-muted hover:text-text-primary ${
-                activeTab === 'notifications' ? 'bg-surface-muted text-primary' : ''
+              className={`rounded-xl text-text-muted hover:text-text-primary ${
+                activeTab === 'notifications' ? 'bg-primary/10 text-primary' : ''
               }`}
             >
-              <Bell className="h-4 w-4" aria-hidden="true" />
+              <Bell className="h-4.5 w-4.5" aria-hidden="true" />
             </Button>
 
             <Button
@@ -468,27 +503,26 @@ export default function VendorDashboardPage() {
               onClick={() => setActiveTab('settings')}
               title="Store Settings"
               aria-label="Settings"
-              className={`hidden sm:inline-flex text-text-muted hover:text-text-primary ${
-                activeTab === 'settings' ? 'bg-surface-muted text-primary' : ''
+              className={`hidden sm:inline-flex rounded-xl text-text-muted hover:text-text-primary ${
+                activeTab === 'settings' ? 'bg-primary/10 text-primary' : ''
               }`}
             >
-              <Settings className="h-4 w-4" aria-hidden="true" />
+              <Settings className="h-4.5 w-4.5" aria-hidden="true" />
             </Button>
 
             <Button
               asChild
               variant="outline"
               size="sm"
-              className="gap-1.5 h-8 px-2.5 sm:px-3 text-xs font-semibold text-text-secondary hover:text-primary shrink-0"
+              className="gap-1.5 h-8 px-2.5 sm:px-3 text-xs font-semibold text-text-secondary hover:text-primary rounded-xl shrink-0"
             >
               <Link to="/" title="Back to Public Website">
                 <Globe className="h-3.5 w-3.5 text-primary" />
-                <span className="hidden sm:inline">Website</span>
-                <span className="sm:hidden">Website</span>
+                <span>Website</span>
               </Link>
             </Button>
 
-            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex gap-1.5 text-caption">
+            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex gap-1.5 text-caption font-semibold rounded-xl">
               <Link to={publicStorePath} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                 Preview Store
@@ -626,24 +660,54 @@ export default function VendorDashboardPage() {
       {mobileNavOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <div
-            className="fixed inset-0 bg-black/50"
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs"
             onClick={() => setMobileNavOpen(false)}
             aria-hidden="true"
           />
-          <div className="relative flex w-64 max-w-[80%] flex-col bg-white p-5 shadow-xl">
+          <div className="relative flex w-72 max-w-[85%] flex-col bg-white p-5 shadow-2xl">
             <div className="flex items-center justify-between border-b border-border pb-4">
-              <span className="text-label font-bold text-text-primary">Vendor Navigation</span>
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-primary/10 border border-primary/20 shrink-0 p-1">
+                  {vendor.logo_url ? (
+                    <img
+                      src={vendor.logo_url}
+                      alt={vendor.business_name}
+                      className="h-full w-full object-cover rounded-lg"
+                      onError={(e) => {
+                        e.currentTarget.src = '/KingdomDash-emblem-clean.png'
+                      }}
+                    />
+                  ) : (
+                    <img
+                      src="/KingdomDash-emblem-clean.png"
+                      alt="KingdomDash"
+                      className="h-7 w-7 object-contain"
+                    />
+                  )}
+                </div>
+                <div>
+                  <span className="text-body font-bold text-text-primary block truncate max-w-[140px]">
+                    {vendor.business_name}
+                  </span>
+                  <span className="text-[10px] text-primary font-bold uppercase tracking-wider">
+                    Vendor Portal
+                  </span>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={() => setMobileNavOpen(false)}
-                className="rounded-md p-1.5 text-text-muted hover:text-text-primary"
+                className="rounded-lg p-1.5 text-text-muted hover:bg-page-background hover:text-text-primary"
                 aria-label="Close menu"
               >
                 <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
 
-            <div className="mt-4 space-y-1">
+            <div className="mt-4 space-y-1 flex-1 overflow-y-auto">
+              <div className="px-2 pb-1 text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                Store Operations
+              </div>
               {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
                 const isActive = activeTab === id
                 return (
@@ -654,14 +718,14 @@ export default function VendorDashboardPage() {
                       setActiveTab(id)
                       setMobileNavOpen(false)
                     }}
-                    className={`flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-body-small font-medium ${
+                    className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-body-small font-medium ${
                       isActive
-                        ? 'bg-primary text-white'
+                        ? 'bg-primary text-white font-semibold shadow-xs'
                         : 'text-text-secondary hover:bg-page-background'
                     }`}
                   >
-                    <Icon className="h-4 w-4" aria-hidden="true" />
-                    {label}
+                    <Icon className="h-4.5 w-4.5 shrink-0" aria-hidden="true" />
+                    <span className="truncate">{label}</span>
                   </button>
                 )
               })}
@@ -672,14 +736,19 @@ export default function VendorDashboardPage() {
                 asChild
                 variant="outline"
                 size="sm"
-                className="w-full justify-start gap-2 text-text-secondary hover:text-primary"
+                className="w-full justify-start gap-2.5 text-text-secondary hover:text-primary rounded-xl"
               >
                 <Link to="/" onClick={() => setMobileNavOpen(false)}>
                   <Globe className="h-4 w-4 text-primary" />
                   Public Website
                 </Link>
               </Button>
-              <Button asChild variant="ghost" size="sm" className="w-full justify-start gap-2 text-text-muted hover:text-text-primary">
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2.5 text-text-muted hover:text-text-primary rounded-xl"
+              >
                 <Link to={publicStorePath} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4" aria-hidden="true" />
                   Preview Store
@@ -689,7 +758,7 @@ export default function VendorDashboardPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => signOut()}
-                className="w-full justify-start gap-2 text-text-muted"
+                className="w-full justify-start gap-2.5 text-text-muted hover:bg-error/10 hover:text-error rounded-xl"
               >
                 <LogOut className="h-4 w-4" aria-hidden="true" />
                 Sign Out

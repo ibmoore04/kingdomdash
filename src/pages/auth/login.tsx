@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Eye, EyeOff, Utensils, ShoppingCart, Package, MapPin, User, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, Utensils, ShoppingCart, Package, MapPin, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/services/supabase/client'
 import { useAuthStore } from '@/stores/auth-store'
 import { resolvePostLoginTarget } from '@/utils/safe-redirect'
 import { mapAuthError } from '@/utils/auth-errors'
 import { appConfig } from '@/config/app.config'
+import { GoogleSignInButton } from '@/components/auth/google-sign-in-button'
 
 // ─── SERVICE DATA ────────────────────────────────────────────────────────────
 const SERVICES = [
@@ -56,11 +57,17 @@ export default function LoginPage() {
     }
   }, [session, profile, location.search, navigate])
 
-  // Handle redirect due to inactive account (P13)
+  // Handle redirect params: inactive account and OAuth cancel/error
   useEffect(() => {
-    const errorParam = new URLSearchParams(location.search).get('error')
+    const params = new URLSearchParams(location.search)
+    const errorParam = params.get('error')
+    const oauthParam = params.get('oauth')
     if (errorParam === 'inactive') {
       setError('Your account is inactive. Please contact support.')
+    } else if (oauthParam === 'cancelled') {
+      setError('Google sign-in was cancelled. You can try again or use your email and password.')
+    } else if (oauthParam === 'error') {
+      setError('Something went wrong with Google sign-in. Please try again or use your email and password.')
     }
   }, [location.search])
 
@@ -157,7 +164,7 @@ export default function LoginPage() {
           {/* Brand lockup */}
           <div className="flex items-center gap-3 flex-shrink-0">
             <img
-              src="/KingdomDash-logo.jpg"
+              src="/KingdomDash-emblem-clean.png"
               alt="KingdomDash logo"
               className="h-9 w-auto rounded-sm object-contain"
             />
@@ -252,25 +259,11 @@ export default function LoginPage() {
 
             {/* Mobile brand (visible only on small screens) */}
             <div className="flex items-center gap-2 mb-5 lg:hidden">
-              <img src="/KingdomDash-logo.jpg" alt="KingdomDash" className="h-7 w-auto rounded-sm object-contain" />
+              <img src="/KingdomDash-emblem-clean.png" alt="KingdomDash" className="h-7 w-auto rounded-sm object-contain" />
               <div className="leading-none">
                 <span className="text-[#111111] text-label font-bold tracking-tight">KINGDOM</span>
                 <span className="text-[#E50914] text-label font-bold tracking-tight">DASH</span>
               </div>
-            </div>
-
-            {/* Auth icon */}
-            <div
-              className="inline-flex items-center justify-center rounded-2xl mb-5"
-              style={{
-                width: '48px',
-                height: '48px',
-                background: 'rgba(229,9,20,0.08)',
-                border: '1px solid rgba(229,9,20,0.15)',
-              }}
-              aria-hidden="true"
-            >
-              <User className="h-5 w-5 text-[#E50914]" />
             </div>
 
             {/* Heading */}
@@ -475,6 +468,19 @@ export default function LoginPage() {
                 {!isLoading && 'Sign in'}
               </Button>
             </form>
+
+            {/* Google Sign-In — shown between Sign In button and footer divider */}
+            <div className="mt-3 flex items-center gap-3">
+              <div className="flex-1 h-px bg-[#e5e7eb]" />
+              <span className="text-eyebrow text-[#9ca3af]">OR</span>
+              <div className="flex-1 h-px bg-[#e5e7eb]" />
+            </div>
+
+            <GoogleSignInButton
+              redirectParam={new URLSearchParams(location.search).get('redirect')}
+              onError={(msg) => setError(msg)}
+              className="mt-3"
+            />
 
             {/* Divider */}
             <div className="mt-4 flex items-center gap-3">

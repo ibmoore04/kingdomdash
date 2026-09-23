@@ -12,16 +12,12 @@ import {
   LogOut,
   PackageCheck,
   Plus,
-  Menu,
-  X,
   Save,
   CheckCircle,
   AlertCircle,
   RefreshCw,
-  CreditCard,
-  Utensils,
   Globe,
-  ChevronRight,
+  Gift,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth-store'
@@ -32,9 +28,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CustomerSettingsTab } from '@/components/customer/customer-settings-tab'
 import { CustomerNotificationsTab } from '@/components/customer/customer-notifications-tab'
-import { formatNgn } from '@/utils/formatting'
+import { CustomerRewardsTab } from '@/components/customer/customer-rewards-tab'
+import { OrderReviewModal } from '@/components/customer/order-review-modal'
+import { CustomerOrderCard } from '@/components/customer/customer-order-card'
+import { CancelOrderModal } from '@/components/customer/cancel-order-modal'
+import { getOrderReview, fetchCustomerReviews } from '@/services/supabase/reviews'
 
-type CustomerTab = 'orders' | 'addresses' | 'profile' | 'notifications' | 'settings'
+type CustomerTab = 'orders' | 'addresses' | 'profile' | 'rewards' | 'notifications' | 'settings'
 
 interface CustomerOrderSummary {
   id: string
@@ -45,6 +45,7 @@ interface CustomerOrderSummary {
   subtotal: number
   delivery_fee: number
   total: number
+  delivery_pin?: string | null
   pickup_address?: string
   delivery_address?: string
   created_at: string
@@ -65,6 +66,7 @@ const NAV_ITEMS: { id: CustomerTab; icon: typeof ShoppingBag; label: string }[] 
   { id: 'orders', icon: ShoppingBag, label: 'Orders' },
   { id: 'addresses', icon: MapPin, label: 'Addresses' },
   { id: 'profile', icon: User, label: 'Profile' },
+  { id: 'rewards', icon: Gift, label: 'Rewards' },
   { id: 'notifications', icon: Bell, label: 'Notifications' },
   { id: 'settings', icon: Settings, label: 'Settings' },
 ]
@@ -75,18 +77,25 @@ export default function CustomerDashboardPage() {
 
   const initialTab = (searchParams.get('tab') as CustomerTab) || 'orders'
   const [activeTab, setActiveTab] = useState<CustomerTab>(
-    ['orders', 'addresses', 'profile', 'notifications', 'settings'].includes(initialTab)
+    ['orders', 'addresses', 'profile', 'rewards', 'notifications', 'settings'].includes(initialTab)
       ? initialTab
       : 'orders'
   )
 
-  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  useEffect(() => {
+    const tabParam = searchParams.get('tab') as CustomerTab
+    if (tabParam && ['orders', 'addresses', 'profile', 'rewards', 'notifications', 'settings'].includes(tabParam)) {
+      setActiveTab(tabParam)
+    }
+  }, [searchParams])
 
   // Orders management state
   const [orders, setOrders] = useState<CustomerOrderSummary[]>([])
   const [isLoadingOrders, setIsLoadingOrders] = useState(false)
   const [ordersError, setOrdersError] = useState<string | null>(null)
   const [orderFilter, setOrderFilter] = useState<'all' | 'pending' | 'active' | 'completed'>('all')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [cancellingOrder, setCancellingOrder] = useState<any | null>(null)
 
   const loadCustomerOrders = useCallback(async () => {
     if (!profile?.id) return
@@ -116,6 +125,12 @@ export default function CustomerDashboardPage() {
               total,
               pickup_address,
               delivery_address,
+              delivery_pin,
+              cancellation_reason,
+              refund_required,
+              refund_status,
+              delivery_contact,
+              delivery_phone,
               created_at,
               vendors ( id, business_name ),
               order_items ( id, product_name, quantity, unit_price, line_total )
@@ -148,6 +163,12 @@ export default function CustomerDashboardPage() {
 
       const data = await Promise.race([fetchOrders(), timeoutPromise])
       setOrders((data as unknown as CustomerOrderSummary[]) || [])
+
+      if (profile?.id) {
+        void fetchCustomerReviews(profile.id).then(() => {
+          setReviewsVersion((v) => v + 1)
+        })
+      }
     } catch (err) {
       console.error('[CustomerDashboard] Failed to load orders:', err)
       setOrdersError(err instanceof Error ? err.message : 'Unable to load orders')
@@ -186,96 +207,9 @@ export default function CustomerDashboardPage() {
     return true
   })
 
-  const renderOrderStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-      case 'placed':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-amber-50 text-amber-700 border border-amber-200">
-            <Clock className="w-3 h-3 animate-pulse" />
-            Awaiting Payment
-          </span>
-        )
-      case 'payment_confirmed':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <CheckCircle className="w-3 h-3" />
-            Payment Confirmed
-          </span>
-        )
-      case 'preparing':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">
-            <Store className="w-3 h-3" />
-            Preparing
-          </span>
-        )
-      case 'ready':
-      case 'ready_for_pickup':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-purple-50 text-purple-700 border border-purple-200">
-            <PackageCheck className="w-3 h-3" />
-            Ready for Pickup
-          </span>
-        )
-      case 'in_transit':
-      case 'delivering':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-indigo-50 text-indigo-700 border border-indigo-200">
-            <Bike className="w-3 h-3" />
-            Out for Delivery
-          </span>
-        )
-      case 'delivered':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <CheckCircle className="w-3 h-3" />
-            Delivered
-          </span>
-        )
-      case 'cancelled':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-rose-50 text-rose-700 border border-rose-200">
-            <AlertCircle className="w-3 h-3" />
-            Cancelled
-          </span>
-        )
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-gray-50 text-gray-700 border border-gray-200">
-            {status}
-          </span>
-        )
-    }
-  }
-
-  const renderServiceBadge = (serviceType: string) => {
-    const s = (serviceType || '').toLowerCase()
-    if (s === 'food') {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
-          <Utensils className="w-2.5 h-2.5" />
-          Food
-        </span>
-      )
-    }
-    if (s === 'grocery') {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-          <ShoppingBag className="w-2.5 h-2.5" />
-          Grocery
-        </span>
-      )
-    }
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-        <Bike className="w-2.5 h-2.5" />
-        Courier
-      </span>
-    )
-  }
-
   // Profile editable state
+  const [reviewingOrder, setReviewingOrder] = useState<CustomerOrderSummary | null>(null)
+  const [reviewsVersion, setReviewsVersion] = useState(0)
   const [profileName, setProfileName] = useState(profile?.full_name || '')
   const [profilePhone, setProfilePhone] = useState(profile?.phone || '')
   const [isSavingProfile, setIsSavingProfile] = useState(false)
@@ -380,307 +314,116 @@ export default function CustomerDashboardPage() {
 
   const handleSelectTab = (id: CustomerTab) => {
     setActiveTab(id)
-    setMobileNavOpen(false)
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-page-background">
-      {/* Desktop Sidebar */}
-      <aside
-        className="
-          group/sidebar
-          hidden lg:flex lg:flex-col
-          shrink-0 overflow-hidden overflow-y-auto
-          border-r border-border bg-white
-          w-[72px] hover:w-60
-          transition-all duration-300 ease-in-out
-          relative z-10
-        "
-        aria-label="Customer dashboard sidebar"
-      >
-        {/* Brand header */}
-        <div className="flex h-16 items-center justify-between border-b border-border px-3.5 shrink-0">
-          <Link to="/" className="flex items-center gap-2.5 overflow-hidden">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white font-bold shrink-0">
-              <User className="h-5 w-5" />
-            </div>
-            <div className="overflow-hidden whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
-              <div className="font-bold text-text-primary text-sm">KingdomDash</div>
-              <div className="text-[10px] text-primary font-semibold uppercase tracking-wider">Customer</div>
+    <div className="flex h-screen flex-col overflow-hidden bg-page-background">
+      {/* Header */}
+      <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-white px-4 sm:px-6 z-20">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link to="/" className="flex items-center gap-2.5 overflow-hidden group">
+            <img
+              src="/KingdomDash-logo.jpg"
+              alt="KingdomDash"
+              className="h-9 w-auto rounded-lg object-contain shadow-xs shrink-0"
+            />
+            <div className="truncate">
+              <h1 className="sr-only">Customer Dashboard</h1>
+              <div className="font-bold text-text-primary tracking-wide text-sm leading-tight group-hover:text-primary transition-colors">
+                KINGDOM<span className="text-primary">DASH</span>
+              </div>
+              <div className="text-[10px] text-primary font-bold uppercase tracking-wider leading-tight">
+                Customer
+              </div>
             </div>
           </Link>
-          <ChevronRight
-            className="w-4 h-4 shrink-0 text-text-muted group-hover/sidebar:opacity-0 transition-opacity duration-200 absolute right-3"
-            aria-hidden="true"
-          />
+          <Badge variant="primary" className="text-caption hidden md:inline-flex capitalize shrink-0 ml-1">
+            {NAV_ITEMS.find((n) => n.id === activeTab)?.label || 'Orders'}
+          </Badge>
         </div>
 
-        {/* Account info strip */}
-        <div className="px-3.5 py-3 border-b border-border/70 shrink-0 overflow-hidden">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-page-background border border-border flex items-center justify-center shrink-0">
-              <User className="h-3.5 w-3.5 text-text-muted" />
-            </div>
-            <div className="overflow-hidden whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200">
-              <p className="text-body-small font-bold text-text-primary truncate leading-tight">
-                {profile?.full_name || 'Customer Account'}
-              </p>
-              <p className="text-caption text-text-secondary truncate leading-tight">
-                {profile?.email}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex flex-col gap-1 px-2 py-3 flex-1" aria-label="Dashboard navigation">
-          {NAV_ITEMS.map(({ id, icon: Icon, label }) => {
-            const isActive = activeTab === id
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => handleSelectTab(id)}
-                title={label}
-                className={`flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-body-small font-medium transition-all w-full group/item ${
-                  isActive
-                    ? 'bg-primary text-white font-bold shadow-xs'
-                    : 'text-text-secondary hover:bg-page-background hover:text-text-primary'
-                }`}
-              >
-                <Icon
-                  className={`h-5 w-5 shrink-0 ${isActive ? 'text-white' : 'text-text-muted group-hover/item:text-text-primary'}`}
-                  aria-hidden="true"
-                />
-                <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate flex-1 text-left">
-                  {label}
-                </span>
-                {id === 'orders' && pendingOrdersCount > 0 && (
-                  <span
-                    className={`shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 ${
-                      isActive ? 'bg-white text-primary' : 'bg-amber-100 text-amber-800'
-                    }`}
-                  >
-                    {pendingOrdersCount}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </nav>
-
-        {/* Footer */}
-        <div className="border-t border-border px-2 py-3 shrink-0 space-y-1">
-          <Link
-            to="/"
-            title="Back to Public Website"
-            className="flex items-center gap-3 px-2.5 py-2 rounded-xl text-body-small font-semibold text-text-secondary hover:bg-page-background hover:text-primary transition-colors group/item"
-          >
-            <Globe className="h-5 w-5 text-primary shrink-0" aria-hidden="true" />
-            <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate">
-              Public Website
-            </span>
-          </Link>
-          <button
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <Button
             type="button"
-            onClick={() => signOut()}
-            title="Sign Out"
-            className="flex w-full items-center gap-3 px-2.5 py-2 rounded-xl text-body-small font-semibold text-text-muted hover:bg-page-background hover:text-text-primary transition-colors group/item"
+            variant="ghost"
+            size="icon"
+            onClick={() => handleSelectTab('notifications')}
+            title="Notifications"
+            aria-label="Notifications"
+            className={`text-text-muted hover:text-text-primary h-8 w-8 sm:h-9 sm:w-9 ${
+              activeTab === 'notifications' ? 'bg-surface-muted text-primary' : ''
+            }`}
           >
-            <LogOut className="h-5 w-5 shrink-0" aria-hidden="true" />
-            <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 truncate">
-              Sign Out
-            </span>
-          </button>
+            <Bell className="h-4 w-4" aria-hidden="true" />
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="gap-1.5 h-8 px-2 sm:px-3 text-xs font-semibold text-text-secondary hover:text-primary shrink-0"
+          >
+            <Link to="/" title="Back to Public Website">
+              <Globe className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+              <span className="hidden sm:inline">Website</span>
+            </Link>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => signOut()}
+            className="text-text-muted hover:text-primary gap-1.5 h-8 px-2 sm:px-3 text-xs font-semibold shrink-0"
+            title="Sign Out"
+            aria-label="Sign Out"
+          >
+            <LogOut className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Sign Out</span>
+          </Button>
+
+          <Button asChild variant="primary" size="sm" className="hidden sm:inline-flex gap-1.5 h-8 text-xs font-bold text-white bg-primary hover:bg-primary-hover">
+            <Link to="/food" className="text-white">
+              Order Food
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
+          </Button>
         </div>
-      </aside>
+      </header>
 
-      {/* Mobile Slide-Over Navigation Drawer */}
-      {mobileNavOpen && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
-            onClick={() => setMobileNavOpen(false)}
-            aria-hidden="true"
-          />
-
-          {/* Drawer content */}
-          <div className="relative flex w-72 max-w-[80vw] flex-1 flex-col justify-between bg-white shadow-xl z-10 animate-in slide-in-from-left duration-200">
-            <div>
-              <div className="flex h-16 items-center justify-between border-b border-border px-5">
-                <Link to="/" onClick={() => setMobileNavOpen(false)} className="flex items-center gap-2">
-                  <span className="text-body-large font-bold text-text-primary">KingdomDash</span>
-                  <span className="text-caption font-semibold text-primary">Customer</span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setMobileNavOpen(false)}
-                  className="rounded-lg p-1.5 text-text-muted hover:text-text-primary hover:bg-surface-muted"
-                  aria-label="Close navigation menu"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="p-4 border-b border-border/70 bg-page-background/50">
-                <span className="text-caption font-semibold text-text-muted uppercase tracking-wider block">
-                  Signed in as
-                </span>
-                <span className="text-body-small font-bold text-text-primary truncate block mt-1">
-                  {profile?.full_name || 'Customer Account'}
-                </span>
-                <span className="text-caption text-text-secondary truncate block">
-                  {profile?.email}
-                </span>
-              </div>
-
-              <nav className="flex flex-col gap-1 p-3" aria-label="Mobile drawer navigation">
-                {NAV_ITEMS.map(({ id, icon: Icon, label }) => {
-                  const isActive = activeTab === id
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => handleSelectTab(id)}
-                      className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-body-small font-medium transition-all ${
-                        isActive
-                          ? 'bg-primary text-white font-bold shadow-xs'
-                          : 'text-text-secondary hover:bg-page-background hover:text-text-primary'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                        <span>{label}</span>
-                      </div>
-                      {id === 'orders' && pendingOrdersCount > 0 && (
-                        <span
-                          className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                            isActive ? 'bg-white text-primary' : 'bg-amber-100 text-amber-800'
-                          }`}
-                        >
-                          {pendingOrdersCount}
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
-              </nav>
-            </div>
-
-            <div className="p-4 border-t border-border space-y-2">
-              <Button asChild variant="outline" size="sm" className="w-full justify-start gap-2 text-text-secondary hover:text-primary">
-                <Link to="/" onClick={() => setMobileNavOpen(false)}>
-                  <Globe className="h-4 w-4 text-primary" />
-                  Public Website
-                </Link>
-              </Button>
-
-              <Button asChild variant="primary" size="sm" className="w-full gap-1.5 justify-center font-bold text-white bg-primary hover:bg-primary-hover">
-                <Link to="/food" onClick={() => setMobileNavOpen(false)} className="text-white">
-                  Order Food Now
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => signOut()}
-                className="w-full justify-start gap-2 text-text-muted hover:text-text-primary"
-              >
-                <LogOut className="h-4 w-4" aria-hidden="true" />
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Area */}
-      <div className="flex flex-1 flex-col overflow-hidden min-h-0">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-white px-4 sm:px-6">
-          <div className="flex items-center gap-2.5 min-w-0">
-            {/* Mobile Hamburger Menu Toggle Button */}
+      {/* Desktop Horizontal Tab Bar */}
+      <nav aria-label="Customer dashboard tabs" className="hidden lg:flex items-center gap-1 border-b border-border bg-white px-6 py-2 shrink-0 z-10">
+        {NAV_ITEMS.map(({ id, icon: Icon, label }) => {
+          const isActive = activeTab === id
+          return (
             <button
+              key={id}
               type="button"
-              onClick={() => setMobileNavOpen(true)}
-              className="lg:hidden rounded-lg p-2 text-text-muted hover:bg-surface-muted hover:text-text-primary -ml-1.5"
-              aria-label="Open navigation menu"
+              onClick={() => handleSelectTab(id)}
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all ${
+                isActive
+                  ? 'bg-primary text-white shadow-xs'
+                  : 'text-text-secondary hover:bg-page-background hover:text-text-primary'
+              }`}
             >
-              <Menu className="h-5 w-5" />
+              <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>{label}</span>
+              {id === 'orders' && pendingOrdersCount > 0 && (
+                <span
+                  className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                    isActive ? 'bg-white text-primary' : 'bg-amber-100 text-amber-800'
+                  }`}
+                >
+                  {pendingOrdersCount}
+                </span>
+              )}
             </button>
+          )
+        })}
+      </nav>
 
-            <h1 className="text-h4 font-bold text-text-primary truncate">
-              Customer Dashboard
-            </h1>
-            <Badge variant="primary" className="text-caption hidden sm:inline-flex capitalize shrink-0">
-              {NAV_ITEMS.find((n) => n.id === activeTab)?.label || 'Orders'}
-            </Badge>
-          </div>
-
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => handleSelectTab('notifications')}
-              title="Notifications"
-              aria-label="Notifications"
-              className={`hidden sm:inline-flex text-text-muted hover:text-text-primary ${
-                activeTab === 'notifications' ? 'bg-surface-muted text-primary' : ''
-              }`}
-            >
-              <Bell className="h-4 w-4" aria-hidden="true" />
-            </Button>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => handleSelectTab('settings')}
-              title="Settings"
-              aria-label="Settings"
-              className={`hidden sm:inline-flex text-text-muted hover:text-text-primary ${
-                activeTab === 'settings' ? 'bg-surface-muted text-primary' : ''
-              }`}
-            >
-              <Settings className="h-4 w-4" aria-hidden="true" />
-            </Button>
-
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="gap-1.5 h-8 px-2.5 sm:px-3 text-xs font-semibold text-text-secondary hover:text-primary shrink-0"
-            >
-              <Link to="/" title="Back to Public Website">
-                <Globe className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                <span className="hidden sm:inline">Website</span>
-                <span className="sm:hidden">Website</span>
-              </Link>
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => signOut()}
-              className="text-text-muted hover:text-text-primary gap-1.5 hidden sm:inline-flex"
-            >
-              <LogOut className="h-4 w-4" aria-hidden="true" />
-              <span>Sign Out</span>
-            </Button>
-
-            <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex gap-1.5">
-              <Link to="/food">
-                Order Food
-                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-              </Link>
-            </Button>
-          </div>
-        </header>
-
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-28 lg:pb-8 space-y-6">
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col overflow-hidden min-h-0">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 space-y-6">
           {/* Pending Application Banner */}
           {pendingApplication && (
             <div className="mx-auto max-w-4xl rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-sm">
@@ -729,12 +472,6 @@ export default function CustomerDashboardPage() {
           )}
 
           <div className="mx-auto max-w-4xl">
-            {/* Tab: Settings */}
-            {activeTab === 'settings' && <CustomerSettingsTab />}
-
-            {/* Tab: Notifications */}
-            {activeTab === 'notifications' && <CustomerNotificationsTab />}
-
             {/* Tab: Orders */}
             {activeTab === 'orders' && (
               <div className="space-y-6">
@@ -874,134 +611,44 @@ export default function CustomerDashboardPage() {
                 {!isLoadingOrders && filteredOrders.length > 0 && (
                   <div className="space-y-4">
                     {filteredOrders.map((order) => {
-                      const isPending = order.status === 'pending' || order.status === 'placed'
+                      void reviewsVersion
+                      const existingReview = getOrderReview(order.id)
                       return (
-                        <div
+                        <CustomerOrderCard
                           key={order.id}
-                          className={`rounded-2xl border bg-white overflow-hidden shadow-xs transition-all hover:shadow-md ${
-                            isPending
-                              ? 'border-amber-300 ring-1 ring-amber-200/60'
-                              : 'border-border'
-                          }`}
-                        >
-                          {/* Card Top Bar */}
-                          <div className="p-4 sm:p-5 border-b border-border/80 bg-page-background/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <div className="flex flex-wrap items-center gap-2">
-                              {renderServiceBadge(order.service_type)}
-                              <span className="font-mono text-xs font-semibold text-text-muted">
-                                #{order.id.slice(0, 8).toUpperCase()}
-                              </span>
-                              <span className="text-text-muted text-xs">•</span>
-                              <span className="text-xs text-text-secondary">
-                                {new Date(order.created_at).toLocaleDateString('en-NG', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </span>
-                            </div>
-                            <div>{renderOrderStatusBadge(order.status)}</div>
-                          </div>
-
-                          {/* Card Body */}
-                          <div className="p-4 sm:p-5 space-y-4">
-                            {/* Merchant / Destination */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                              <div>
-                                <span className="text-text-muted block text-[11px] uppercase tracking-wider">Merchant / Service</span>
-                                <span className="font-bold text-text-primary text-sm">
-                                  {order.vendors?.business_name || (order.service_type === 'courier' ? 'Direct Courier Dispatch' : 'KingdomDash Merchant')}
-                                </span>
-                              </div>
-                              <div className="sm:text-right">
-                                <span className="text-text-muted block text-[11px] uppercase tracking-wider">Delivery Destination</span>
-                                <span className="text-text-secondary font-medium truncate max-w-xs block">
-                                  {order.delivery_address}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Items list */}
-                            {order.order_items && order.order_items.length > 0 && (
-                              <div className="rounded-xl bg-surface-muted/50 p-3 space-y-1.5 border border-border/60">
-                                <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">
-                                  Items ({order.order_items.length})
-                                </span>
-                                <ul className="divide-y divide-border/40 text-xs">
-                                  {order.order_items.slice(0, 3).map((item) => (
-                                    <li key={item.id} className="py-1.5 flex items-center justify-between">
-                                      <span className="text-text-primary">
-                                        <span className="font-semibold">{item.quantity}×</span> {item.product_name}
-                                      </span>
-                                      <span className="font-mono font-medium text-text-secondary">
-                                        {formatNgn(item.line_total || item.unit_price * item.quantity)}
-                                      </span>
-                                    </li>
-                                  ))}
-                                  {order.order_items.length > 3 && (
-                                    <li className="pt-1.5 text-[11px] text-text-muted italic">
-                                      +{order.order_items.length - 3} more items...
-                                    </li>
-                                  )}
-                                </ul>
-                              </div>
-                            )}
-
-                            {/* Financials & Action Row */}
-                            <div className="pt-2 border-t border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                              <div className="flex items-baseline gap-2">
-                                <span className="text-xs text-text-muted">Total Amount:</span>
-                                <span className="text-body-large font-bold text-primary font-mono">
-                                  {formatNgn(order.total)}
-                                </span>
-                                <span className="text-[11px] text-text-muted">
-                                  (incl. {formatNgn(order.delivery_fee)} delivery)
-                                </span>
-                              </div>
-
-                              <div className="flex items-center gap-2">
-                                {isPending ? (
-                                  <Button asChild variant="primary" size="sm" className="gap-1.5 bg-primary hover:bg-primary/90 text-white font-bold shadow-xs">
-                                    <Link to={`/order/${order.id}/confirmation`}>
-                                      <CreditCard className="w-3.5 h-3.5" />
-                                      <span>Pay Now ({formatNgn(order.total)})</span>
-                                    </Link>
-                                  </Button>
-                                ) : (
-                                  <Button asChild variant="outline" size="sm" className="gap-1.5 text-xs font-semibold">
-                                    <Link to={`/order/${order.id}/confirmation`}>
-                                      <span>Track Delivery</span>
-                                      <ArrowRight className="w-3.5 h-3.5" />
-                                    </Link>
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Callout banner if awaiting payment */}
-                            {isPending && (
-                              <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <div className="flex items-center gap-2">
-                                  <Clock className="w-4 h-4 text-amber-600 shrink-0 animate-pulse" />
-                                  <span>
-                                    Your food order is recorded and waiting for payment. Click <strong>Pay Now</strong> to complete payment via Paystack so the kitchen can begin preparation.
-                                  </span>
-                                </div>
-                                <Button asChild variant="primary" size="sm" className="shrink-0 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold">
-                                  <Link to={`/order/${order.id}/confirmation`}>
-                                    Complete Payment
-                                  </Link>
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                          order={order}
+                          existingReview={existingReview}
+                          onReviewClick={(ord) => setReviewingOrder(ord)}
+                          onCancelClick={(ord) => setCancellingOrder(ord)}
+                        />
                       )
                     })}
                   </div>
                 )}
+
+                {/* Order Review Feedback Modal */}
+                <OrderReviewModal
+                  isOpen={!!reviewingOrder}
+                  onClose={() => setReviewingOrder(null)}
+                  orderId={reviewingOrder?.id || ''}
+                  orderNumber={reviewingOrder ? reviewingOrder.id.slice(0, 8).toUpperCase() : ''}
+                  customerId={profile?.id}
+                  onReviewSubmitted={() => {
+                    setReviewsVersion((v) => v + 1)
+                  }}
+                />
+
+                {/* Order Cancellation Modal */}
+                <CancelOrderModal
+                  isOpen={!!cancellingOrder}
+                  onClose={() => setCancellingOrder(null)}
+                  orderId={cancellingOrder?.id || ''}
+                  orderNumber={cancellingOrder ? cancellingOrder.id.slice(0, 8).toUpperCase() : ''}
+                  isPaid={cancellingOrder?.status === 'payment_confirmed'}
+                  onCancelled={() => {
+                    loadCustomerOrders()
+                  }}
+                />
               </div>
             )}
 
@@ -1172,6 +819,24 @@ export default function CustomerDashboardPage() {
                 </div>
               </div>
             )}
+
+            {/* Tab: Rewards & Passes */}
+            {activeTab === 'rewards' && (
+              <CustomerRewardsTab
+                userId={profile?.id || 'guest'}
+                userName={profile?.full_name || profile?.email?.split('@')[0]}
+              />
+            )}
+
+            {/* Tab: Notifications */}
+            {activeTab === 'notifications' && (
+              <CustomerNotificationsTab />
+            )}
+
+            {/* Tab: Settings */}
+            {activeTab === 'settings' && (
+              <CustomerSettingsTab />
+            )}
           </div>
         </main>
       </div>
@@ -1188,14 +853,21 @@ export default function CustomerDashboardPage() {
               key={id}
               type="button"
               onClick={() => handleSelectTab(id)}
-              className={`flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors ${
+              className={`flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[10px] font-medium transition-colors ${
                 isActive
                   ? 'text-primary font-bold'
                   : 'text-text-muted hover:text-text-primary'
               }`}
             >
-              <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} aria-hidden="true" />
-              <span className="truncate">{label}</span>
+              <div className="relative">
+                <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} aria-hidden="true" />
+                {id === 'orders' && pendingOrdersCount > 0 && (
+                  <span className="absolute -top-1 -right-2 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[8px] font-bold text-white">
+                    {pendingOrdersCount}
+                  </span>
+                )}
+              </div>
+              <span className="truncate max-w-[54px]">{label}</span>
             </button>
           )
         })}

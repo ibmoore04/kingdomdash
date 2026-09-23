@@ -20,5 +20,6 @@ export default defineConfig({
     testTimeout: 30000,
     pool: 'threads',
     maxWorkers: 2,
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
   },
 })

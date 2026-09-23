@@ -120,8 +120,100 @@ export const AdminPaymentsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Content Table */}
-      <div className="rounded-2xl bg-white border border-border overflow-hidden shadow-xs">
+      {/* Mobile Cards View (md:hidden) */}
+      <div className="md:hidden space-y-3">
+        {loading ? (
+          <div className="p-8 text-center text-text-muted bg-white border border-border rounded-2xl shadow-xs">
+            <RefreshCw className="w-5 h-5 animate-spin text-primary mx-auto mb-2" />
+            <p className="text-xs">
+              {tab === 'transactions' ? 'Loading transactions...' : 'Querying refund queue...'}
+            </p>
+          </div>
+        ) : tab === 'transactions' ? (
+          transactions.length === 0 ? (
+            <div className="p-8 text-center text-text-muted bg-white border border-border rounded-2xl shadow-xs">
+              <p className="text-xs">No payment transactions found.</p>
+            </div>
+          ) : (
+            transactions.map((tx) => (
+              <div
+                key={tx.id}
+                className="p-4 bg-white border border-border rounded-2xl shadow-xs space-y-2.5"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="text-xs font-mono font-semibold text-text-primary">
+                      Tx: {tx.id.slice(0, 8)}...
+                    </div>
+                    <div className="text-[10px] text-text-muted font-mono">
+                      Ref: {tx.paystack_reference || 'N/A'}
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <CheckCircle2 className="w-2.5 h-2.5" />
+                    {tx.status}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-border">
+                  <div>
+                    <span className="text-[10px] text-text-muted block">Order:</span>
+                    <span className="text-xs font-mono text-text-secondary">
+                      {tx.order_id ? `${tx.order_id.slice(0, 8)}...` : '—'}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-mono text-sm font-bold text-text-primary">
+                      ₦{Number(tx.amount || 0).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                    </div>
+                    <div className="text-[10px] text-text-muted">
+                      {new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )
+        ) : refundQueue.length === 0 ? (
+          <div className="p-8 text-center text-text-muted bg-white border border-border rounded-2xl shadow-xs space-y-1">
+            <CheckCircle2 className="w-6 h-6 text-emerald-600 mx-auto mb-1" />
+            <p className="text-xs font-semibold text-text-primary">Refund queue is clear</p>
+            <p className="text-[11px]">No paid cancelled orders awaiting manual review.</p>
+          </div>
+        ) : (
+          refundQueue.map((item) => (
+            <div
+              key={item.id}
+              className="p-4 bg-white border border-border rounded-2xl shadow-xs space-y-2.5"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-xs font-mono font-semibold text-text-primary">
+                  Order: {item.id.slice(0, 8)}...
+                </div>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-50 text-amber-700 border border-amber-200">
+                  <Clock className="w-2.5 h-2.5" />
+                  Review Needed
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-border">
+                <div>
+                  <span className="text-[10px] text-text-muted block">Status:</span>
+                  <span className="text-[11px] font-bold uppercase text-primary">
+                    {item.status}
+                  </span>
+                </div>
+                <div className="text-right font-mono text-sm font-bold text-primary">
+                  ₦{Number(item.total_amount || 0).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View (hidden md:block) */}
+      <div className="hidden md:block rounded-2xl bg-white border border-border overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           {tab === 'transactions' ? (
             <table className="w-full text-left text-xs text-text-secondary">

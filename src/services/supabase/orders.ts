@@ -132,3 +132,40 @@ export async function getOrdersByVendor(vendorId: string) {
     .order('created_at', { ascending: false }) as Promise<{ data: unknown; error: unknown }>
 }
 
+/**
+ * Cancel an order as a customer.
+ * Invokes cancel_order_operational RPC with fallback direct updates.
+ */
+export async function cancelOrderCustomer(orderId: string, reason: string) {
+  try {
+    const res = await db.rpc('cancel_order_operational', {
+      p_order_id: orderId,
+      p_reason: reason,
+    })
+    if (!res?.error) return { data: true, error: null }
+  } catch (err) {
+    console.warn('cancel_order_operational RPC call fallback:', err)
+  }
+
+  // Fallback direct update
+  const now = new Date().toISOString()
+  const { data, error } = await db
+    .from('orders')
+    .update({
+      status: 'cancelled',
+      cancelled_at: now,
+      cancellation_reason: reason,
+      updated_at: now,
+    })
+    .eq('id', orderId)
+    .select('id')
+    .maybeSingle()
+
+  if (!error) {
+    await db.from('deliveries').update({ status: 'cancelled', updated_at: now }).eq('order_id', orderId)
+  }
+
+  return { data, error }
+}
+
+

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import {
   getPendingRiderApplications,
@@ -21,6 +22,20 @@ import {
   Bike,
 } from 'lucide-react';
 import { DirectOnboardRiderModal } from '@/components/admin/onboarding/direct-onboard-rider-modal';
+
+function formatDateSafe(val?: string | null): string {
+  if (!val) return 'Recently';
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? 'Recently' : d.toLocaleDateString();
+}
+
+function getRiderContactPhone(app: RiderApplication): string {
+  return app.phone || app.phone_number || app.profile?.phone || '—';
+}
+
+function getRiderDate(app: RiderApplication): string {
+  return formatDateSafe(app.submitted_at || app.created_at);
+}
 
 export const AdminRiderApplicationsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -196,7 +211,7 @@ export const AdminRiderApplicationsPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-2 text-xs py-2 border-y border-border/60">
                   <div>
                     <span className="text-[10px] text-text-muted uppercase tracking-wider block">Phone</span>
-                    <span className="font-mono text-text-secondary truncate block">{app.phone_number || '—'}</span>
+                    <span className="font-mono text-text-secondary truncate block">{getRiderContactPhone(app)}</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-text-muted uppercase tracking-wider block">Plate / Details</span>
@@ -206,7 +221,7 @@ export const AdminRiderApplicationsPage: React.FC = () => {
 
                 <div className="flex items-center justify-between pt-1">
                   <span className="text-[11px] text-text-muted">
-                    {new Date(app.created_at).toLocaleDateString()}
+                    {getRiderDate(app)}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <button
@@ -265,7 +280,7 @@ export const AdminRiderApplicationsPage: React.FC = () => {
                         <div className="font-semibold text-text-primary">{app.full_name || 'Unnamed Applicant'}</div>
                         <div className="text-[10px] text-text-muted font-mono">{app.id}</div>
                       </td>
-                      <td className="px-4 py-3 font-mono text-text-secondary">{app.phone_number || '—'}</td>
+                      <td className="px-4 py-3 font-mono text-text-secondary">{getRiderContactPhone(app)}</td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-light-surface text-text-secondary border border-border">
                           <Truck className="w-2.5 h-2.5 text-text-muted" />
@@ -274,7 +289,7 @@ export const AdminRiderApplicationsPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 font-mono text-text-secondary">{app.plate_number || '—'}</td>
                       <td className="px-4 py-3 text-text-secondary">
-                        {new Date(app.created_at).toLocaleDateString()}
+                        {getRiderDate(app)}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="inline-flex items-center gap-1.5">
@@ -319,8 +334,8 @@ export const AdminRiderApplicationsPage: React.FC = () => {
       )}
 
       {/* Details Modal / Drawer */}
-      {detailApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      {detailApp && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white border border-border rounded-2xl max-w-lg w-full p-6 space-y-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div className="flex items-center gap-3">
@@ -351,7 +366,7 @@ export const AdminRiderApplicationsPage: React.FC = () => {
                   <span className="text-text-secondary">Phone Contact</span>
                   <p className="font-mono text-text-primary mt-0.5 flex items-center gap-1">
                     <Phone className="w-3 h-3 text-text-muted" />
-                    {detailApp.phone_number || 'N/A'}
+                    {getRiderContactPhone(detailApp)}
                   </p>
                 </div>
                 <div>
@@ -430,12 +445,13 @@ export const AdminRiderApplicationsPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Rider Approval Modal */}
-      {approvingRiderApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      {approvingRiderApp && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white border border-border rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
             <div className="flex items-center gap-3 border-b border-border pb-4">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600">
@@ -492,12 +508,13 @@ export const AdminRiderApplicationsPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Reject Modal */}
-      {isRejectModalOpen && selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      {isRejectModalOpen && selectedApp && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <h3 className="text-sm font-bold text-text-primary">Reject Rider Application</h3>
             <p className="text-xs text-text-secondary">
@@ -530,7 +547,8 @@ export const AdminRiderApplicationsPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Direct Onboard Rider Modal */}

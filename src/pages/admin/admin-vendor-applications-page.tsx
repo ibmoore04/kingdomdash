@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import {
   getPendingVendorApplications,
@@ -20,6 +21,28 @@ import {
   Plus,
 } from 'lucide-react';
 import { DirectOnboardVendorModal } from '@/components/admin/onboarding/direct-onboard-vendor-modal';
+
+function formatDateSafe(val?: string | null): string {
+  if (!val) return 'Recently';
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? 'Recently' : d.toLocaleDateString();
+}
+
+function getAppContactPhone(app: VendorApplication): string {
+  return app.phone || app.phone_number || app.profile?.phone || '—';
+}
+
+function getAppContactEmail(app: VendorApplication): string {
+  return app.email || app.owner_email || app.profile?.email || '—';
+}
+
+function getAppAddress(app: VendorApplication): string {
+  return app.business_address || app.address || '—';
+}
+
+function getAppDate(app: VendorApplication): string {
+  return formatDateSafe(app.submitted_at || app.created_at);
+}
 
 export const AdminVendorApplicationsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -229,18 +252,18 @@ export const AdminVendorApplicationsPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-2 text-xs py-2 border-y border-border/60">
                   <div>
                     <span className="text-[10px] text-text-muted uppercase tracking-wider block">Contact</span>
-                    <span className="font-mono text-text-secondary truncate block">{app.phone_number || '—'}</span>
-                    <span className="text-[10px] text-text-muted truncate block">{app.owner_email || '—'}</span>
+                    <span className="font-mono text-text-secondary truncate block">{getAppContactPhone(app)}</span>
+                    <span className="text-[10px] text-text-muted truncate block">{getAppContactEmail(app)}</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-text-muted uppercase tracking-wider block">Address</span>
-                    <span className="text-text-secondary truncate block">{app.address || '—'}</span>
+                    <span className="text-text-secondary truncate block">{getAppAddress(app)}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
                   <span className="text-[11px] text-text-muted">
-                    {new Date(app.created_at).toLocaleDateString()}
+                    {getAppDate(app)}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <button
@@ -319,14 +342,14 @@ export const AdminVendorApplicationsPage: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-4 py-3 font-mono text-text-secondary">
-                        <div>{app.phone_number || '—'}</div>
-                        <div className="text-[10px] text-text-muted">{app.owner_email || '—'}</div>
+                        <div>{getAppContactPhone(app)}</div>
+                        <div className="text-[10px] text-text-muted">{getAppContactEmail(app)}</div>
                       </td>
                       <td className="px-4 py-3 text-text-secondary max-w-[200px] truncate">
-                        {app.address || '—'}
+                        {getAppAddress(app)}
                       </td>
                       <td className="px-4 py-3 text-text-secondary">
-                        {new Date(app.created_at).toLocaleDateString()}
+                        {getAppDate(app)}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="inline-flex items-center gap-1.5">
@@ -371,8 +394,8 @@ export const AdminVendorApplicationsPage: React.FC = () => {
       )}
 
       {/* Details modal */}
-      {detailApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      {detailApp && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white border border-border rounded-2xl max-w-lg w-full p-6 space-y-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div className="flex items-center gap-3">
@@ -423,14 +446,14 @@ export const AdminVendorApplicationsPage: React.FC = () => {
                   <span className="text-text-secondary">Contact Phone</span>
                   <p className="font-mono text-text-primary mt-0.5 flex items-center gap-1">
                     <Phone className="w-3 h-3 text-text-muted" />
-                    {detailApp.phone_number || 'N/A'}
+                    {getAppContactPhone(detailApp)}
                   </p>
                 </div>
                 <div>
                   <span className="text-text-secondary">Owner Email</span>
                   <p className="text-text-secondary mt-0.5 flex items-center gap-1 truncate">
                     <Mail className="w-3 h-3 text-text-muted shrink-0" />
-                    {detailApp.owner_email || 'N/A'}
+                    {getAppContactEmail(detailApp)}
                   </p>
                 </div>
               </div>
@@ -439,14 +462,14 @@ export const AdminVendorApplicationsPage: React.FC = () => {
                 <span className="text-text-secondary">Physical Address</span>
                 <p className="text-text-primary mt-0.5 flex items-start gap-1">
                   <MapPin className="w-3.5 h-3.5 text-text-muted shrink-0 mt-0.5" />
-                  {detailApp.address || 'No physical address specified'}
+                  {getAppAddress(detailApp)}
                 </p>
               </div>
 
-              {detailApp.description && (
+              {(detailApp.business_description || detailApp.description) && (
                 <div className="p-3 rounded-xl bg-light-surface border border-border">
                   <span className="text-text-secondary">Business Concept / Bio</span>
-                  <p className="text-text-secondary mt-1 italic">{detailApp.description}</p>
+                  <p className="text-text-secondary mt-1 italic">{detailApp.business_description || detailApp.description}</p>
                 </div>
               )}
             </div>
@@ -478,12 +501,13 @@ export const AdminVendorApplicationsPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Multi-Service Vendor Approval Modal */}
-      {approvingApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      {approvingApp && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white border border-border rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
             <div className="flex items-center gap-3 border-b border-border pb-4">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600">
@@ -576,12 +600,13 @@ export const AdminVendorApplicationsPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Reject Modal */}
-      {isRejectModalOpen && selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      {isRejectModalOpen && selectedApp && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <h3 className="text-sm font-bold text-text-primary">Reject Merchant Application</h3>
             <p className="text-xs text-text-secondary">
@@ -614,7 +639,8 @@ export const AdminVendorApplicationsPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Direct Onboard Vendor Modal */}

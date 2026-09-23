@@ -13,13 +13,9 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import {
   Eye,
   EyeOff,
-  UserPlus,
-  CheckCircle,
-  Mail,
-  ShoppingBag,
-  Bike,
-  Store,
-  Clock,
+  CheckCircle2,
+  XCircle,
+  Loader2 as LoaderIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/services/supabase/client'
@@ -28,10 +24,10 @@ import { mapAuthError } from '@/utils/auth-errors'
 import { validatePhoneNumber } from '@/utils/phone'
 import { useAuthStore } from '@/stores/auth-store'
 import { resolvePostLoginTarget } from '@/utils/safe-redirect'
+import { GoogleSignInButton } from '@/components/auth/google-sign-in-button'
 import {
   AuthShell,
   AuthField,
-  AuthIconBadge,
   AuthErrorAlert,
   AuthDivider,
   BUTTON_STYLE,
@@ -41,33 +37,8 @@ import {
 
 export type AccountType = 'customer' | 'rider' | 'vendor'
 
-interface AccountOption {
-  type: AccountType
-  title: string
-  description: string
-  icon: typeof ShoppingBag
-}
-
-const ACCOUNT_OPTIONS: AccountOption[] = [
-  {
-    type: 'customer',
-    title: 'Customer',
-    description: 'Order food, groceries, and courier services.',
-    icon: ShoppingBag,
-  },
-  {
-    type: 'rider',
-    title: 'Rider',
-    description: 'Deliver orders and courier packages.',
-    icon: Bike,
-  },
-  {
-    type: 'vendor',
-    title: 'Vendor',
-    description: 'Sell food or groceries through KingdomDash.',
-    icon: Store,
-  },
-]
+// Referral code validation states
+type ReferralStatus = 'idle' | 'checking' | 'valid' | 'invalid'
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState('')
@@ -75,8 +46,14 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [accountType, setAccountType] = useState<AccountType>('customer')
   const [showPassword, setShowPassword] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
+  const location = useLocation()
+  const [referralCode, setReferralCode] = useState(() => {
+    return new URLSearchParams(location.search).get('ref')?.toUpperCase() || ''
+  })
+  const [referralStatus, setReferralStatus] = useState<ReferralStatus>('idle')
+  const referralDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<{
@@ -85,13 +62,11 @@ export default function RegisterPage() {
     phone?: string
     password?: string
     confirmPassword?: string
-    accountType?: string
+    terms?: string
   }>({})
-  const [isSubmitted, setIsSubmitted] = useState(false)
 
   const errorRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
-  const location = useLocation()
   const { session, profile } = useAuthStore()
 
   // Prevent authenticated / unconfirmed users from accessing registration form
@@ -115,6 +90,37 @@ export default function RegisterPage() {
     }
   }, [error])
 
+  // Referral code real-time validation (debounced 600ms)
+  useEffect(() => {
+    if (referralDebounceRef.current) clearTimeout(referralDebounceRef.current)
+    const trimmed = referralCode.trim()
+    if (!trimmed) {
+      setReferralStatus('idle')
+      return
+    }
+    setReferralStatus('checking')
+    referralDebounceRef.current = setTimeout(async () => {
+      try {
+        // Use the secure RPC function to safely validate referral codes for anonymous users
+        // without violating profiles Row Level Security (RLS).
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error: rpcError } = await (supabase.rpc as any)('validate_referral_code', {
+          p_code: trimmed,
+        })
+        if (rpcError || data !== true) {
+          setReferralStatus('invalid')
+        } else {
+          setReferralStatus('valid')
+        }
+      } catch {
+        setReferralStatus('invalid')
+      }
+    }, 600)
+    return () => {
+      if (referralDebounceRef.current) clearTimeout(referralDebounceRef.current)
+    }
+  }, [referralCode])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
@@ -125,7 +131,7 @@ export default function RegisterPage() {
       phone?: string
       password?: string
       confirmPassword?: string
-      accountType?: string
+      terms?: string
     } = {}
 
     if (!fullName.trim()) {
@@ -155,6 +161,10 @@ export default function RegisterPage() {
       errors.confirmPassword = 'Passwords do not match'
     }
 
+    if (!termsAccepted) {
+      errors.terms = 'You must accept the Terms of Service and Privacy Policy to register'
+    }
+
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors)
       return
@@ -164,6 +174,26 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
+      // If a referral code is present but not yet validated (or invalid), block submission
+      if (referralCode.trim() && referralStatus === 'checking') {
+        setError('Please wait while we validate your referral code.')
+        setIsLoading(false)
+        return
+      }
+      if (referralCode.trim() && referralStatus === 'invalid') {
+        setError('The referral code you entered does not exist. Please check it and try again.')
+        setIsLoading(false)
+        return
+      }
+
+      if (referralCode.trim()) {
+        try {
+          localStorage.setItem('kd_pending_referral', referralCode.trim())
+        } catch {
+          // ignore
+        }
+      }
+
       // Send intent only in metadata — role assignment is strictly server-authoritative
       const { error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
@@ -172,7 +202,8 @@ export default function RegisterPage() {
           data: {
             full_name: fullName.trim(),
             phone: phoneValidation.normalized,
-            account_type: accountType,
+            account_type: 'customer',
+            referral_code: referralCode.trim() || undefined,
           },
           emailRedirectTo: `${appConfig.url}/auth/callback`,
         },
@@ -181,11 +212,7 @@ export default function RegisterPage() {
       if (signUpError) {
         setError(mapAuthError(signUpError, 'Sign up'))
       } else {
-        if (accountType === 'customer') {
-          navigate(`/auth/verify-email?email=${encodeURIComponent(email.trim())}`, { replace: true })
-        } else {
-          setIsSubmitted(true)
-        }
+        navigate(`/auth/verify-email?email=${encodeURIComponent(email.trim())}`, { replace: true })
       }
     } catch (err) {
       setError(mapAuthError(err, 'Sign up'))
@@ -194,123 +221,9 @@ export default function RegisterPage() {
     }
   }
 
-  // ── Post-registration confirmation state ──────────────────────────────
-  if (isSubmitted) {
-    return (
-      <AuthShell>
-        {accountType === 'customer' ? (
-          <>
-            {/* Customer confirmation */}
-            <div
-              className="inline-flex items-center justify-center rounded-2xl mb-5"
-              style={{
-                width: '48px',
-                height: '48px',
-                background: 'rgba(22,163,74,0.10)',
-                border: '1px solid rgba(22,163,74,0.25)',
-              }}
-              aria-hidden="true"
-            >
-              <CheckCircle className="h-5 w-5 text-[#16a34a]" />
-            </div>
-
-            <h2
-              className="font-bold leading-none tracking-tight text-[#111111]"
-              style={{ fontSize: 'clamp(2rem,3.5vw,2.6rem)' }}
-            >
-              Check your email
-            </h2>
-            <p className="mt-2 text-body-small text-[#6b7280]">
-              We've sent a confirmation link to your inbox.
-            </p>
-
-            <div
-              className="mt-6 flex items-start gap-3 rounded-xl px-4 py-4"
-              style={{
-                background: 'rgba(22,163,74,0.06)',
-                border: '1px solid rgba(22,163,74,0.2)',
-              }}
-            >
-              <Mail className="h-5 w-5 text-[#16a34a] flex-shrink-0 mt-0.5" aria-hidden="true" />
-              <div>
-                <p className="text-label font-semibold text-[#111111]">
-                  Confirm your email at
-                </p>
-                <p className="text-body-small text-[#6b7280] mt-0.5 break-all">{email}</p>
-                <p className="text-caption text-[#9ca3af] mt-2">
-                  Click the link in the email to activate your account, then sign in.
-                  Check your spam folder if you don't see it.
-                </p>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Applicant (Rider or Vendor) confirmation */}
-            <div
-              className="inline-flex items-center justify-center rounded-2xl mb-5"
-              style={{
-                width: '48px',
-                height: '48px',
-                background: 'rgba(234,88,12,0.10)',
-                border: '1px solid rgba(234,88,12,0.25)',
-              }}
-              aria-hidden="true"
-            >
-              <Clock className="h-5 w-5 text-[#ea580c] animate-pulse" />
-            </div>
-
-            <h2
-              className="font-bold leading-none tracking-tight text-[#111111]"
-              style={{ fontSize: 'clamp(1.8rem,3.2vw,2.3rem)' }}
-            >
-              Application Submitted
-            </h2>
-            <p className="mt-2 text-body-small text-[#6b7280]">
-              {accountType === 'rider'
-                ? 'Your Rider application has been submitted. Your account will become available for Rider operations after verification and approval.'
-                : 'Your Vendor application has been submitted. Your account will become available for Vendor operations after review and approval.'}
-            </p>
-
-            <div
-              className="mt-6 space-y-3 rounded-xl border border-amber-200 bg-amber-50/50 p-4 text-left"
-            >
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-2 w-2 rounded-full bg-amber-500" />
-                <p className="text-label font-semibold text-[#111111]">
-                  Next Steps:
-                </p>
-              </div>
-              <ul className="text-caption text-[#6b7280] space-y-1.5 list-disc list-inside">
-                <li>Check your email (<strong className="text-[#111111]">{email}</strong>) to confirm your account.</li>
-                <li>The KingdomDash operations team will review your application.</li>
-                <li>Once approved, you will be granted access to the {accountType === 'rider' ? 'Rider Platform' : 'Vendor Portal'}.</li>
-              </ul>
-            </div>
-          </>
-        )}
-
-        <AuthDivider />
-
-        <p className="mt-5 text-center text-body-small text-[#6b7280]">
-          Already confirmed?{' '}
-          <Link
-            to="/auth/login"
-            className="font-semibold text-[#E50914] hover:text-[#b91c1c] hover:underline transition-colors"
-          >
-            Sign in
-          </Link>
-        </p>
-      </AuthShell>
-    )
-  }
-
   // ── Registration form ─────────────────────────────────────────────────
   return (
     <AuthShell headlineLine1="Join the" headlineLine2Prefix="" headlineKeyword="KingdomDash">
-      {/* Auth icon */}
-      <AuthIconBadge icon={UserPlus} />
-
       {/* Heading */}
       <h2
         className="font-bold leading-none tracking-tight text-[#111111]"
@@ -329,6 +242,21 @@ export default function RegisterPage() {
           <AuthErrorAlert message={error} alertRef={errorRef} />
         </div>
       )}
+
+      {/* Google Sign-In — at the top, before the email form */}
+      <div className="mt-6">
+        <GoogleSignInButton
+          redirectParam={new URLSearchParams(location.search).get('redirect')}
+          onError={(msg) => setError(msg)}
+        />
+      </div>
+
+      {/* OR divider */}
+      <div className="mt-5 flex items-center gap-3">
+        <div className="flex-1 h-px bg-[#e5e7eb]" />
+        <span className="text-eyebrow text-[#9ca3af]">OR REGISTER WITH EMAIL</span>
+        <div className="flex-1 h-px bg-[#e5e7eb]" />
+      </div>
 
       {/* Form */}
       <form
@@ -449,65 +377,97 @@ export default function RegisterPage() {
           autoComplete="new-password"
         />
 
-        {/* Account Type Selection */}
-        <div className="pt-2">
-          <label className="block text-label font-semibold text-[#111111] mb-2">
-            What would you like to do on KingdomDash?
-          </label>
-          <div
-            role="radiogroup"
-            aria-label="What would you like to do on KingdomDash?"
-            className="grid grid-cols-1 gap-2.5"
+        {/* Referral code (Optional) */}
+        <div>
+          <label
+            htmlFor="register-referral"
+            className="block text-label font-semibold text-[#111111] mb-1.5"
           >
-            {ACCOUNT_OPTIONS.map((option) => {
-              const isSelected = accountType === option.type
-              const Icon = option.icon
-              return (
-                <button
-                  key={option.type}
-                  type="button"
-                  role="radio"
-                  aria-label={option.title}
-                  aria-checked={isSelected}
-                  onClick={() => setAccountType(option.type)}
-                  className={`flex items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all ${
-                    isSelected
-                      ? 'border-[#E50914] bg-red-50/40 shadow-sm ring-1 ring-[#E50914]'
-                      : 'border-[#e5e7eb] bg-white hover:border-[#d1d5db] hover:bg-gray-50/50'
-                  }`}
-                >
-                  <div
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${
-                      isSelected
-                        ? 'bg-[#E50914] text-white'
-                        : 'bg-gray-100 text-gray-500'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-body-small font-semibold text-[#111111]">
-                        {option.title}
-                      </span>
-                      <div
-                        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-                          isSelected
-                            ? 'border-[#E50914] bg-[#E50914]'
-                            : 'border-[#d1d5db] bg-white'
-                        }`}
-                      >
-                        {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
-                      </div>
-                    </div>
-                    <p className="mt-0.5 text-caption text-[#6b7280]">
-                      {option.description}
-                    </p>
-                  </div>
-                </button>
-              )
-            })}
+            Referral Code <span className="text-caption text-[#6b7280] font-normal">(Optional)</span>
+          </label>
+          <div className="relative">
+            <input
+              id="register-referral"
+              type="text"
+              value={referralCode}
+              onChange={(e) => {
+                setReferralCode(e.target.value.toUpperCase())
+                setReferralStatus('idle')
+              }}
+              placeholder="e.g. KD-ABCD"
+              className="w-full text-[#111111] placeholder:text-[#9ca3af] uppercase font-mono tracking-wider transition-colors pr-10"
+              style={{
+                ...INPUT_STYLE_PASSWORD,
+                borderColor:
+                  referralStatus === 'valid'
+                    ? '#059669'
+                    : referralStatus === 'invalid'
+                    ? '#E50914'
+                    : '#e5e7eb',
+              }}
+              autoComplete="off"
+            />
+            {/* Validation indicator */}
+            {referralStatus === 'checking' && (
+              <LoaderIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[#9ca3af]" />
+            )}
+            {referralStatus === 'valid' && (
+              <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#059669]" />
+            )}
+            {referralStatus === 'invalid' && (
+              <XCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#E50914]" />
+            )}
           </div>
+          {referralStatus === 'valid' && (
+            <p className="mt-1 text-caption text-[#059669] font-medium">
+              ✓ Valid referral code! ₦500 delivery credit will be applied on your first order.
+            </p>
+          )}
+          {referralStatus === 'invalid' && (
+            <p className="mt-1 text-caption text-[#E50914]">
+              This referral code doesn&apos;t exist. Check for typos and try again.
+            </p>
+          )}
+        </div>
+
+        {/* Terms & Privacy acceptance */}
+        <div className="space-y-1.5 pt-1">
+          <label className="flex items-start gap-2.5 cursor-pointer select-none text-left">
+            <input
+              type="checkbox"
+              id="register-terms"
+              checked={termsAccepted}
+              onChange={(e) => {
+                setTermsAccepted(e.target.checked)
+                if (fieldErrors.terms) setFieldErrors((prev) => ({ ...prev, terms: undefined }))
+              }}
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#E50914] focus:ring-[#E50914]"
+            />
+            <span className="text-body-small text-[#4b5563] leading-snug">
+              I agree to KingdomDash&apos;s{' '}
+              <Link
+                to="/terms"
+                target="_blank"
+                className="font-semibold text-[#E50914] hover:text-[#b91c1c] underline"
+              >
+                Terms of Service
+              </Link>{' '}
+              and{' '}
+              <Link
+                to="/privacy"
+                target="_blank"
+                className="font-semibold text-[#E50914] hover:text-[#b91c1c] underline"
+              >
+                Privacy Policy
+              </Link>
+              .
+            </span>
+          </label>
+          {fieldErrors.terms && (
+            <p id="register-terms-error" className="text-caption text-[#E50914]">
+              {fieldErrors.terms}
+            </p>
+          )}
         </div>
 
         {/* Submit */}

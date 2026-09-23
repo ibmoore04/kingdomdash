@@ -19,12 +19,15 @@ export function RiderBottomNav({ activeTripCount = 0, inboxCount = 0 }: RiderBot
       icon: Inbox,
       label: 'Offers',
       badge: inboxCount > 0 ? inboxCount : undefined,
+      badgeVariant: 'primary' as const,
     },
     {
       to: '/rider/deliveries/active',
       icon: MapPin,
-      label: 'Trip',
-      badge: activeTripCount > 0 ? activeTripCount : undefined,
+      label: 'Active Trip',
+      badge: activeTripCount > 0 ? 'Live' : undefined,
+      badgeVariant: 'warning' as const,
+      hasPulse: activeTripCount > 0,
     },
     {
       to: '/rider/history',
@@ -40,31 +43,53 @@ export function RiderBottomNav({ activeTripCount = 0, inboxCount = 0 }: RiderBot
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-border bg-white/95 backdrop-blur-md lg:hidden shadow-lg"
+      className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t border-border bg-white/95 backdrop-blur-lg lg:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-2"
       aria-label="Rider mobile navigation"
     >
-      {items.map(({ to, icon: Icon, label, badge }) => (
+      {items.map(({ to, icon: Icon, label, badge, badgeVariant, hasPulse }) => (
         <NavLink
           key={to}
           to={to}
           className={({ isActive }) =>
-            `relative flex flex-col items-center justify-center gap-1 px-3 py-1.5 transition-colors ${
-              isActive ? 'text-primary font-bold' : 'text-text-muted hover:text-text-primary'
+            `relative flex flex-1 flex-col items-center justify-center py-1 transition-all duration-150 ${
+              isActive
+                ? 'text-primary font-bold'
+                : 'text-text-muted hover:text-text-primary'
             }`
           }
         >
-          <div className="relative">
-            <Icon className="h-5 w-5" aria-hidden="true" />
-            {badge !== undefined && (
-              <Badge
-                variant="warning"
-                className="absolute -top-1.5 -right-2.5 flex h-4 min-w-4 items-center justify-center rounded-full p-0.5 text-[10px] font-bold"
+          {({ isActive }) => (
+            <>
+              <div
+                className={`relative flex flex-col items-center justify-center rounded-2xl px-3 py-1 transition-all ${
+                  isActive ? 'bg-primary/10' : ''
+                }`}
               >
-                {badge}
-              </Badge>
-            )}
-          </div>
-          <span className="text-[11px] leading-tight">{label}</span>
+                <div className="relative">
+                  <Icon
+                    className={`h-5 w-5 ${
+                      isActive ? 'stroke-[2.5px] text-primary' : 'stroke-2'
+                    }`}
+                    aria-hidden="true"
+                  />
+                  {hasPulse && (
+                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-amber-500 animate-ping" />
+                  )}
+                  {badge !== undefined && (
+                    <Badge
+                      variant={badgeVariant || 'primary'}
+                      className="absolute -top-2 -right-3 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-extrabold ring-1 ring-white shadow-xs"
+                    >
+                      {badge}
+                    </Badge>
+                  )}
+                </div>
+                <span className="text-[10px] tracking-tight mt-0.5 truncate max-w-[56px]">
+                  {label}
+                </span>
+              </div>
+            </>
+          )}
         </NavLink>
       ))}
     </nav>

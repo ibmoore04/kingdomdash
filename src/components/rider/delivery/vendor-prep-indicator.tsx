@@ -10,7 +10,7 @@ export function VendorPrepIndicator({
   orderStatus,
   serviceType,
 }: VendorPrepIndicatorProps) {
-  if (serviceType === 'courier') {
+  if (serviceType === 'courier' || serviceType === 'custom' || serviceType === 'personal_shopper') {
     return (
       <div className="flex items-center gap-2 rounded-xl border border-border bg-page-background p-3 text-body-small">
         <PackageCheck className="h-4 w-4 text-primary" aria-hidden="true" />

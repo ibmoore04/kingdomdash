@@ -34,12 +34,7 @@
 2. Client-supplied metadata that is never validated server-side is a code smell that will cause confusion and potential bugs.
 3. The Phase 3 requirements (Requirement 2.2) explicitly state: metadata must ONLY contain `full_name`. Sending `phone` and `account_type` violates the agreed architecture.
 
-**Solution:**
-- Remove `account_type` from signup metadata entirely. The application-level intent (rider/vendor wanting to apply) should be handled post-registration via a separate application flow, not embedded in the signup call.
-- Remove `phone` from signup metadata. Phone should be collected via a profile update (`updateProfile`) after email confirmation, where it goes into `public.profiles.phone` via a controlled update path.
-- Keep only `data: { full_name: fullName.trim() }` as required by the spec.
 
----
 
 ### SEC-02 — HIGH: `appConfig.url` fallback is `https://kingdomdash.com` — incorrect redirect in development
 

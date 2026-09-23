@@ -210,7 +210,7 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
   return (
     <div
       data-testid="location-picker-map"
-      className={`relative w-full rounded-xl overflow-hidden border border-slate-700/60 shadow-md flex flex-col ${className}`}
+      className={`isolate relative z-0 w-full rounded-xl overflow-hidden border border-slate-700/60 shadow-md flex flex-col ${className}`}
       style={{ height }}
     >
       <div ref={containerRef} className="w-full flex-1" />
@@ -220,7 +220,7 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
         type="button"
         onClick={handleRecenter}
         title="Recenter map"
-        className="absolute top-3 right-3 z-[400] p-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 rounded-lg border border-slate-700 shadow-md backdrop-blur-sm transition-colors"
+        className="absolute top-3 right-3 z-20 p-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 rounded-lg border border-slate-700 shadow-md backdrop-blur-sm transition-colors"
       >
         <RotateCcw className="w-4 h-4" />
       </button>

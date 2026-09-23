@@ -193,7 +193,7 @@ export const LocationMap: React.FC<LocationMapProps> = ({
   return (
     <div
       data-testid="location-map"
-      className={`relative w-full rounded-xl overflow-hidden border border-slate-700/60 shadow-md ${className}`}
+      className={`isolate relative z-0 w-full rounded-xl overflow-hidden border border-slate-700/60 shadow-md ${className}`}
       style={{ height }}
     >
       <div ref={containerRef} className="w-full h-full" />
