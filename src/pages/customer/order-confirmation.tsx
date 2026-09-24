@@ -61,16 +61,39 @@ export default function OrderConfirmationPage() {
     }
 
     try {
-      const { data, error: fetchErr } = await getOrderById(orderId)
+      let { data, error: fetchErr } = await getOrderById(orderId)
+
+      // Mobile WebView / Transient Auth Loss Recovery:
+      // If order query failed but we have a Paystack transaction reference, run active verification via Edge Function
+      if ((fetchErr || !data) && reference) {
+        setIsVerifying(true)
+        try {
+          const verifyRes = await verifyPaystackPayment({ reference })
+          if (verifyRes.success) {
+            setVerificationNotice('Payment verified via Paystack. Refreshing order details...')
+            const retryRes = await getOrderById(orderId)
+            if (retryRes.data) {
+              data = retryRes.data
+              fetchErr = null
+            }
+          }
+        } catch (vErr) {
+          console.warn('[OrderConfirmation] Active verification fallback failed:', vErr)
+        } finally {
+          setIsVerifying(false)
+        }
+      }
+
       if (fetchErr || !data) {
         setError(
           fetchErr && typeof fetchErr === 'object' && 'message' in fetchErr
             ? String((fetchErr as { message: string }).message)
-            : 'Unable to locate this order. It may not exist or you do not have permission to view it.'
+            : 'Unable to locate this order. It may not exist or your session is re-authenticating.'
         )
       } else {
         const fullOrder = data as FullOrder
         setOrder(fullOrder)
+        setError(null)
         setIsLoading(false)
 
         // Load latest payment record for this order in background (non-blocking)
@@ -117,6 +140,18 @@ export default function OrderConfirmationPage() {
 
   useEffect(() => {
     fetchOrderAndPayment()
+  }, [fetchOrderAndPayment])
+
+  // Automatically refetch when Supabase auth session finishes rehydrating on mobile WebViews
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        fetchOrderAndPayment()
+      }
+    })
+    return () => {
+      authListener.subscription.unsubscribe()
+    }
   }, [fetchOrderAndPayment])
 
   // Realtime subscription + adaptive polling fallback for connectivity resiliency

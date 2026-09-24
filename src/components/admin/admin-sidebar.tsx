@@ -22,6 +22,7 @@ import {
   LogOut,
   Bell,
   Globe,
+  HelpCircle,
   X,
 } from 'lucide-react';
 
@@ -56,6 +57,7 @@ const navSections: { title: string; items: NavItem[] }[] = [
       { label: 'Dispatch Console', href: '/admin/dispatch', icon: Send },
       { label: 'Operational Incidents', href: '/admin/exceptions', icon: AlertTriangle },
       { label: 'Payment & Refunds', href: '/admin/payments', icon: CreditCard },
+      { label: 'Support & Tickets', href: '/admin/support', icon: HelpCircle },
     ],
   },
   {

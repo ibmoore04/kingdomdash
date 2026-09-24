@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { formatNgn } from '@/utils/formatting'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/services/supabase/client'
+import { submitPersonalShopperRequestSecure } from '@/services/supabase/orders'
 import { generateWhatsAppLink } from '@/utils/whatsapp'
 
 interface ShopperItem {
@@ -165,22 +166,21 @@ export default function PersonalShopperPage() {
       const activeMarketObj = POPULAR_MARKETS.find((m) => m.id === selectedMarket)
       const marketTitle = selectedMarket === 'custom' ? (customMarketName || 'Custom Store') : activeMarketObj?.name
 
-      // 1. Submit to Supabase directly (triggers real-time database notification for Admins)
+      // Submit via SECURITY DEFINER RPC to enforce server-side financial calculation and authority
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const rpcRes = await (supabase.rpc as any)('submit_personal_shopper_request', {
-          p_customer_name: customerName,
-          p_customer_phone: customerPhone,
-          p_delivery_address: deliveryAddress,
-          p_market_name: marketTitle,
-          p_budget_cap: budgetCap ? Number(budgetCap) : grandEstimatedTotal + 2000,
-          p_estimated_total: grandEstimatedTotal,
-          p_items: items,
-          p_notes: `Delivery to ${deliveryAddress}`,
+        const rpcRes = await submitPersonalShopperRequestSecure({
+          customerName,
+          customerPhone,
+          deliveryAddress,
+          marketName: marketTitle || 'Custom Store',
+          budgetCap: budgetCap ? Number(budgetCap) : grandEstimatedTotal + 2000,
+          estimatedTotal: grandEstimatedTotal,
+          items,
+          notes: `Delivery to ${deliveryAddress}`,
         })
 
         if (!rpcRes?.error && rpcRes?.data) {
-          const shopperId = rpcRes.data
+          const shopperId = rpcRes.data as string
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const { data: shopperRec } = await (supabase.from as any)('personal_shopper_requests')
             .select('order_id, orders(id, delivery_pin)')
@@ -193,64 +193,25 @@ export default function PersonalShopperPage() {
           } else if (shopperRec?.order_id) {
             resolvedOrderId = shopperRec.order_id
           }
-        }
-
-        if (rpcRes?.error) {
-          console.warn('RPC submit_personal_shopper_request error, falling back to direct table inserts:', rpcRes.error)
-          // Direct fallback table inserts:
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { data: newOrd } = await (supabase.from as any)('orders').insert({
-            service_type: 'custom',
-            status: 'payment_confirmed',
-            pickup_address: marketTitle,
-            delivery_address: deliveryAddress,
-            customer_name: customerName,
-            customer_phone: customerPhone,
-            delivery_contact: customerName,
-            delivery_phone: customerPhone,
-            pickup_contact: 'Market Concierge',
-            pickup_phone: customerPhone,
-            subtotal: grandEstimatedTotal,
-            delivery_fee: 600,
-            total: grandEstimatedTotal + 600,
-            special_instructions: `Delivery to ${deliveryAddress}`,
-          }).select('id, delivery_pin').maybeSingle()
-
-          const newOrderId = newOrd?.id
-          resolvedOrderId = newOrderId || null
-          resolvedPin = newOrd?.delivery_pin || null
-
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase.from as any)('personal_shopper_requests').insert({
-            order_id: newOrderId || null,
-            customer_name: customerName,
-            customer_phone: customerPhone,
-            delivery_address: deliveryAddress,
-            market_name: marketTitle,
-            budget_cap: budgetCap ? Number(budgetCap) : grandEstimatedTotal + 2000,
-            estimated_total: grandEstimatedTotal,
-            items: items,
-            notes: `Delivery to ${deliveryAddress}`,
-            status: 'pending',
+        } else if (rpcRes?.error) {
+          console.error('Failed to submit personal shopper request via server RPC:', rpcRes.error)
+          pushToast({
+            variant: 'error',
+            title: 'Order Submission Failed',
+            message: 'Unable to submit personal shopper request. Please try again or contact support.',
           })
-
-          if (newOrderId) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await (supabase.from as any)('deliveries').insert({
-              order_id: newOrderId,
-              customer_name: customerName,
-              customer_phone: customerPhone,
-              service_type: 'custom',
-              pickup_address: marketTitle,
-              pickup_contact: 'Market Concierge',
-              delivery_address: deliveryAddress,
-              delivery_contact: customerPhone,
-              status: 'pending',
-            })
-          }
+          setIsSubmitting(false)
+          return
         }
       } catch (err) {
-        console.warn('Failed to submit shopper request to Supabase directly:', err)
+        console.error('Failed to submit shopper request:', err)
+        pushToast({
+          variant: 'error',
+          title: 'Submission Error',
+          message: 'An unexpected error occurred while placing your request.',
+        })
+        setIsSubmitting(false)
+        return
       }
 
       if (resolvedOrderId) {

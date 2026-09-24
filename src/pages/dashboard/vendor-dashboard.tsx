@@ -12,6 +12,7 @@ import {
   Bell,
   Settings,
   Globe,
+  HelpCircle,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useCurrentVendor } from '@/hooks/use-current-vendor'
@@ -23,6 +24,7 @@ import { VendorCategoriesTab } from '@/components/vendor/vendor-categories-tab'
 import { VendorProfileTab } from '@/components/vendor/vendor-profile-tab'
 import { VendorSettingsTab } from '@/components/vendor/vendor-settings-tab'
 import { VendorNotificationsTab } from '@/components/vendor/vendor-notifications-tab'
+import { VendorSupportTab } from '@/components/vendor/vendor-support-tab'
 import { ProductFormModal } from '@/components/vendor/product-form-modal'
 import { CategoryFormModal } from '@/components/vendor/category-form-modal'
 import { DeleteConfirmDialog } from '@/components/vendor/delete-confirm-dialog'
@@ -55,7 +57,7 @@ import type {
   VendorUpdate,
 } from '@/types'
 
-type TabType = 'overview' | 'orders' | 'products' | 'categories' | 'profile' | 'notifications' | 'settings'
+type TabType = 'overview' | 'orders' | 'products' | 'categories' | 'profile' | 'notifications' | 'settings' | 'support'
 
 const NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -63,6 +65,7 @@ const NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] 
   { id: 'products', label: 'Products & Menu', icon: UtensilsCrossed },
   { id: 'categories', label: 'Categories', icon: FolderTree },
   { id: 'profile', label: 'Business Profile', icon: Store },
+  { id: 'support', label: 'Merchant Support', icon: HelpCircle },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'settings', label: 'Settings', icon: Settings },
 ]
@@ -71,7 +74,7 @@ const VENDOR_MOBILE_NAV_ITEMS: { id: TabType; label: string; icon: typeof Layout
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'orders', label: 'Orders', icon: ShoppingBag },
   { id: 'products', label: 'Products', icon: UtensilsCrossed },
-  { id: 'profile', label: 'Store', icon: Store },
+  { id: 'support', label: 'Support', icon: HelpCircle },
   { id: 'settings', label: 'Settings', icon: Settings },
 ]
 
@@ -81,6 +84,7 @@ const TAB_DESCRIPTIONS: Record<TabType, string> = {
   products: 'Manage menu items, dish pricing, and stock availability',
   categories: 'Store taxonomy, dish sections, and menu organization',
   profile: 'Business storefront details, brand profile, and contact information',
+  support: 'Submit partner inquiries, track menu/billing issues, and view responses',
   notifications: 'Platform alerts, customer order updates, and system logs',
   settings: 'Store configuration, fulfillment preferences, and security controls',
 }
@@ -618,6 +622,10 @@ export default function VendorDashboardPage() {
                 vendor={vendor}
                 onNavigateToTab={(tab) => setActiveTab(tab)}
               />
+            )}
+
+            {activeTab === 'support' && (
+              <VendorSupportTab />
             )}
 
             {activeTab === 'settings' && (

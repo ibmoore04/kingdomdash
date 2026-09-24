@@ -4,6 +4,8 @@ import 'leaflet/dist/leaflet.css'
 import type { Coordinates } from '@/types'
 import { IJEBU_ODE_CENTER, isValidCoordinates } from '@/utils/geo'
 import { MapFallback } from './map-fallback'
+import { appConfig } from '@/config/app.config'
+import { GoogleMapView } from './google-map-view'
 
 export interface LocationMapProps {
   center?: Coordinates | null
@@ -51,6 +53,7 @@ export const LocationMap: React.FC<LocationMapProps> = ({
   const markerRef = useRef<L.Marker | null>(null)
   const circleRef = useRef<L.Circle | null>(null)
   const [initFailed, setInitFailed] = useState(false)
+  const [useGoogleMaps, setUseGoogleMaps] = useState(Boolean(appConfig.maps.googleMapsApiKey))
 
   const effectiveCenter: Coordinates =
     center && isValidCoordinates(center)
@@ -59,10 +62,25 @@ export const LocationMap: React.FC<LocationMapProps> = ({
       ? marker.coords
       : IJEBU_ODE_CENTER
 
-  useEffect(() => {
-    if (!containerRef.current) return
+  // Attempt Google Maps if key exists
+  if (useGoogleMaps && appConfig.maps.googleMapsApiKey) {
+    return (
+      <GoogleMapView
+        center={effectiveCenter}
+        zoom={zoom}
+        marker={marker}
+        serviceArea={serviceArea}
+        height={height}
+        className={className}
+        onError={() => setUseGoogleMaps(false)}
+      />
+    )
+  }
 
-    // Graceful fallback for headless/jsdom or environments without CSS/layout support
+  useEffect(() => {
+    if (!containerRef.current || useGoogleMaps) return
+
+    // Graceful fallback for Leaflet / Esri
     try {
       if (!mapInstanceRef.current) {
         const map = L.map(containerRef.current, {
@@ -72,7 +90,6 @@ export const LocationMap: React.FC<LocationMapProps> = ({
           attributionControl: false,
         })
 
-        // High-availability Esri World Street Map (100% free, fast CDN, zero API key required)
         const tileLayer = L.tileLayer(
           'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
           {
@@ -81,19 +98,14 @@ export const LocationMap: React.FC<LocationMapProps> = ({
           }
         )
         tileLayer.on('tileerror', () => {
-          // Silently handle tile errors without breaking map interactions
+          // Silently handle tile errors
         })
         tileLayer.addTo(map)
 
         mapInstanceRef.current = map
 
-        // Trigger map invalidateSize after container settles in DOM
-        setTimeout(() => {
-          map.invalidateSize()
-        }, 150)
-        setTimeout(() => {
-          map.invalidateSize()
-        }, 400)
+        setTimeout(() => map.invalidateSize(), 150)
+        setTimeout(() => map.invalidateSize(), 400)
       }
     } catch (err) {
       console.warn('[LocationMap] Failed to initialize Leaflet map instance, using fallback:', err)
@@ -142,9 +154,8 @@ export const LocationMap: React.FC<LocationMapProps> = ({
             radius: radiusMeters,
             color: '#10b981',
             fillColor: '#10b981',
-            fillOpacity: 0.1,
+            fillOpacity: 0.12,
             weight: 2,
-            dashArray: '4, 6',
           }
         ).addTo(map)
       }
@@ -152,25 +163,10 @@ export const LocationMap: React.FC<LocationMapProps> = ({
       circleRef.current.remove()
       circleRef.current = null
     }
-
-    return () => {
-      // In development HMR or unmount, cleanup markers
-    }
-  }, [effectiveCenter.latitude, effectiveCenter.longitude, zoom, marker, serviceArea])
+  }, [effectiveCenter, zoom, marker, serviceArea, useGoogleMaps])
 
   useEffect(() => {
-    const el = containerRef.current
-    if (!el || typeof ResizeObserver === 'undefined') return
-
-    const observer = new ResizeObserver(() => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.invalidateSize()
-      }
-    })
-    observer.observe(el)
-
     return () => {
-      observer.disconnect()
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
@@ -180,23 +176,21 @@ export const LocationMap: React.FC<LocationMapProps> = ({
 
   if (initFailed) {
     return (
-      <div style={{ height }} className={className}>
-        <MapFallback
-          center={effectiveCenter}
-          marker={marker}
-          serviceAreaName={serviceArea?.name}
-        />
-      </div>
+      <MapFallback
+        center={effectiveCenter}
+        marker={marker}
+        className={className}
+      />
     )
   }
 
+  const styleHeight = typeof height === 'number' ? `${height}px` : height
+
   return (
     <div
-      data-testid="location-map"
-      className={`isolate relative z-0 w-full rounded-xl overflow-hidden border border-slate-700/60 shadow-md ${className}`}
-      style={{ height }}
-    >
-      <div ref={containerRef} className="w-full h-full" />
-    </div>
+      ref={containerRef}
+      style={{ height: styleHeight, width: '100%' }}
+      className={`relative rounded-xl overflow-hidden shadow-xs border border-neutral-200 ${className}`}
+    />
   )
 }

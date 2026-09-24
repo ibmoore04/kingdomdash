@@ -256,8 +256,15 @@ export const useCartStore = create<CartState>((set, get) => ({
   addItem: (item, vendor) => {
     const state = get()
 
-    // 1. Single-vendor rule check
-    if (state.vendor && state.items.length > 0 && state.vendor.id !== vendor.id) {
+    // 1. Single-vendor & single service_type rule check
+    if (
+      state.vendor &&
+      state.items.length > 0 &&
+      (state.vendor.id !== vendor.id ||
+        state.vendor.serviceType !== vendor.serviceType ||
+        item.serviceType !== state.vendor.serviceType ||
+        state.items.some((i) => i.serviceType !== item.serviceType))
+    ) {
       return { conflict: true, currentVendorName: state.vendor.name }
     }
 

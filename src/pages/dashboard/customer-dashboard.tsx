@@ -18,6 +18,7 @@ import {
   RefreshCw,
   Globe,
   Gift,
+  HelpCircle,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth-store'
@@ -29,12 +30,13 @@ import { Label } from '@/components/ui/label'
 import { CustomerSettingsTab } from '@/components/customer/customer-settings-tab'
 import { CustomerNotificationsTab } from '@/components/customer/customer-notifications-tab'
 import { CustomerRewardsTab } from '@/components/customer/customer-rewards-tab'
+import { CustomerSupportTab } from '@/components/customer/customer-support-tab'
 import { OrderReviewModal } from '@/components/customer/order-review-modal'
 import { CustomerOrderCard } from '@/components/customer/customer-order-card'
 import { CancelOrderModal } from '@/components/customer/cancel-order-modal'
 import { getOrderReview, fetchCustomerReviews } from '@/services/supabase/reviews'
 
-type CustomerTab = 'orders' | 'addresses' | 'profile' | 'rewards' | 'notifications' | 'settings'
+type CustomerTab = 'orders' | 'addresses' | 'profile' | 'rewards' | 'notifications' | 'settings' | 'support'
 
 interface CustomerOrderSummary {
   id: string
@@ -67,6 +69,7 @@ const NAV_ITEMS: { id: CustomerTab; icon: typeof ShoppingBag; label: string }[] 
   { id: 'addresses', icon: MapPin, label: 'Addresses' },
   { id: 'profile', icon: User, label: 'Profile' },
   { id: 'rewards', icon: Gift, label: 'Rewards' },
+  { id: 'support', icon: HelpCircle, label: 'Support' },
   { id: 'notifications', icon: Bell, label: 'Notifications' },
   { id: 'settings', icon: Settings, label: 'Settings' },
 ]
@@ -77,14 +80,14 @@ export default function CustomerDashboardPage() {
 
   const initialTab = (searchParams.get('tab') as CustomerTab) || 'orders'
   const [activeTab, setActiveTab] = useState<CustomerTab>(
-    ['orders', 'addresses', 'profile', 'rewards', 'notifications', 'settings'].includes(initialTab)
+    ['orders', 'addresses', 'profile', 'rewards', 'notifications', 'settings', 'support'].includes(initialTab)
       ? initialTab
       : 'orders'
   )
 
   useEffect(() => {
     const tabParam = searchParams.get('tab') as CustomerTab
-    if (tabParam && ['orders', 'addresses', 'profile', 'rewards', 'notifications', 'settings'].includes(tabParam)) {
+    if (tabParam && ['orders', 'addresses', 'profile', 'rewards', 'notifications', 'settings', 'support'].includes(tabParam)) {
       setActiveTab(tabParam)
     }
   }, [searchParams])
@@ -826,6 +829,11 @@ export default function CustomerDashboardPage() {
                 userId={profile?.id || 'guest'}
                 userName={profile?.full_name || profile?.email?.split('@')[0]}
               />
+            )}
+
+            {/* Tab: Support & Reference Tracking */}
+            {activeTab === 'support' && (
+              <CustomerSupportTab />
             )}
 
             {/* Tab: Notifications */}

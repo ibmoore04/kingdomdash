@@ -248,7 +248,7 @@ export default function HomePage() {
                       value={addressInput}
                       onChange={(e) => setAddressInput(e.target.value)}
                       placeholder="Enter your delivery address in Ijebu-Ode"
-                      className="w-full bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
+                      className="w-full bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 border-none outline-none"
                     />
                   </div>
                   <Button

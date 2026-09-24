@@ -40,16 +40,29 @@ export function AdminNotificationsTab() {
       const res = await getMyNotifications()
       if (res.data && Array.isArray(res.data) && res.data.length > 0) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mapped: AdminNotificationItem[] = (res.data as any[]).map((row) => ({
-          id: row.id,
-          title: row.title,
-          message: row.message,
-          severity: (row.type === 'error' ? 'critical' : row.type === 'warning' ? 'warning' : 'info'),
-          is_read: Boolean(row.is_read),
-          category: 'system',
-          action_label: 'View',
-          created_at: row.created_at || new Date().toISOString(),
-        }))
+        const mapped: AdminNotificationItem[] = (res.data as any[]).map((row) => {
+          const lowerTitle = (row.title || '').toLowerCase()
+          const lowerMsg = (row.message || '').toLowerCase()
+          const rawUrl = row.action_url || ''
+          const isSupport =
+            lowerTitle.includes('support') ||
+            lowerMsg.includes('support') ||
+            lowerTitle.includes('ticket') ||
+            lowerTitle.includes('kd-sup') ||
+            rawUrl.includes('/admin/support')
+
+          return {
+            id: row.id,
+            title: row.title || 'Platform Notification',
+            message: row.message || '',
+            severity: (row.type === 'error' ? 'critical' : row.type === 'warning' ? 'warning' : 'info'),
+            is_read: Boolean(row.is_read),
+            category: 'system',
+            action_label: isSupport ? 'View Support Ticket' : 'View Details',
+            action_href: rawUrl || (isSupport ? '/admin/support' : '/admin/dashboard'),
+            created_at: row.created_at || new Date().toISOString(),
+          }
+        })
         setNotifications(mapped)
         localStorage.setItem(STORAGE_KEY, JSON.stringify(mapped))
       } else {

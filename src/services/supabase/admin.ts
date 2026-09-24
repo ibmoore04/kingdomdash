@@ -1629,22 +1629,6 @@ export async function getCorporateLeads(params?: {
   const limit = params?.limit || 20
   const statusFilter = params?.status && params.status !== 'all' ? params.status : null
 
-  // 1. Attempt RPC
-  try {
-    const res = await db.rpc('get_corporate_leads', {
-      p_status: statusFilter,
-      p_page: page,
-      p_limit: limit,
-    })
-    if (res.data && !res.error && Array.isArray(res.data)) {
-      const count = res.data.length > 0 ? Number(res.data[0].total_count || res.data.length) : 0
-      return { data: res.data as CorporateLeadRow[], count, error: null }
-    }
-  } catch (rpcErr) {
-    console.warn('[getCorporateLeads] RPC error, falling back to table query:', rpcErr)
-  }
-
-  // 2. Direct table query fallback
   try {
     let query = db.from('corporate_leads').select('*', { count: 'exact' })
     if (statusFilter) {
@@ -1659,9 +1643,8 @@ export async function getCorporateLeads(params?: {
     if (error) {
       return { data: [], count: 0, error: error.message }
     }
-  } catch (tableErr: any) {
-    console.error('[getCorporateLeads] Direct table query error:', tableErr)
-    return { data: [], count: 0, error: tableErr?.message || 'Failed to fetch corporate leads' }
+  } catch (err) {
+    return { data: [], count: 0, error: err instanceof Error ? err.message : 'Error loading corporate leads' }
   }
 
   return { data: [], count: 0, error: null }

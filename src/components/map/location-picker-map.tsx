@@ -10,6 +10,8 @@ import {
 } from '@/utils/geo'
 import { MapPin, RotateCcw } from 'lucide-react'
 import { MapFallback } from './map-fallback'
+import { appConfig } from '@/config/app.config'
+import { GoogleMapView } from './google-map-view'
 
 export interface LocationPickerMapProps {
   value?: Coordinates | null
@@ -24,7 +26,7 @@ export interface LocationPickerMapProps {
   readOnly?: boolean
 }
 
-// Custom SVG Draggable Pin Icon
+// Custom SVG Draggable Pin Icon for Leaflet
 const createPickerIcon = (isServiceable = true) =>
   L.divIcon({
     className: 'kingdomdash-picker-pin',
@@ -56,6 +58,7 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
   const markerRef = useRef<L.Marker | null>(null)
   const circleRef = useRef<L.Circle | null>(null)
   const [initFailed, setInitFailed] = useState(false)
+  const [useGoogleMaps, setUseGoogleMaps] = useState(Boolean(appConfig.maps.googleMapsApiKey))
 
   const activeCoords: Coordinates =
     value && isValidCoordinates(value) ? value : IJEBU_ODE_CENTER
@@ -64,9 +67,51 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
     ? isWithinRadiusKm(activeCoords, serviceArea.center, serviceArea.radiusKm)
     : true
 
-  // Leaflet map lifecycle
+  // Handle location reset to center
+  const handleResetToCenter = () => {
+    const center = serviceArea?.center || IJEBU_ODE_CENTER
+    onChange(center)
+  }
+
+  // Attempt Google Maps if key exists
+  if (useGoogleMaps && appConfig.maps.googleMapsApiKey) {
+    return (
+      <div className="relative">
+        <GoogleMapView
+          center={activeCoords}
+          zoom={15}
+          serviceArea={serviceArea}
+          height={height}
+          className={className}
+          draggableMarker={!readOnly}
+          onMarkerDragEnd={(coords) => {
+            onChange({
+              latitude: Math.round(coords.latitude * 1000000) / 1000000,
+              longitude: Math.round(coords.longitude * 1000000) / 1000000,
+            })
+          }}
+          onMapClick={(coords) => {
+            if (!readOnly) {
+              onChange({
+                latitude: Math.round(coords.latitude * 1000000) / 1000000,
+                longitude: Math.round(coords.longitude * 1000000) / 1000000,
+              })
+            }
+          }}
+          onError={() => setUseGoogleMaps(false)}
+        />
+        {/* Floating status badge */}
+        <div className="absolute top-3 left-3 z-[400] flex items-center gap-2 rounded-lg bg-slate-900/90 px-3 py-1.5 text-xs text-white backdrop-blur-md shadow-md">
+          <MapPin className={`h-3.5 w-3.5 ${isServiceable ? 'text-emerald-400' : 'text-amber-400'}`} />
+          <span>{formatCoordinates(activeCoords)}</span>
+        </div>
+      </div>
+    )
+  }
+
+  // Leaflet map lifecycle fallback
   useEffect(() => {
-    if (!containerRef.current) return
+    if (!containerRef.current || useGoogleMaps) return
 
     try {
       if (!mapInstanceRef.current) {
@@ -77,7 +122,6 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
           attributionControl: false,
         })
 
-        // High-availability Esri World Street Map (100% free, fast CDN, zero API key required)
         const tileLayer = L.tileLayer(
           'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
           {
@@ -86,17 +130,12 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
           }
         )
         tileLayer.on('tileerror', () => {
-          // Silently handle tile errors without breaking map interactions
+          // Silently handle tile errors
         })
         tileLayer.addTo(map)
 
-        // Ensure map layout is properly computed
-        setTimeout(() => {
-          map.invalidateSize()
-        }, 150)
-        setTimeout(() => {
-          map.invalidateSize()
-        }, 400)
+        setTimeout(() => map.invalidateSize(), 150)
+        setTimeout(() => map.invalidateSize(), 400)
 
         // Click on map to place/move pin
         if (!readOnly) {
@@ -159,28 +198,16 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
             radius: radiusMeters,
             color: '#10b981',
             fillColor: '#10b981',
-            fillOpacity: 0.08,
+            fillOpacity: 0.12,
             weight: 2,
-            dashArray: '5, 8',
           }
         ).addTo(map)
       }
     }
-  }, [activeCoords.latitude, activeCoords.longitude, isServiceable, readOnly, serviceArea, onChange])
+  }, [activeCoords, isServiceable, serviceArea, readOnly, onChange, useGoogleMaps])
 
   useEffect(() => {
-    const el = containerRef.current
-    if (!el || typeof ResizeObserver === 'undefined') return
-
-    const observer = new ResizeObserver(() => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.invalidateSize()
-      }
-    })
-    observer.observe(el)
-
     return () => {
-      observer.disconnect()
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
@@ -188,63 +215,60 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
     }
   }, [])
 
-  const handleRecenter = () => {
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.setView([activeCoords.latitude, activeCoords.longitude], 15)
-    }
-  }
-
   if (initFailed) {
     return (
-      <div style={{ height }} className={className}>
-        <MapFallback
-          center={activeCoords}
-          serviceAreaName={serviceArea?.name}
-          isServiceable={isServiceable}
-          message="Tap or click below to verify your delivery location coordinates."
-        />
-      </div>
+      <MapFallback
+        center={activeCoords}
+        className={className}
+      />
     )
   }
 
+  const styleHeight = typeof height === 'number' ? `${height}px` : height
+
   return (
-    <div
-      data-testid="location-picker-map"
-      className={`isolate relative z-0 w-full rounded-xl overflow-hidden border border-slate-700/60 shadow-md flex flex-col ${className}`}
-      style={{ height }}
-    >
-      <div ref={containerRef} className="w-full flex-1" />
+    <div className={`relative ${className}`}>
+      <div
+        ref={containerRef}
+        style={{ height: styleHeight, width: '100%' }}
+        className="relative rounded-xl overflow-hidden shadow-xs border border-neutral-200"
+      />
 
-      {/* Recenter Button */}
-      <button
-        type="button"
-        onClick={handleRecenter}
-        title="Recenter map"
-        className="absolute top-3 right-3 z-20 p-2 bg-slate-900/90 hover:bg-slate-800 text-slate-200 rounded-lg border border-slate-700 shadow-md backdrop-blur-sm transition-colors"
-      >
-        <RotateCcw className="w-4 h-4" />
-      </button>
+      {/* Floating coordinates bar */}
+      <div className="absolute top-3 left-3 z-[400] flex items-center gap-2 rounded-lg bg-slate-900/90 px-3 py-1.5 text-xs text-white backdrop-blur-md shadow-md">
+        <MapPin className={`h-3.5 w-3.5 ${isServiceable ? 'text-emerald-400' : 'text-amber-400'}`} />
+        <span>{formatCoordinates(activeCoords)}</span>
+      </div>
 
-      {/* Interactive Bottom Pin Status Bar */}
-      <div className="bg-slate-900/95 backdrop-blur-sm px-4 py-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-300 select-none">
-        <div className="flex items-center gap-2">
-          <MapPin
-            className={`w-4 h-4 ${isServiceable ? 'text-emerald-400' : 'text-amber-400'}`}
-          />
-          <span className="font-medium text-white">{formatCoordinates(activeCoords)}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span
-            className={`px-2 py-0.5 rounded font-semibold ${
-              isServiceable
-                ? 'bg-emerald-500/20 text-emerald-300'
-                : 'bg-amber-500/20 text-amber-300'
-            }`}
-          >
-            {isServiceable ? 'Inside Delivery Zone' : 'Outside Service Zone'}
+      {/* Service area status pill */}
+      {serviceArea && (
+        <div
+          className={`absolute top-3 right-3 z-[400] flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold backdrop-blur-md shadow-md ${
+            isServiceable
+              ? 'bg-emerald-500/90 text-white'
+              : 'bg-amber-500/90 text-slate-950'
+          }`}
+        >
+          <span>
+            {isServiceable
+              ? 'Within Service Area'
+              : `Outside ${serviceArea.name || 'Service Area'}`}
           </span>
         </div>
-      </div>
+      )}
+
+      {/* Recenter button */}
+      {!readOnly && (
+        <button
+          type="button"
+          onClick={handleResetToCenter}
+          className="absolute bottom-3 right-3 z-[400] flex items-center gap-1.5 rounded-lg bg-white/90 dark:bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 backdrop-blur-md shadow-md hover:bg-white transition-colors"
+          title="Reset pin to market center"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          <span>Recenter</span>
+        </button>
+      )}
     </div>
   )
 }

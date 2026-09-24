@@ -112,6 +112,30 @@ describe('CartStore', () => {
     expect(state.vendor?.id).toBe(mockVendorA.id)
   })
 
+  it('detects conflict when adding product from different service category even if vendor ID matches', () => {
+    useCartStore.getState().addItem(mockItemA1, mockVendorA)
+
+    const mixedCategoryVendor: CartVendor = {
+      ...mockVendorA,
+      serviceType: 'grocery',
+    }
+    const mixedCategoryItem: Omit<CartItem, 'quantity'> = {
+      ...mockItemA1,
+      serviceType: 'grocery',
+      productId: 'prod-grocery-same-vendor',
+    }
+
+    const res = useCartStore.getState().addItem(mixedCategoryItem, mixedCategoryVendor)
+
+    expect(res.conflict).toBe(true)
+    expect(res.currentVendorName).toBe('Tasty Bites')
+
+    // Cart remains untouched
+    const state = useCartStore.getState()
+    expect(state.items).toHaveLength(1)
+    expect(state.items[0].serviceType).toBe('food')
+  })
+
   it('forceAddItem overrides existing cart with new vendor and item', () => {
     useCartStore.getState().addItem(mockItemA1, mockVendorA)
     useCartStore.getState().forceAddItem(mockItemB1, mockVendorB)

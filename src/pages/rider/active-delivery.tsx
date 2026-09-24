@@ -29,6 +29,8 @@ import {
   Inbox,
 } from 'lucide-react'
 
+import { supabase } from '@/services/supabase/client'
+
 export default function RiderActiveDeliveryPage() {
   const navigate = useNavigate()
   const { refreshRider } = useCurrentRider()
@@ -51,6 +53,26 @@ export default function RiderActiveDeliveryPage() {
   useEffect(() => {
     loadActiveDelivery()
 
+    // Real-time Supabase subscription for active delivery status updates with guaranteed teardown
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    if (activeDelivery?.order_id) {
+      channel = supabase
+        .channel(`rider_active_delivery_${activeDelivery.order_id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'deliveries',
+            filter: `order_id=eq.${activeDelivery.order_id}`,
+          },
+          () => {
+            loadActiveDelivery()
+          }
+        )
+        .subscribe()
+    }
+
     // 10-second adaptive poll for vendor readiness status changes
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
@@ -58,8 +80,13 @@ export default function RiderActiveDeliveryPage() {
       }
     }, 10000)
 
-    return () => clearInterval(interval)
-  }, [loadActiveDelivery])
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+      clearInterval(interval)
+    }
+  }, [loadActiveDelivery, activeDelivery?.order_id])
 
   const handlePickup = async (notes?: string) => {
     if (!activeDelivery) return

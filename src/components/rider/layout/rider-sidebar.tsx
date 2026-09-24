@@ -9,6 +9,7 @@ import {
   Globe,
   LogOut,
   Star,
+  HelpCircle,
   Bike,
   ShieldCheck,
 } from 'lucide-react'
@@ -67,6 +68,11 @@ export function RiderSidebar({
       to: '/rider/notifications',
       icon: Bell,
       label: 'Notifications',
+    },
+    {
+      to: '/rider/support',
+      icon: HelpCircle,
+      label: 'Rider Support Desk',
     },
     {
       to: '/rider/settings',

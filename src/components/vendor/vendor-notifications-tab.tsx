@@ -29,13 +29,15 @@ export interface VendorNotificationItem {
   message: string
   type: 'info' | 'success' | 'warning' | 'error'
   is_read: boolean
-  action_tab?: 'orders' | 'products' | 'profile' | 'settings'
+  action_tab?: 'orders' | 'products' | 'profile' | 'settings' | 'support'
+  action_url?: string | null
+  action_label?: string | null
   created_at: string
 }
 
 interface VendorNotificationsTabProps {
   vendor: Vendor
-  onNavigateToTab?: (tab: 'orders' | 'products' | 'profile' | 'settings') => void
+  onNavigateToTab?: (tab: 'orders' | 'products' | 'profile' | 'settings' | 'support') => void
 }
 
 export function VendorNotificationsTab({
@@ -52,15 +54,22 @@ export function VendorNotificationsTab({
       const res = await getMyNotifications()
       if (res.data && Array.isArray(res.data)) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mapped: VendorNotificationItem[] = (res.data as any[]).map((row) => ({
-          id: row.id,
-          title: row.title,
-          message: row.message,
-          type: (row.type as VendorNotificationItem['type']) || 'info',
-          is_read: Boolean(row.is_read),
-          action_tab: 'orders',
-          created_at: row.created_at || new Date().toISOString(),
-        }))
+        const mapped: VendorNotificationItem[] = (res.data as any[]).map((row) => {
+          const rawUrl = row.action_url || ''
+          const lowerTitle = (row.title || '').toLowerCase()
+          const isSupport = rawUrl.includes('support') || lowerTitle.includes('support')
+          return {
+            id: row.id,
+            title: row.title,
+            message: row.message,
+            type: (row.type as VendorNotificationItem['type']) || 'info',
+            is_read: Boolean(row.is_read),
+            action_tab: isSupport ? 'support' : 'orders',
+            action_url: rawUrl || null,
+            action_label: isSupport ? 'View Support Ticket' : undefined,
+            created_at: row.created_at || new Date().toISOString(),
+          }
+        })
         setNotifications(mapped)
       } else {
         setNotifications([])
@@ -344,7 +353,16 @@ export function VendorNotificationsTab({
                     {notif.message}
                   </p>
 
-                  {notif.action_tab && onNavigateToTab && (
+                  {notif.action_url ? (
+                    <div className="mt-3">
+                      <Button asChild variant="outline" size="sm" className="h-8 gap-1.5 bg-white text-caption">
+                        <a href={notif.action_url}>
+                          {notif.action_label || 'View Details'}
+                          <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                        </a>
+                      </Button>
+                    </div>
+                  ) : notif.action_tab && onNavigateToTab ? (
                     <div className="mt-3">
                       <Button
                         type="button"
@@ -353,11 +371,11 @@ export function VendorNotificationsTab({
                         onClick={() => onNavigateToTab(notif.action_tab!)}
                         className="h-8 gap-1.5 bg-white text-caption"
                       >
-                        View {notif.action_tab === 'orders' ? 'Orders' : 'Catalog'}
+                        {notif.action_label || `View ${notif.action_tab === 'orders' ? 'Orders' : notif.action_tab === 'support' ? 'Support' : 'Catalog'}`}
                         <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                       </Button>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </div>

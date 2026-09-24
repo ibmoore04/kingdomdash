@@ -48,29 +48,45 @@ export const AdminNotificationsPage: React.FC = () => {
 
     // Helper: normalise a raw local cache entry into AdminNotificationItem shape
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const normaliseLocal = (n: any): AdminNotificationItem => ({
-      id: n.id,
-      title: n.title || 'Notification',
-      message: n.message || '',
-      severity: (n.severity || 'info') as AdminNotificationItem['severity'],
-      is_read: Boolean(n.read ?? n.is_read),
-      category: (
-        n.type === 'corporate_lead' ? 'application'
-        : n.type === 'personal_shopper_request' ? 'order'
-        : n.category || 'system'
-      ) as AdminNotificationItem['category'],
-      action_href: n.action_href || (
-        n.type === 'corporate_lead' ? '/admin/users'
-        : n.type === 'personal_shopper_request' ? '/admin/orders'
-        : '/admin/dashboard'
-      ),
-      action_label: n.action_label || (
-        n.type === 'corporate_lead' ? 'View Leads'
-        : n.type === 'personal_shopper_request' ? 'View Orders'
-        : 'View Dashboard'
-      ),
-      created_at: n.createdAt || n.created_at || new Date().toISOString(),
-    });
+    const normaliseLocal = (n: any): AdminNotificationItem => {
+      const lowerTitle = String(n.title || '').toLowerCase();
+      const lowerMsg = String(n.message || '').toLowerCase();
+      const href = n.action_href || n.action_url || '';
+      const isSupport =
+        lowerTitle.includes('support') ||
+        lowerMsg.includes('support') ||
+        lowerTitle.includes('ticket') ||
+        lowerTitle.includes('kd-sup') ||
+        href.includes('/admin/support');
+
+      return {
+        id: n.id,
+        title: n.title || 'Notification',
+        message: n.message || '',
+        severity: (n.severity || 'info') as AdminNotificationItem['severity'],
+        is_read: Boolean(n.read ?? n.is_read),
+        category: (
+          isSupport ? 'system'
+          : n.type === 'corporate_lead' ? 'application'
+          : n.type === 'personal_shopper_request' ? 'order'
+          : n.category || 'system'
+        ) as AdminNotificationItem['category'],
+        action_href: href || (
+          isSupport ? '/admin/support'
+          : n.type === 'corporate_lead' ? '/admin/users'
+          : n.type === 'personal_shopper_request' ? '/admin/orders'
+          : '/admin/dashboard'
+        ),
+        action_label:
+          isSupport ? 'View Support Ticket'
+          : n.action_label || (
+            n.type === 'corporate_lead' ? 'View Leads'
+            : n.type === 'personal_shopper_request' ? 'View Orders'
+            : 'View Dashboard'
+          ),
+        created_at: n.createdAt || n.created_at || new Date().toISOString(),
+      };
+    };
 
     const readLocalCache = (): AdminNotificationItem[] => {
       const cached = localStorage.getItem(STORAGE_KEY);
@@ -85,34 +101,45 @@ export const AdminNotificationsPage: React.FC = () => {
         const mapped: AdminNotificationItem[] = (res.data as any[]).map((row) => {
           const lowerTitle = (row.title || '').toLowerCase();
           const lowerMsg = (row.message || '').toLowerCase();
+          const rawUrl = row.action_url || '';
 
           let category: AdminNotificationItem['category'] = 'system';
-          let actionHref = '/admin/dashboard';
+          let actionHref = rawUrl || '/admin/dashboard';
           let actionLabel = 'View Dashboard';
 
-          if (lowerTitle.includes('corporate') || lowerMsg.includes('corporate')) {
+          if (
+            lowerTitle.includes('support') ||
+            lowerMsg.includes('support') ||
+            lowerTitle.includes('ticket') ||
+            lowerTitle.includes('kd-sup') ||
+            rawUrl.includes('/admin/support')
+          ) {
+            category = 'system';
+            actionHref = rawUrl || '/admin/support';
+            actionLabel = 'View Support Ticket';
+          } else if (lowerTitle.includes('corporate') || lowerMsg.includes('corporate')) {
             category = 'application';
-            actionHref = row.action_url || '/admin/users?tab=corporate';
+            actionHref = rawUrl || '/admin/users?tab=corporate';
             actionLabel = 'View Corporate Leads';
           } else if (lowerTitle.includes('shopper') || lowerMsg.includes('market run')) {
             category = 'order';
-            actionHref = row.action_url || '/admin/orders?type=shopper';
+            actionHref = rawUrl || '/admin/orders?type=shopper';
             actionLabel = 'View Shopper Request';
           } else if (lowerTitle.includes('rider') || lowerMsg.includes('rider app')) {
             category = 'application';
-            actionHref = row.action_url || '/admin/rider-applications';
+            actionHref = rawUrl || '/admin/rider-applications';
             actionLabel = 'Review Application';
           } else if (lowerTitle.includes('vendor') || lowerMsg.includes('vendor app')) {
             category = 'application';
-            actionHref = row.action_url || '/admin/vendor-applications';
+            actionHref = rawUrl || '/admin/vendor-applications';
             actionLabel = 'Review Application';
           } else if (lowerTitle.includes('dispatch') || lowerMsg.includes('delivery')) {
             category = 'dispatch';
-            actionHref = row.action_url || '/admin/dispatch';
+            actionHref = rawUrl || '/admin/dispatch';
             actionLabel = 'Open Dispatch';
           } else if (lowerTitle.includes('order') || lowerMsg.includes('refund')) {
             category = 'order';
-            actionHref = row.action_url || '/admin/orders';
+            actionHref = rawUrl || '/admin/orders';
             actionLabel = 'View Orders';
           }
 

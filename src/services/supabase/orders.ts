@@ -168,4 +168,33 @@ export async function cancelOrderCustomer(orderId: string, reason: string) {
   return { data, error }
 }
 
+export interface SubmitPersonalShopperParams {
+  customerName: string
+  customerPhone: string
+  deliveryAddress: string
+  marketName: string
+  budgetCap?: number
+  estimatedTotal?: number
+  items: unknown[]
+  notes?: string
+}
+
+/**
+ * Places a Personal Shopper market concierge request via `submit_personal_shopper_request` RPC.
+ * Enforces 100% server-side financial authority and creates orders atomically.
+ */
+export async function submitPersonalShopperRequestSecure(params: SubmitPersonalShopperParams) {
+  return db.rpc('submit_personal_shopper_request', {
+    p_customer_name: params.customerName,
+    p_customer_phone: params.customerPhone,
+    p_delivery_address: params.deliveryAddress,
+    p_market_name: params.marketName,
+    p_budget_cap: params.budgetCap ?? null,
+    p_estimated_total: params.estimatedTotal ?? null,
+    p_items: params.items ?? [],
+    p_notes: params.notes ?? null,
+  }) as Promise<{ data: unknown; error: unknown }>
+}
+
+
 

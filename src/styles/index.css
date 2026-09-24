@@ -246,14 +246,24 @@
     }
   }
 
-  /* Native button/input focus styles for elements not using component classes */
+  /* Native button focus styles for elements not using component classes */
   button:not([class*="no-transition"]):not(
       [class*="btn-transition"]
-    ):focus-visible,
-  input:not([class*="no-transition"]):focus-visible,
-  textarea:not([class*="no-transition"]):focus-visible,
-  select:not([class*="no-transition"]):focus-visible {
+    ):focus-visible {
     @apply outline-none ring-2 ring-primary ring-offset-2;
+  }
+
+  /* Input, textarea & select focus reset — prevent double focus rings */
+  input:focus,
+  input:focus-visible,
+  textarea:focus,
+  textarea:focus-visible,
+  select:focus,
+  select:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+    --tw-ring-color: transparent !important;
   }
 
   /* Ensure all interactive elements respect motion preferences */

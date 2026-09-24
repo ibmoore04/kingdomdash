@@ -343,7 +343,7 @@ export default function RiderNotificationsPage() {
                       <div className="mt-3">
                         <Button asChild variant="outline" size="sm" className="h-8 gap-1.5 bg-white text-caption">
                           <Link to={notif.action_url}>
-                            View Details
+                            {notif.action_url.includes('support') || notif.title.toLowerCase().includes('support') ? 'View Support Ticket' : 'View Details'}
                             <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                           </Link>
                         </Button>

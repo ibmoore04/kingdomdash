@@ -76,6 +76,7 @@ const AdminCatalogPage = lazy(() => import('@/pages/admin/admin-catalog-page'))
 const AdminPricingPage = lazy(() => import('@/pages/admin/admin-pricing-page'))
 const AdminServiceAreasPage = lazy(() => import('@/pages/admin/admin-service-areas-page'))
 const AdminAuditLogsPage = lazy(() => import('@/pages/admin/admin-audit-logs-page'))
+const AdminSupportPage = lazy(() => import('@/pages/admin/admin-support-page'))
 
 // ── Rider Platform pages (Phase 11) ──────────────────────────────────────────
 const RiderDashboardPage = lazy(() => import('@/pages/rider/dashboard'))
@@ -85,6 +86,7 @@ const RiderHistoryPage = lazy(() => import('@/pages/rider/history'))
 const RiderProfilePage = lazy(() => import('@/pages/rider/profile'))
 const RiderSettingsPage = lazy(() => import('@/pages/rider/settings'))
 const RiderNotificationsPage = lazy(() => import('@/pages/rider/notifications'))
+const RiderSupportPage = lazy(() => import('@/pages/rider/support'))
 
 // ── Ordering & Cart pages (Phase 6) ──────────────────────────────────────────
 const CartPage = lazy(() => import('@/pages/public/cart'))
@@ -96,18 +98,20 @@ const RiderPendingPage = lazy(() => import('@/pages/customer/rider-pending-page'
 const VendorPendingPage = lazy(() => import('@/pages/customer/vendor-pending-page'))
 
 // ── Loading fallback ──────────────────────────────────────────────────────────
+import { OfflineBanner } from '@/components/shared/offline-banner'
+import { Preloader } from '@/components/shared/preloader'
+import { RouteProgressBar } from '@/components/shared/route-progress'
+
 function PageLoader() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">Loading…</p>
-    </div>
-  )
+  return <Preloader fullScreen message="Loading page..." />
 }
 
 export default function App() {
   return (
     <>
+      <RouteProgressBar />
       <ScrollToTop />
+      <OfflineBanner />
       <Suspense fallback={<PageLoader />}>
         <Routes>
         {/* ── Direct auth aliases (preserving query parameters) ─────────────── */}
@@ -136,6 +140,7 @@ export default function App() {
           <Route path="/dashboard/profile" element={<Navigate to="/dashboard?tab=profile" replace />} />
           <Route path="/dashboard/rewards" element={<Navigate to="/dashboard?tab=rewards" replace />} />
           <Route path="/dashboard/notifications" element={<Navigate to="/dashboard?tab=notifications" replace />} />
+          <Route path="/dashboard/support" element={<Navigate to="/dashboard?tab=support" replace />} />
           <Route path="/dashboard/settings" element={<Navigate to="/dashboard?tab=settings" replace />} />
           {/* Catch-all for any other /dashboard/* paths → default to orders tab */}
           <Route path="/dashboard/*" element={<Navigate to="/dashboard?tab=orders" replace />} />
@@ -163,6 +168,7 @@ export default function App() {
           <Route path="/rider/profile" element={<RiderProfilePage />} />
           <Route path="/rider/settings" element={<RiderSettingsPage />} />
           <Route path="/rider/notifications" element={<RiderNotificationsPage />} />
+          <Route path="/rider/support" element={<RiderSupportPage />} />
           <Route path="/rider/*" element={<Navigate to="/rider/dashboard" replace />} />
         </Route>
         <Route element={<RouteGuard allowedRoles={['admin', 'super_admin']} />}>
@@ -183,6 +189,8 @@ export default function App() {
             <Route path="catalog" element={<AdminCatalogPage />} />
             <Route path="pricing" element={<AdminPricingPage />} />
             <Route path="service-areas" element={<AdminServiceAreasPage />} />
+            <Route path="/admin/support" element={<AdminSupportPage />} />
+            <Route path="support" element={<AdminSupportPage />} />
             <Route path="audit-logs" element={<AdminAuditLogsPage />} />
             <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
           </Route>
