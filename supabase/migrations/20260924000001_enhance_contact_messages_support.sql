@@ -26,9 +26,8 @@ DROP POLICY IF EXISTS "contact_messages_select_own_or_ref" ON public.contact_mes
 CREATE POLICY "contact_messages_select_own_or_ref" ON public.contact_messages
   FOR SELECT TO authenticated, anon
   USING (
-    LOWER(email) = LOWER(auth.jwt()->>'email')
-    OR user_id = auth.uid()
-    OR reference_code IS NOT NULL
+    user_id = auth.uid()
+    OR (auth.jwt()->>'email' IS NOT NULL AND LOWER(email) = LOWER(auth.jwt()->>'email'))
   );
 
 DROP POLICY IF EXISTS "contact_messages_select_admin" ON public.contact_messages;
@@ -316,3 +315,32 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.submit_support_ticket(text, text, text, text, text) TO anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.update_support_ticket_status(text, text, text) TO authenticated, service_role;
+
+-- 7. RPC for secure exact reference code lookup without broad SELECT RLS exposure
+CREATE OR REPLACE FUNCTION public.get_support_ticket_by_ref(p_ref_code text)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_catalog
+AS $$
+DECLARE
+  v_rec public.contact_messages%ROWTYPE;
+BEGIN
+  IF p_ref_code IS NULL OR TRIM(p_ref_code) = '' THEN
+    RETURN NULL;
+  END IF;
+
+  SELECT * INTO v_rec
+  FROM public.contact_messages
+  WHERE reference_code = TRIM(p_ref_code) OR id::text = TRIM(p_ref_code)
+  LIMIT 1;
+
+  IF NOT FOUND THEN
+    RETURN NULL;
+  END IF;
+
+  RETURN to_jsonb(v_rec);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_support_ticket_by_ref(text) TO anon, authenticated, service_role;

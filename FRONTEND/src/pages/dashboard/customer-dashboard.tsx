@@ -16,11 +16,13 @@ import {
   CheckCircle,
   AlertCircle,
   RefreshCw,
-  CreditCard,
-  Utensils,
   Globe,
-  Star,
   Gift,
+  HelpCircle,
+  Building2,
+  MoreHorizontal,
+  X,
+  ChevronRight,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth-store'
@@ -32,11 +34,14 @@ import { Label } from '@/components/ui/label'
 import { CustomerSettingsTab } from '@/components/customer/customer-settings-tab'
 import { CustomerNotificationsTab } from '@/components/customer/customer-notifications-tab'
 import { CustomerRewardsTab } from '@/components/customer/customer-rewards-tab'
+import { CustomerSupportTab } from '@/components/customer/customer-support-tab'
+import { CustomerCorporateTab } from '@/components/customer/customer-corporate-tab'
 import { OrderReviewModal } from '@/components/customer/order-review-modal'
-import { getOrderReview } from '@/services/supabase/reviews'
-import { formatNgn } from '@/utils/formatting'
+import { CustomerOrderCard } from '@/components/customer/customer-order-card'
+import { CancelOrderModal } from '@/components/customer/cancel-order-modal'
+import { getOrderReview, fetchCustomerReviews } from '@/services/supabase/reviews'
 
-type CustomerTab = 'orders' | 'addresses' | 'profile' | 'rewards' | 'notifications' | 'settings'
+type CustomerTab = 'orders' | 'corporate' | 'addresses' | 'profile' | 'rewards' | 'notifications' | 'settings' | 'support'
 
 interface CustomerOrderSummary {
   id: string
@@ -47,6 +52,7 @@ interface CustomerOrderSummary {
   subtotal: number
   delivery_fee: number
   total: number
+  delivery_pin?: string | null
   pickup_address?: string
   delivery_address?: string
   created_at: string
@@ -63,38 +69,115 @@ interface CustomerOrderSummary {
   }>
 }
 
-const NAV_ITEMS: { id: CustomerTab; icon: typeof ShoppingBag; label: string }[] = [
+const PRIMARY_NAV_ITEMS: { id: CustomerTab; icon: typeof ShoppingBag; label: string }[] = [
   { id: 'orders', icon: ShoppingBag, label: 'Orders' },
+  { id: 'corporate', icon: Building2, label: 'Corporate' },
   { id: 'addresses', icon: MapPin, label: 'Addresses' },
   { id: 'profile', icon: User, label: 'Profile' },
-  { id: 'rewards', icon: Gift, label: 'Rewards' },
-  { id: 'notifications', icon: Bell, label: 'Notifications' },
-  { id: 'settings', icon: Settings, label: 'Settings' },
 ]
 
+const SECONDARY_NAV_ITEMS: { id: CustomerTab; icon: typeof Gift; label: string; description: string }[] = [
+  { id: 'rewards', icon: Gift, label: 'Rewards', description: 'Loyalty points & referral bonuses' },
+  { id: 'notifications', icon: Bell, label: 'Notifications', description: 'Order updates and system alerts' },
+  { id: 'support', icon: HelpCircle, label: 'Support', description: 'Help desk & ticket assistance' },
+  { id: 'settings', icon: Settings, label: 'Settings', description: 'Preferences & account security' },
+]
+
+const NAV_ITEMS: { id: CustomerTab; icon: typeof ShoppingBag; label: string }[] = [
+  ...PRIMARY_NAV_ITEMS,
+  ...SECONDARY_NAV_ITEMS.map((item) => ({ id: item.id, icon: item.icon as typeof ShoppingBag, label: item.label })),
+]
+
+const VALID_CUSTOMER_TABS: CustomerTab[] = [
+  'orders',
+  'corporate',
+  'addresses',
+  'profile',
+  'rewards',
+  'notifications',
+  'settings',
+  'support',
+]
+
+const CUSTOMER_TAB_STORAGE_KEY = 'kingdomdash_customer_active_tab'
+
+function getInitialCustomerTab(searchParams: URLSearchParams): CustomerTab {
+  const paramTab = searchParams.get('tab') as CustomerTab
+  if (paramTab && VALID_CUSTOMER_TABS.includes(paramTab)) {
+    return paramTab
+  }
+  try {
+    const saved = localStorage.getItem(CUSTOMER_TAB_STORAGE_KEY) as CustomerTab
+    if (saved && VALID_CUSTOMER_TABS.includes(saved)) {
+      return saved
+    }
+  } catch {
+    // Ignore storage issues in restricted environments
+  }
+  return 'orders'
+}
+
 export default function CustomerDashboardPage() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { profile, signOut } = useAuthStore()
 
-  const initialTab = (searchParams.get('tab') as CustomerTab) || 'orders'
-  const [activeTab, setActiveTab] = useState<CustomerTab>(
-    ['orders', 'addresses', 'profile', 'rewards', 'notifications', 'settings'].includes(initialTab)
-      ? initialTab
-      : 'orders'
-  )
+  const [activeTab, setActiveTab] = useState<CustomerTab>(() => getInitialCustomerTab(searchParams))
 
+  // Mobile More Sheet State
+  const [isMoreOpen, setIsMoreOpen] = useState(false)
+  const isMoreActive = ['rewards', 'notifications', 'support', 'settings'].includes(activeTab)
+
+  // Close sheet on escape
+  useEffect(() => {
+    if (!isMoreOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMoreOpen(false)
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isMoreOpen])
+
+  // Sync activeTab with URL searchParams and localStorage
   useEffect(() => {
     const tabParam = searchParams.get('tab') as CustomerTab
-    if (tabParam && ['orders', 'addresses', 'profile', 'rewards', 'notifications', 'settings'].includes(tabParam)) {
+    if (tabParam && VALID_CUSTOMER_TABS.includes(tabParam)) {
       setActiveTab(tabParam)
+      try {
+        localStorage.setItem(CUSTOMER_TAB_STORAGE_KEY, tabParam)
+      } catch {
+        // Ignore
+      }
+    } else {
+      // If URL does not specify a tab, reflect the active or saved tab into the URL
+      try {
+        const saved = localStorage.getItem(CUSTOMER_TAB_STORAGE_KEY) as CustomerTab
+        const targetTab = saved && VALID_CUSTOMER_TABS.includes(saved) ? saved : 'orders'
+        if (targetTab !== 'orders') {
+          setActiveTab(targetTab)
+        }
+        setSearchParams(
+          (prev) => {
+            const next = new URLSearchParams(prev)
+            if (next.get('tab') !== targetTab) {
+              next.set('tab', targetTab)
+            }
+            return next
+          },
+          { replace: true }
+        )
+      } catch {
+        // Ignore
+      }
     }
-  }, [searchParams])
+  }, [searchParams, setSearchParams])
 
   // Orders management state
   const [orders, setOrders] = useState<CustomerOrderSummary[]>([])
   const [isLoadingOrders, setIsLoadingOrders] = useState(false)
   const [ordersError, setOrdersError] = useState<string | null>(null)
   const [orderFilter, setOrderFilter] = useState<'all' | 'pending' | 'active' | 'completed'>('all')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [cancellingOrder, setCancellingOrder] = useState<any | null>(null)
 
   const loadCustomerOrders = useCallback(async () => {
     if (!profile?.id) return
@@ -124,6 +207,12 @@ export default function CustomerDashboardPage() {
               total,
               pickup_address,
               delivery_address,
+              delivery_pin,
+              cancellation_reason,
+              refund_required,
+              refund_status,
+              delivery_contact,
+              delivery_phone,
               created_at,
               vendors ( id, business_name ),
               order_items ( id, product_name, quantity, unit_price, line_total )
@@ -137,13 +226,11 @@ export default function CustomerDashboardPage() {
           if (!res?.error && res?.data) {
             return res.data
           }
-          // If join query returned an error, fallback to direct query
           console.warn('[CustomerDashboard] Complex order join failed, falling back to direct table select:', res?.error)
         } catch (innerErr) {
           console.warn('[CustomerDashboard] Join query exception, trying fallback:', innerErr)
         }
 
-        // Direct fallback query without joins
         const fallbackRes = await db
           .from('orders')
           .select('*')
@@ -156,6 +243,12 @@ export default function CustomerDashboardPage() {
 
       const data = await Promise.race([fetchOrders(), timeoutPromise])
       setOrders((data as unknown as CustomerOrderSummary[]) || [])
+
+      if (profile?.id) {
+        void fetchCustomerReviews(profile.id).then(() => {
+          setReviewsVersion((v) => v + 1)
+        })
+      }
     } catch (err) {
       console.error('[CustomerDashboard] Failed to load orders:', err)
       setOrdersError(err instanceof Error ? err.message : 'Unable to load orders')
@@ -194,95 +287,6 @@ export default function CustomerDashboardPage() {
     return true
   })
 
-  const renderOrderStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-      case 'placed':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-amber-50 text-amber-700 border border-amber-200">
-            <Clock className="w-3 h-3 animate-pulse" />
-            Awaiting Payment
-          </span>
-        )
-      case 'payment_confirmed':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <CheckCircle className="w-3 h-3" />
-            Payment Confirmed
-          </span>
-        )
-      case 'preparing':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">
-            <Store className="w-3 h-3" />
-            Preparing
-          </span>
-        )
-      case 'ready':
-      case 'ready_for_pickup':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-purple-50 text-purple-700 border border-purple-200">
-            <PackageCheck className="w-3 h-3" />
-            Ready for Pickup
-          </span>
-        )
-      case 'in_transit':
-      case 'delivering':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-indigo-50 text-indigo-700 border border-indigo-200">
-            <Bike className="w-3 h-3" />
-            Out for Delivery
-          </span>
-        )
-      case 'delivered':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <CheckCircle className="w-3 h-3" />
-            Delivered
-          </span>
-        )
-      case 'cancelled':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-rose-50 text-rose-700 border border-rose-200">
-            <AlertCircle className="w-3 h-3" />
-            Cancelled
-          </span>
-        )
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-gray-50 text-gray-700 border border-gray-200">
-            {status}
-          </span>
-        )
-    }
-  }
-
-  const renderServiceBadge = (serviceType: string) => {
-    const s = (serviceType || '').toLowerCase()
-    if (s === 'food') {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
-          <Utensils className="w-2.5 h-2.5" />
-          Food
-        </span>
-      )
-    }
-    if (s === 'grocery') {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-          <ShoppingBag className="w-2.5 h-2.5" />
-          Grocery
-        </span>
-      )
-    }
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-        <Bike className="w-2.5 h-2.5" />
-        Courier
-      </span>
-    )
-  }
-
   // Profile editable state
   const [reviewingOrder, setReviewingOrder] = useState<CustomerOrderSummary | null>(null)
   const [reviewsVersion, setReviewsVersion] = useState(0)
@@ -311,7 +315,6 @@ export default function CustomerDashboardPage() {
     async function checkPendingApplications() {
       if (!profile) return
       try {
-        // Scaffold compatibility: cast untyped supabase
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const db = supabase as any
         const [riderRes, vendorRes] = await Promise.all([
@@ -388,13 +391,31 @@ export default function CustomerDashboardPage() {
     }
   }
 
-  const handleSelectTab = (id: CustomerTab) => {
-    setActiveTab(id)
-  }
+  const handleSelectTab = useCallback(
+    (id: CustomerTab) => {
+      setActiveTab(id)
+      setIsMoreOpen(false)
+      try {
+        localStorage.setItem(CUSTOMER_TAB_STORAGE_KEY, id)
+      } catch {
+        // Ignore
+      }
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          if (next.get('tab') !== id) {
+            next.set('tab', id)
+          }
+          return next
+        },
+        { replace: true }
+      )
+    },
+    [setSearchParams]
+  )
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-page-background">
-      {/* Header */}
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-white px-4 sm:px-6 z-20">
         <div className="flex items-center gap-3 min-w-0">
           <Link to="/" className="flex items-center gap-2.5 overflow-hidden group">
@@ -466,7 +487,6 @@ export default function CustomerDashboardPage() {
         </div>
       </header>
 
-      {/* Desktop Horizontal Tab Bar */}
       <nav aria-label="Customer dashboard tabs" className="hidden lg:flex items-center gap-1 border-b border-border bg-white px-6 py-2 shrink-0 z-10">
         {NAV_ITEMS.map(({ id, icon: Icon, label }) => {
           const isActive = activeTab === id
@@ -497,10 +517,8 @@ export default function CustomerDashboardPage() {
         })}
       </nav>
 
-      {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden min-h-0">
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 space-y-6">
-          {/* Pending Application Banner */}
           {pendingApplication && (
             <div className="mx-auto max-w-4xl rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-sm">
               <div className="flex items-start gap-4">
@@ -548,7 +566,6 @@ export default function CustomerDashboardPage() {
           )}
 
           <div className="mx-auto max-w-4xl">
-            {/* Tab: Orders */}
             {activeTab === 'orders' && (
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -583,7 +600,6 @@ export default function CustomerDashboardPage() {
                   </div>
                 </div>
 
-                {/* Filter Tabs — responsive edge-to-edge scroll on mobile with shrink-0 pills */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-0.5 border-b border-border -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
                   {[
                     { id: 'all', label: 'All Orders', count: orders.length },
@@ -632,7 +648,6 @@ export default function CustomerDashboardPage() {
                   ))}
                 </div>
 
-                {/* Loading state */}
                 {isLoadingOrders && orders.length === 0 && (
                   <div className="py-16 text-center text-text-muted bg-white rounded-2xl border border-border">
                     <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-3" />
@@ -641,7 +656,6 @@ export default function CustomerDashboardPage() {
                   </div>
                 )}
 
-                {/* Error state */}
                 {ordersError && (
                   <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -654,7 +668,6 @@ export default function CustomerDashboardPage() {
                   </div>
                 )}
 
-                {/* Empty State */}
                 {!isLoadingOrders && filteredOrders.length === 0 && (
                   <div className="rounded-2xl border border-border bg-white p-8 text-center shadow-xs">
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-muted text-text-muted mb-4">
@@ -683,165 +696,24 @@ export default function CustomerDashboardPage() {
                   </div>
                 )}
 
-                {/* Orders List */}
                 {!isLoadingOrders && filteredOrders.length > 0 && (
                   <div className="space-y-4">
                     {filteredOrders.map((order) => {
-                      const isPending = order.status === 'pending' || order.status === 'placed'
+                      void reviewsVersion
+                      const existingReview = getOrderReview(order.id)
                       return (
-                        <div
+                        <CustomerOrderCard
                           key={order.id}
-                          className={`rounded-2xl border bg-white overflow-hidden shadow-xs transition-all hover:shadow-md ${
-                            isPending
-                              ? 'border-amber-300 ring-1 ring-amber-200/60'
-                              : 'border-border'
-                          }`}
-                        >
-                          {/* Card Top Bar */}
-                          <div className="p-4 sm:p-5 border-b border-border/80 bg-page-background/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <div className="flex flex-wrap items-center gap-2">
-                              {renderServiceBadge(order.service_type)}
-                              <span className="font-mono text-xs font-semibold text-text-muted">
-                                #{order.id.slice(0, 8).toUpperCase()}
-                              </span>
-                              <span className="text-text-muted text-xs">•</span>
-                              <span className="text-xs text-text-secondary">
-                                {new Date(order.created_at).toLocaleDateString('en-NG', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </span>
-                            </div>
-                            <div>{renderOrderStatusBadge(order.status)}</div>
-                          </div>
-
-                          {/* Card Body */}
-                          <div className="p-4 sm:p-5 space-y-4">
-                            {/* Merchant / Destination */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                              <div>
-                                <span className="text-text-muted block text-[11px] uppercase tracking-wider">Merchant / Service</span>
-                                <span className="font-bold text-text-primary text-sm">
-                                  {order.vendors?.business_name || (order.service_type === 'courier' ? 'Direct Courier Dispatch' : 'KingdomDash Merchant')}
-                                </span>
-                              </div>
-                              <div className="sm:text-right">
-                                <span className="text-text-muted block text-[11px] uppercase tracking-wider">Delivery Destination</span>
-                                <span className="text-text-secondary font-medium truncate max-w-xs block">
-                                  {order.delivery_address}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Items list */}
-                            {order.order_items && order.order_items.length > 0 && (
-                              <div className="rounded-xl bg-surface-muted/50 p-3 space-y-1.5 border border-border/60">
-                                <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">
-                                  Items ({order.order_items.length})
-                                </span>
-                                <ul className="divide-y divide-border/40 text-xs">
-                                  {order.order_items.slice(0, 3).map((item) => (
-                                    <li key={item.id} className="py-1.5 flex items-center justify-between">
-                                      <span className="text-text-primary">
-                                        <span className="font-semibold">{item.quantity}×</span> {item.product_name}
-                                      </span>
-                                      <span className="font-mono font-medium text-text-secondary">
-                                        {formatNgn(item.line_total || item.unit_price * item.quantity)}
-                                      </span>
-                                    </li>
-                                  ))}
-                                  {order.order_items.length > 3 && (
-                                    <li className="pt-1.5 text-[11px] text-text-muted italic">
-                                      +{order.order_items.length - 3} more items...
-                                    </li>
-                                  )}
-                                </ul>
-                              </div>
-                            )}
-
-                            {/* Financials & Action Row */}
-                            <div className="pt-2 border-t border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                              <div className="flex items-baseline gap-2">
-                                <span className="text-xs text-text-muted">Total Amount:</span>
-                                <span className="text-body-large font-bold text-primary font-mono">
-                                  {formatNgn(order.total)}
-                                </span>
-                                <span className="text-[11px] text-text-muted">
-                                  (incl. {formatNgn(order.delivery_fee)} delivery)
-                                </span>
-                              </div>
-
-                              <div className="flex items-center gap-2">
-                                {order.status === 'delivered' && (
-                                  (() => {
-                                    // Trigger re-read when reviewsVersion changes
-                                    void reviewsVersion
-                                    const existingReview = getOrderReview(order.id)
-                                    return existingReview ? (
-                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold">
-                                        <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                                        <span>{existingReview.rating}.0 Rated</span>
-                                      </span>
-                                    ) : (
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setReviewingOrder(order)}
-                                        className="gap-1.5 text-xs font-bold text-amber-900 border-amber-300 bg-amber-50/80 hover:bg-amber-100"
-                                      >
-                                        <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                                        <span>Rate Order</span>
-                                      </Button>
-                                    )
-                                  })()
-                                )}
-
-                                {isPending ? (
-                                  <Button asChild variant="primary" size="sm" className="gap-1.5 bg-primary hover:bg-primary/90 text-white font-bold shadow-xs">
-                                    <Link to={`/order/${order.id}/confirmation`}>
-                                      <CreditCard className="w-3.5 h-3.5" />
-                                      <span>Pay Now ({formatNgn(order.total)})</span>
-                                    </Link>
-                                  </Button>
-                                ) : (
-                                  <Button asChild variant="outline" size="sm" className="gap-1.5 text-xs font-semibold">
-                                    <Link to={`/order/${order.id}/confirmation`}>
-                                      <span>Track Delivery</span>
-                                      <ArrowRight className="w-3.5 h-3.5" />
-                                    </Link>
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Callout banner if awaiting payment */}
-                            {isPending && (
-                              <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <div className="flex items-center gap-2">
-                                  <Clock className="w-4 h-4 text-amber-600 shrink-0 animate-pulse" />
-                                  <span>
-                                    Your food order is recorded and waiting for payment. Click <strong>Pay Now</strong> to complete payment via Paystack so the kitchen can begin preparation.
-                                  </span>
-                                </div>
-                                <Button asChild variant="primary" size="sm" className="shrink-0 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold">
-                                  <Link to={`/order/${order.id}/confirmation`}>
-                                    Complete Payment
-                                  </Link>
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                          order={order}
+                          existingReview={existingReview}
+                          onReviewClick={(ord) => setReviewingOrder(ord)}
+                          onCancelClick={(ord) => setCancellingOrder(ord)}
+                        />
                       )
                     })}
                   </div>
                 )}
 
-                {/* Order Review Feedback Modal */}
                 <OrderReviewModal
                   isOpen={!!reviewingOrder}
                   onClose={() => setReviewingOrder(null)}
@@ -852,10 +724,20 @@ export default function CustomerDashboardPage() {
                     setReviewsVersion((v) => v + 1)
                   }}
                 />
+
+                <CancelOrderModal
+                  isOpen={!!cancellingOrder}
+                  onClose={() => setCancellingOrder(null)}
+                  orderId={cancellingOrder?.id || ''}
+                  orderNumber={cancellingOrder ? cancellingOrder.id.slice(0, 8).toUpperCase() : ''}
+                  isPaid={cancellingOrder?.status === 'payment_confirmed'}
+                  onCancelled={() => {
+                    loadCustomerOrders()
+                  }}
+                />
               </div>
             )}
 
-            {/* Tab: Addresses */}
             {activeTab === 'addresses' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -897,7 +779,6 @@ export default function CustomerDashboardPage() {
               </div>
             )}
 
-            {/* Tab: Profile */}
             {activeTab === 'profile' && (
               <div className="space-y-6">
                 <div>
@@ -925,7 +806,6 @@ export default function CustomerDashboardPage() {
                   </div>
                 )}
 
-                {/* Identity Summary Card */}
                 <div className="p-6 rounded-2xl border border-border bg-white shadow-xs">
                   <div className="flex items-center gap-4">
                     <div className="h-16 w-16 rounded-2xl bg-primary text-white font-bold text-h3 flex items-center justify-center shrink-0">
@@ -943,7 +823,6 @@ export default function CustomerDashboardPage() {
                   </div>
                 </div>
 
-                {/* Editable Profile Form */}
                 <div className="p-6 rounded-2xl border border-border bg-white shadow-xs">
                   <h3 className="text-body-large font-bold text-text-primary border-b border-border pb-4 mb-5">
                     Edit Personal Information
@@ -1023,7 +902,10 @@ export default function CustomerDashboardPage() {
               </div>
             )}
 
-            {/* Tab: Rewards & Passes */}
+            {activeTab === 'corporate' && (
+              <CustomerCorporateTab />
+            )}
+
             {activeTab === 'rewards' && (
               <CustomerRewardsTab
                 userId={profile?.id || 'guest'}
@@ -1031,12 +913,14 @@ export default function CustomerDashboardPage() {
               />
             )}
 
-            {/* Tab: Notifications */}
+            {activeTab === 'support' && (
+              <CustomerSupportTab />
+            )}
+
             {activeTab === 'notifications' && (
               <CustomerNotificationsTab />
             )}
 
-            {/* Tab: Settings */}
             {activeTab === 'settings' && (
               <CustomerSettingsTab />
             )}
@@ -1044,12 +928,106 @@ export default function CustomerDashboardPage() {
         </main>
       </div>
 
-      {/* Mobile Sticky Bottom Navigation Bar */}
+      {/* Backdrop overlay for Mobile More Menu */}
+      {isMoreOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in duration-200 lg:hidden"
+          aria-hidden="true"
+          onClick={() => setIsMoreOpen(false)}
+        />
+      )}
+
+      {/* Mobile More Menu Bottom Sheet */}
+      {isMoreOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="More navigation options"
+          id="mobile-more-menu"
+          className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] left-0 right-0 z-50 mx-auto max-w-md px-4 pb-2 animate-in slide-in-from-bottom-4 duration-200 lg:hidden"
+        >
+          <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-2xl">
+            {/* Sheet Header */}
+            <div className="flex items-center justify-between border-b border-border/80 px-5 py-3.5 bg-neutral-50/70">
+              <span className="text-sm font-bold text-text-primary tracking-tight">More Dashboard Options</span>
+              <button
+                type="button"
+                aria-label="Close more options menu"
+                className="rounded-lg p-1.5 text-text-secondary hover:bg-neutral-200/60 hover:text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                onClick={() => setIsMoreOpen(false)}
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+
+            {/* Secondary Navigation List */}
+            <nav aria-label="Secondary dashboard navigation" className="p-2 space-y-1">
+              {SECONDARY_NAV_ITEMS.map(({ id, icon: Icon, label, description }) => {
+                const isActive = activeTab === id
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => handleSelectTab(id)}
+                    className={`w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      isActive
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : 'text-text-primary hover:bg-neutral-100 font-medium'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                          isActive
+                            ? 'bg-primary text-white shadow-xs'
+                            : 'bg-neutral-100 text-text-secondary'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" aria-hidden="true" />
+                      </div>
+                      <div className="flex flex-col text-left">
+                        <span className="font-bold text-text-primary">{label}</span>
+                        <span className="text-[11px] text-text-muted">{description}</span>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-text-muted" aria-hidden="true" />
+                  </button>
+                )
+              })}
+            </nav>
+
+            {/* Quick Actions (Sign Out / Website) */}
+            <div className="border-t border-border p-2 bg-neutral-50/50 flex items-center justify-between gap-2">
+              <Link
+                to="/"
+                onClick={() => setIsMoreOpen(false)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-border bg-white text-xs font-semibold text-text-secondary hover:text-primary transition-colors"
+              >
+                <Globe className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                <span>Website</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMoreOpen(false)
+                  signOut()
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-rose-200 bg-rose-50 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-colors"
+              >
+                <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Sticky Bottom Navigation Bar (4 primary items + More) */}
       <nav
         className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-border bg-white px-2 py-1 shadow-lg lg:hidden"
         aria-label="Mobile bottom navigation"
       >
-        {NAV_ITEMS.map(({ id, icon: Icon, label }) => {
+        {PRIMARY_NAV_ITEMS.map(({ id, icon: Icon, label }) => {
           const isActive = activeTab === id
           return (
             <button
@@ -1074,6 +1052,24 @@ export default function CustomerDashboardPage() {
             </button>
           )
         })}
+
+        {/* More Button */}
+        <button
+          type="button"
+          aria-label="More navigation options"
+          aria-expanded={isMoreOpen}
+          onClick={() => setIsMoreOpen((prev) => !prev)}
+          className={`flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[10px] font-medium transition-colors ${
+            isMoreActive
+              ? 'text-primary font-bold'
+              : 'text-text-muted hover:text-text-primary'
+          }`}
+        >
+          <div className="relative">
+            <MoreHorizontal className={`h-5 w-5 ${isMoreActive ? 'stroke-[2.5px]' : 'stroke-2'}`} aria-hidden="true" />
+          </div>
+          <span className="truncate max-w-[54px]">More</span>
+        </button>
       </nav>
     </div>
   )

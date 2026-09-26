@@ -73,42 +73,6 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
     onChange(center)
   }
 
-  // Attempt Google Maps if key exists
-  if (useGoogleMaps && appConfig.maps.googleMapsApiKey) {
-    return (
-      <div className="relative">
-        <GoogleMapView
-          center={activeCoords}
-          zoom={15}
-          serviceArea={serviceArea}
-          height={height}
-          className={className}
-          draggableMarker={!readOnly}
-          onMarkerDragEnd={(coords) => {
-            onChange({
-              latitude: Math.round(coords.latitude * 1000000) / 1000000,
-              longitude: Math.round(coords.longitude * 1000000) / 1000000,
-            })
-          }}
-          onMapClick={(coords) => {
-            if (!readOnly) {
-              onChange({
-                latitude: Math.round(coords.latitude * 1000000) / 1000000,
-                longitude: Math.round(coords.longitude * 1000000) / 1000000,
-              })
-            }
-          }}
-          onError={() => setUseGoogleMaps(false)}
-        />
-        {/* Floating status badge */}
-        <div className="absolute top-3 left-3 z-[400] flex items-center gap-2 rounded-lg bg-slate-900/90 px-3 py-1.5 text-xs text-white backdrop-blur-md shadow-md">
-          <MapPin className={`h-3.5 w-3.5 ${isServiceable ? 'text-emerald-400' : 'text-amber-400'}`} />
-          <span>{formatCoordinates(activeCoords)}</span>
-        </div>
-      </div>
-    )
-  }
-
   // Leaflet map lifecycle fallback
   useEffect(() => {
     if (!containerRef.current || useGoogleMaps) return
@@ -214,6 +178,42 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
       }
     }
   }, [])
+
+  // Attempt Google Maps if key exists
+  if (useGoogleMaps && appConfig.maps.googleMapsApiKey) {
+    return (
+      <div className="relative">
+        <GoogleMapView
+          center={activeCoords}
+          zoom={15}
+          serviceArea={serviceArea}
+          height={height}
+          className={className}
+          draggableMarker={!readOnly}
+          onMarkerDragEnd={(coords) => {
+            onChange({
+              latitude: Math.round(coords.latitude * 1000000) / 1000000,
+              longitude: Math.round(coords.longitude * 1000000) / 1000000,
+            })
+          }}
+          onMapClick={(coords) => {
+            if (!readOnly) {
+              onChange({
+                latitude: Math.round(coords.latitude * 1000000) / 1000000,
+                longitude: Math.round(coords.longitude * 1000000) / 1000000,
+              })
+            }
+          }}
+          onError={() => setUseGoogleMaps(false)}
+        />
+        {/* Floating status badge */}
+        <div className="absolute top-3 left-3 z-[400] flex items-center gap-2 rounded-lg bg-slate-900/90 px-3 py-1.5 text-xs text-white backdrop-blur-md shadow-md">
+          <MapPin className={`h-3.5 w-3.5 ${isServiceable ? 'text-emerald-400' : 'text-amber-400'}`} />
+          <span>{formatCoordinates(activeCoords)}</span>
+        </div>
+      </div>
+    )
+  }
 
   if (initFailed) {
     return (

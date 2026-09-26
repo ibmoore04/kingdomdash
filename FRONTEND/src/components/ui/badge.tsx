@@ -3,6 +3,7 @@ import { cn } from '@/lib/cn'
 
 const variants = {
   default: 'bg-light-surface text-text-secondary border-border',
+  outline: 'bg-transparent text-text-secondary border-border',
   primary: 'bg-primary-soft text-primary-hover border-primary/20',
   success: 'bg-[#dcfce7] text-[#166534] border-[#86efac]',
   warning: 'bg-[#fef3c7] text-[#92400e] border-[#fcd34d]',

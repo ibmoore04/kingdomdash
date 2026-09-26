@@ -191,6 +191,31 @@ export async function getSupportTicketByReference(
   const isUuid = UUID_REGEX.test(cleanQuery)
 
   try {
+    // 1. Primary path: SECURITY DEFINER RPC get_support_ticket_by_ref
+    const { data: rpcData, error: rpcErr } = await db.rpc('get_support_ticket_by_ref', {
+      p_ref_code: cleanQuery,
+    })
+
+    if (!rpcErr && rpcData) {
+      const ticket: SupportTicket = {
+        id: String(rpcData.id),
+        reference_code: rpcData.reference_code || `KD-SUP-${String(rpcData.id).slice(0, 6).toUpperCase()}`,
+        name: String(rpcData.name || 'Anonymous'),
+        email: String(rpcData.email || ''),
+        phone: rpcData.phone ? String(rpcData.phone) : null,
+        category: rpcData.category || 'general',
+        subject: String(rpcData.subject || 'Support Ticket'),
+        message: String(rpcData.message || ''),
+        status: (rpcData.status || 'new') as SupportTicket['status'],
+        admin_response: rpcData.admin_response || null,
+        admin_responded_at: rpcData.admin_responded_at || null,
+        created_at: String(rpcData.created_at || new Date().toISOString()),
+        updated_at: String(rpcData.updated_at || new Date().toISOString()),
+      }
+      return { data: ticket, error: null }
+    }
+
+    // 2. Fallback table query
     let query = db.from('contact_messages').select('*')
     if (isUuid) {
       query = query.or(`reference_code.eq.${cleanQuery},id.eq.${cleanQuery}`)

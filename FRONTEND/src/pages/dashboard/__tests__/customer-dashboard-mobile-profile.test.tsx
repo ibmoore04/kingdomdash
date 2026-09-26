@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import CustomerDashboardPage from '../customer-dashboard'
 import { useAuthStore } from '@/stores/auth-store'
@@ -90,8 +90,8 @@ describe('Customer Dashboard Mobile Navigation & Profile Editing', () => {
 
     // Bottom nav profile button
     const bottomNav = screen.getByLabelText('Mobile bottom navigation')
-    const profileBtn = bottomNav.querySelector('button:nth-child(3)') || screen.getAllByRole('button', { name: /profile/i })[1]
-    fireEvent.click(profileBtn!)
+    const profileBtn = within(bottomNav).getByRole('button', { name: /profile/i })
+    fireEvent.click(profileBtn)
 
     // Profile tab content should be visible
     expect(await screen.findByLabelText(/full name/i)).toBeInTheDocument()
@@ -150,5 +150,18 @@ describe('Customer Dashboard Mobile Navigation & Profile Editing', () => {
 
     // Feedback message displayed
     await screen.findByText(/profile details successfully updated/i)
+  })
+
+  it('persists selected tab to localStorage and respects saved tab on refresh', async () => {
+    localStorage.setItem('kingdomdash_customer_active_tab', 'corporate')
+
+    render(
+      <MemoryRouter initialEntries={['/dashboard/customer']}>
+        <CustomerDashboardPage />
+      </MemoryRouter>
+    )
+
+    // Corporate badge/heading is visible and active tab is corporate
+    expect(await screen.findByRole('heading', { name: /corporate/i })).toBeInTheDocument()
   })
 })

@@ -19,6 +19,10 @@ import {
   Globe,
   Gift,
   HelpCircle,
+  Building2,
+  MoreHorizontal,
+  X,
+  ChevronRight,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth-store'
@@ -31,12 +35,13 @@ import { CustomerSettingsTab } from '@/components/customer/customer-settings-tab
 import { CustomerNotificationsTab } from '@/components/customer/customer-notifications-tab'
 import { CustomerRewardsTab } from '@/components/customer/customer-rewards-tab'
 import { CustomerSupportTab } from '@/components/customer/customer-support-tab'
+import { CustomerCorporateTab } from '@/components/customer/customer-corporate-tab'
 import { OrderReviewModal } from '@/components/customer/order-review-modal'
 import { CustomerOrderCard } from '@/components/customer/customer-order-card'
 import { CancelOrderModal } from '@/components/customer/cancel-order-modal'
 import { getOrderReview, fetchCustomerReviews } from '@/services/supabase/reviews'
 
-type CustomerTab = 'orders' | 'addresses' | 'profile' | 'rewards' | 'notifications' | 'settings' | 'support'
+type CustomerTab = 'orders' | 'corporate' | 'addresses' | 'profile' | 'rewards' | 'notifications' | 'settings' | 'support'
 
 interface CustomerOrderSummary {
   id: string
@@ -64,33 +69,107 @@ interface CustomerOrderSummary {
   }>
 }
 
-const NAV_ITEMS: { id: CustomerTab; icon: typeof ShoppingBag; label: string }[] = [
+const PRIMARY_NAV_ITEMS: { id: CustomerTab; icon: typeof ShoppingBag; label: string }[] = [
   { id: 'orders', icon: ShoppingBag, label: 'Orders' },
+  { id: 'corporate', icon: Building2, label: 'Corporate' },
   { id: 'addresses', icon: MapPin, label: 'Addresses' },
   { id: 'profile', icon: User, label: 'Profile' },
-  { id: 'rewards', icon: Gift, label: 'Rewards' },
-  { id: 'support', icon: HelpCircle, label: 'Support' },
-  { id: 'notifications', icon: Bell, label: 'Notifications' },
-  { id: 'settings', icon: Settings, label: 'Settings' },
 ]
 
+const SECONDARY_NAV_ITEMS: { id: CustomerTab; icon: typeof Gift; label: string; description: string }[] = [
+  { id: 'rewards', icon: Gift, label: 'Rewards', description: 'Loyalty points & referral bonuses' },
+  { id: 'notifications', icon: Bell, label: 'Notifications', description: 'Order updates and system alerts' },
+  { id: 'support', icon: HelpCircle, label: 'Support', description: 'Help desk & ticket assistance' },
+  { id: 'settings', icon: Settings, label: 'Settings', description: 'Preferences & account security' },
+]
+
+const NAV_ITEMS: { id: CustomerTab; icon: typeof ShoppingBag; label: string }[] = [
+  ...PRIMARY_NAV_ITEMS,
+  ...SECONDARY_NAV_ITEMS.map((item) => ({ id: item.id, icon: item.icon as typeof ShoppingBag, label: item.label })),
+]
+
+const VALID_CUSTOMER_TABS: CustomerTab[] = [
+  'orders',
+  'corporate',
+  'addresses',
+  'profile',
+  'rewards',
+  'notifications',
+  'settings',
+  'support',
+]
+
+const CUSTOMER_TAB_STORAGE_KEY = 'kingdomdash_customer_active_tab'
+
+function getInitialCustomerTab(searchParams: URLSearchParams): CustomerTab {
+  const paramTab = searchParams.get('tab') as CustomerTab
+  if (paramTab && VALID_CUSTOMER_TABS.includes(paramTab)) {
+    return paramTab
+  }
+  try {
+    const saved = localStorage.getItem(CUSTOMER_TAB_STORAGE_KEY) as CustomerTab
+    if (saved && VALID_CUSTOMER_TABS.includes(saved)) {
+      return saved
+    }
+  } catch {
+    // Ignore storage issues in restricted environments
+  }
+  return 'orders'
+}
+
 export default function CustomerDashboardPage() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { profile, signOut } = useAuthStore()
 
-  const initialTab = (searchParams.get('tab') as CustomerTab) || 'orders'
-  const [activeTab, setActiveTab] = useState<CustomerTab>(
-    ['orders', 'addresses', 'profile', 'rewards', 'notifications', 'settings', 'support'].includes(initialTab)
-      ? initialTab
-      : 'orders'
-  )
+  const [activeTab, setActiveTab] = useState<CustomerTab>(() => getInitialCustomerTab(searchParams))
 
+  // Mobile More Sheet State
+  const [isMoreOpen, setIsMoreOpen] = useState(false)
+  const isMoreActive = ['rewards', 'notifications', 'support', 'settings'].includes(activeTab)
+
+  // Close sheet on escape
+  useEffect(() => {
+    if (!isMoreOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMoreOpen(false)
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isMoreOpen])
+
+  // Sync activeTab with URL searchParams and localStorage
   useEffect(() => {
     const tabParam = searchParams.get('tab') as CustomerTab
-    if (tabParam && ['orders', 'addresses', 'profile', 'rewards', 'notifications', 'settings', 'support'].includes(tabParam)) {
+    if (tabParam && VALID_CUSTOMER_TABS.includes(tabParam)) {
       setActiveTab(tabParam)
+      try {
+        localStorage.setItem(CUSTOMER_TAB_STORAGE_KEY, tabParam)
+      } catch {
+        // Ignore
+      }
+    } else {
+      // If URL does not specify a tab, reflect the active or saved tab into the URL
+      try {
+        const saved = localStorage.getItem(CUSTOMER_TAB_STORAGE_KEY) as CustomerTab
+        const targetTab = saved && VALID_CUSTOMER_TABS.includes(saved) ? saved : 'orders'
+        if (targetTab !== 'orders') {
+          setActiveTab(targetTab)
+        }
+        setSearchParams(
+          (prev) => {
+            const next = new URLSearchParams(prev)
+            if (next.get('tab') !== targetTab) {
+              next.set('tab', targetTab)
+            }
+            return next
+          },
+          { replace: true }
+        )
+      } catch {
+        // Ignore
+      }
     }
-  }, [searchParams])
+  }, [searchParams, setSearchParams])
 
   // Orders management state
   const [orders, setOrders] = useState<CustomerOrderSummary[]>([])
@@ -315,9 +394,28 @@ export default function CustomerDashboardPage() {
     }
   }
 
-  const handleSelectTab = (id: CustomerTab) => {
-    setActiveTab(id)
-  }
+  const handleSelectTab = useCallback(
+    (id: CustomerTab) => {
+      setActiveTab(id)
+      setIsMoreOpen(false)
+      try {
+        localStorage.setItem(CUSTOMER_TAB_STORAGE_KEY, id)
+      } catch {
+        // Ignore
+      }
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          if (next.get('tab') !== id) {
+            next.set('tab', id)
+          }
+          return next
+        },
+        { replace: true }
+      )
+    },
+    [setSearchParams]
+  )
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-page-background">
@@ -823,6 +921,11 @@ export default function CustomerDashboardPage() {
               </div>
             )}
 
+            {/* Tab: Corporate Dispatch Portal */}
+            {activeTab === 'corporate' && (
+              <CustomerCorporateTab />
+            )}
+
             {/* Tab: Rewards & Passes */}
             {activeTab === 'rewards' && (
               <CustomerRewardsTab
@@ -849,12 +952,106 @@ export default function CustomerDashboardPage() {
         </main>
       </div>
 
-      {/* Mobile Sticky Bottom Navigation Bar */}
+      {/* Backdrop overlay for Mobile More Menu */}
+      {isMoreOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in duration-200 lg:hidden"
+          aria-hidden="true"
+          onClick={() => setIsMoreOpen(false)}
+        />
+      )}
+
+      {/* Mobile More Menu Bottom Sheet */}
+      {isMoreOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="More navigation options"
+          id="mobile-more-menu"
+          className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] left-0 right-0 z-50 mx-auto max-w-md px-4 pb-2 animate-in slide-in-from-bottom-4 duration-200 lg:hidden"
+        >
+          <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-2xl">
+            {/* Sheet Header */}
+            <div className="flex items-center justify-between border-b border-border/80 px-5 py-3.5 bg-neutral-50/70">
+              <span className="text-sm font-bold text-text-primary tracking-tight">More Dashboard Options</span>
+              <button
+                type="button"
+                aria-label="Close more options menu"
+                className="rounded-lg p-1.5 text-text-secondary hover:bg-neutral-200/60 hover:text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                onClick={() => setIsMoreOpen(false)}
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+
+            {/* Secondary Navigation List */}
+            <nav aria-label="Secondary dashboard navigation" className="p-2 space-y-1">
+              {SECONDARY_NAV_ITEMS.map(({ id, icon: Icon, label, description }) => {
+                const isActive = activeTab === id
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => handleSelectTab(id)}
+                    className={`w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      isActive
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : 'text-text-primary hover:bg-neutral-100 font-medium'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                          isActive
+                            ? 'bg-primary text-white shadow-xs'
+                            : 'bg-neutral-100 text-text-secondary'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" aria-hidden="true" />
+                      </div>
+                      <div className="flex flex-col text-left">
+                        <span className="font-bold text-text-primary">{label}</span>
+                        <span className="text-[11px] text-text-muted">{description}</span>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-text-muted" aria-hidden="true" />
+                  </button>
+                )
+              })}
+            </nav>
+
+            {/* Quick Actions (Sign Out / Website) */}
+            <div className="border-t border-border p-2 bg-neutral-50/50 flex items-center justify-between gap-2">
+              <Link
+                to="/"
+                onClick={() => setIsMoreOpen(false)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-border bg-white text-xs font-semibold text-text-secondary hover:text-primary transition-colors"
+              >
+                <Globe className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                <span>Website</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMoreOpen(false)
+                  signOut()
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-rose-200 bg-rose-50 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-colors"
+              >
+                <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Sticky Bottom Navigation Bar (4 primary items + More) */}
       <nav
         className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-border bg-white px-2 py-1 shadow-lg lg:hidden"
         aria-label="Mobile bottom navigation"
       >
-        {NAV_ITEMS.map(({ id, icon: Icon, label }) => {
+        {PRIMARY_NAV_ITEMS.map(({ id, icon: Icon, label }) => {
           const isActive = activeTab === id
           return (
             <button
@@ -879,6 +1076,24 @@ export default function CustomerDashboardPage() {
             </button>
           )
         })}
+
+        {/* More Button */}
+        <button
+          type="button"
+          aria-label="More navigation options"
+          aria-expanded={isMoreOpen}
+          onClick={() => setIsMoreOpen((prev) => !prev)}
+          className={`flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[10px] font-medium transition-colors ${
+            isMoreActive
+              ? 'text-primary font-bold'
+              : 'text-text-muted hover:text-text-primary'
+          }`}
+        >
+          <div className="relative">
+            <MoreHorizontal className={`h-5 w-5 ${isMoreActive ? 'stroke-[2.5px]' : 'stroke-2'}`} aria-hidden="true" />
+          </div>
+          <span className="truncate max-w-[54px]">More</span>
+        </button>
       </nav>
     </div>
   )

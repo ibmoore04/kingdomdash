@@ -96,7 +96,7 @@ export default function VendorDashboardPage() {
 
   const initialTab = (searchParams.get('tab') as TabType) || 'overview'
   const [activeTab, setActiveTab] = useState<TabType>(
-    ['overview', 'orders', 'products', 'categories', 'profile', 'notifications', 'settings'].includes(initialTab)
+    ['overview', 'orders', 'products', 'categories', 'profile', 'notifications', 'settings', 'support'].includes(initialTab)
       ? initialTab
       : 'overview'
   )

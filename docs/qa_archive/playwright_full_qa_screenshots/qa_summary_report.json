@@ -1,0 +1,92 @@
+[
+  {
+    "testName": "Public Route: /",
+    "passed": true,
+    "details": "Title: \"Food, Groceries & Courier Delivery in Ijebu-Ode | KingdomDash — SWIFT IN MOTION.\" | H1 Count: 1",
+    "screenshotFile": "C:\\Users\\USER\\KindomDash\\DOCS\\qa_archive\\playwright_full_qa_screenshots\\public__.png"
+  },
+  {
+    "testName": "Public Route: /food",
+    "passed": true,
+    "details": "Title: \"Food Delivery in Ijebu-Ode — Top Restaurants & Fast Doorstep Dispatch | KingdomDash — SWIFT IN MOTION.\" | H1 Count: 1",
+    "screenshotFile": "C:\\Users\\USER\\KindomDash\\DOCS\\qa_archive\\playwright_full_qa_screenshots\\public__food.png"
+  },
+  {
+    "testName": "Public Route: /groceries",
+    "passed": true,
+    "details": "Title: \"Grocery Delivery in Ijebu-Ode — Fresh Produce & Supermarket Delivery | KingdomDash — SWIFT IN MOTION.\" | H1 Count: 1",
+    "screenshotFile": "C:\\Users\\USER\\KindomDash\\DOCS\\qa_archive\\playwright_full_qa_screenshots\\public__groceries.png"
+  },
+  {
+    "testName": "Public Route: /courier",
+    "passed": true,
+    "details": "Title: \"Courier Dispatch in Ijebu-Ode — Same-Day Parcel & Document Delivery | KingdomDash — SWIFT IN MOTION.\" | H1 Count: 1",
+    "screenshotFile": "C:\\Users\\USER\\KindomDash\\DOCS\\qa_archive\\playwright_full_qa_screenshots\\public__courier.png"
+  },
+  {
+    "testName": "Public Route: /personal-shopper",
+    "passed": true,
+    "details": "Title: \"Personal Market Shopper & Concierge — KingdomDash\" | H1 Count: 1",
+    "screenshotFile": "C:\\Users\\USER\\KindomDash\\DOCS\\qa_archive\\playwright_full_qa_screenshots\\public__personal-shopper.png"
+  },
+  {
+    "testName": "Public Route: /become-vendor",
+    "passed": true,
+    "details": "Title: \"Become a Vendor | KingdomDash — SWIFT IN MOTION.\" | H1 Count: 1",
+    "screenshotFile": "C:\\Users\\USER\\KindomDash\\DOCS\\qa_archive\\playwright_full_qa_screenshots\\public__become-vendor.png"
+  },
+  {
+    "testName": "Public Route: /faq",
+    "passed": true,
+    "details": "Title: \"FAQ & Help Centre | KingdomDash — SWIFT IN MOTION.\" | H1 Count: 1",
+    "screenshotFile": "C:\\Users\\USER\\KindomDash\\DOCS\\qa_archive\\playwright_full_qa_screenshots\\public__faq.png"
+  },
+  {
+    "testName": "RBAC Security: Anonymous access to /admin/dashboard blocked",
+    "passed": true,
+    "details": "Current URL: http://localhost:5173/auth/login?redirect=%2Fadmin%2Fdashboard",
+    "screenshotFile": null
+  },
+  {
+    "testName": "RBAC Security: Customer access to /admin/support blocked",
+    "passed": true,
+    "details": "Current URL: http://localhost:5173/dashboard",
+    "screenshotFile": null
+  },
+  {
+    "testName": "Admin Portal: Support & Report Center Page Loads",
+    "passed": true,
+    "details": "Verified header and metric cards",
+    "screenshotFile": "C:\\Users\\USER\\KindomDash\\DOCS\\qa_archive\\playwright_full_qa_screenshots\\admin_support_desk.png"
+  },
+  {
+    "testName": "Customer Portal: Support Requests & Ticket Tracking Tab Loads",
+    "passed": true,
+    "details": "Verified reference tracking & support ticket form",
+    "screenshotFile": "C:\\Users\\USER\\KindomDash\\DOCS\\qa_archive\\playwright_full_qa_screenshots\\customer_support_tab.png"
+  },
+  {
+    "testName": "Customer Portal: Corporate Dispatch Portal Tab Loads",
+    "passed": true,
+    "details": "Verified Corporate Dispatch Portal & Application Desk",
+    "screenshotFile": "C:\\Users\\USER\\KindomDash\\DOCS\\qa_archive\\playwright_full_qa_screenshots\\customer_corporate_tab.png"
+  },
+  {
+    "testName": "Vendor Portal: Merchant Support & Desk Tab Loads",
+    "passed": true,
+    "details": "Verified vendor ticket reference submission and history",
+    "screenshotFile": "C:\\Users\\USER\\KindomDash\\DOCS\\qa_archive\\playwright_full_qa_screenshots\\vendor_support_tab.png"
+  },
+  {
+    "testName": "Rider Portal: Rider Support & Assistance Page Loads",
+    "passed": true,
+    "details": "Verified rider ticket submission & emergency hotlines",
+    "screenshotFile": "C:\\Users\\USER\\KindomDash\\DOCS\\qa_archive\\playwright_full_qa_screenshots\\rider_support_page.png"
+  },
+  {
+    "testName": "Runtime Integrity: No Unhandled JS Errors during navigation",
+    "passed": true,
+    "details": "Clean execution log",
+    "screenshotFile": null
+  }
+]

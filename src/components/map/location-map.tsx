@@ -62,21 +62,6 @@ export const LocationMap: React.FC<LocationMapProps> = ({
       ? marker.coords
       : IJEBU_ODE_CENTER
 
-  // Attempt Google Maps if key exists
-  if (useGoogleMaps && appConfig.maps.googleMapsApiKey) {
-    return (
-      <GoogleMapView
-        center={effectiveCenter}
-        zoom={zoom}
-        marker={marker}
-        serviceArea={serviceArea}
-        height={height}
-        className={className}
-        onError={() => setUseGoogleMaps(false)}
-      />
-    )
-  }
-
   useEffect(() => {
     if (!containerRef.current || useGoogleMaps) return
 
@@ -173,6 +158,21 @@ export const LocationMap: React.FC<LocationMapProps> = ({
       }
     }
   }, [])
+
+  // Attempt Google Maps if key exists
+  if (useGoogleMaps && appConfig.maps.googleMapsApiKey) {
+    return (
+      <GoogleMapView
+        center={effectiveCenter}
+        zoom={zoom}
+        marker={marker}
+        serviceArea={serviceArea}
+        height={height}
+        className={className}
+        onError={() => setUseGoogleMaps(false)}
+      />
+    )
+  }
 
   if (initFailed) {
     return (
