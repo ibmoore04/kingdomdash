@@ -53,6 +53,7 @@ const ForgotPasswordPage = lazy(() => import('@/pages/auth/forgot-password'))
 const AuthCallbackPage = lazy(() => import('@/pages/auth/callback'))
 const UpdatePasswordPage = lazy(() => import('@/pages/auth/update-password'))
 const VerifyEmailPage = lazy(() => import('@/pages/auth/verify-email'))
+const MfaPage = lazy(() => import('@/pages/auth/mfa'))
 
 // ── Dashboard pages (protected by RouteGuard) ─────────────────────────────────
 const CustomerDashboardPage = lazy(() => import('@/pages/dashboard/customer-dashboard'))
@@ -117,6 +118,7 @@ export default function App() {
         <Route path="/forgot-password" element={<RedirectWithQuery to="/auth/forgot-password" />} />
         <Route path="/callback" element={<RedirectWithQuery to="/auth/callback" />} />
         <Route path="/update-password" element={<RedirectWithQuery to="/auth/update-password" />} />
+        <Route path="/mfa" element={<RedirectWithQuery to="/auth/mfa" />} />
 
         {/* ── Full-screen auth routes — no PublicLayout ───────────────────────── */}
         <Route path="/auth/login" element={<LoginPage />} />
@@ -125,6 +127,7 @@ export default function App() {
         <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/auth/update-password" element={<UpdatePasswordPage />} />
+        <Route path="/auth/mfa" element={<MfaPage />} />
 
         {/* ── Protected customer routes — RouteGuard enforces auth + role ──────── */}
         <Route element={<RouteGuard allowedRoles={['customer']} />}>

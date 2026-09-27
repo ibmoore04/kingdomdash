@@ -18,14 +18,31 @@ export interface Profile {
   updated_at: string
 }
 
+export function extractJwtAal(token?: string | null): 'aal1' | 'aal2' {
+  if (!token || typeof token !== 'string') return 'aal1'
+  try {
+    const parts = token.split('.')
+    if (parts.length >= 2) {
+      const payload = JSON.parse(atob(parts[1]))
+      if (payload.aal === 'aal2') return 'aal2'
+    }
+  } catch {
+    // fallback
+  }
+  return 'aal1'
+}
+
 export interface AuthState {
   session: Session | null
   profile: Profile | null
   isLoading: boolean
   isRecoverySession: boolean
   isEmailConfirmed: boolean
+  mfaLevel: 'aal1' | 'aal2'
   profileError: Error | null
   signOut: () => Promise<void>
+  setMfaLevel: (level: 'aal1' | 'aal2') => void
+  checkMfaAssuranceLevel: () => Promise<'aal1' | 'aal2'>
 }
 
 // Module-level generation counter to prevent race conditions (Guarantee A and B, P7)
@@ -86,7 +103,28 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
   isRecoverySession: false,
   isEmailConfirmed: false,
+  mfaLevel: 'aal1',
   profileError: null,
+
+  setMfaLevel: (mfaLevel) => set({ mfaLevel }),
+
+  checkMfaAssuranceLevel: async () => {
+    try {
+      if (supabase.auth?.mfa?.getAuthenticatorAssuranceLevel) {
+        const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+        if (!error && data?.currentLevel) {
+          const lvl = data.currentLevel as 'aal1' | 'aal2'
+          set({ mfaLevel: lvl })
+          return lvl
+        }
+      }
+    } catch {
+      // fallback
+    }
+    const current = extractJwtAal(useAuthStore.getState().session?.access_token)
+    set({ mfaLevel: current })
+    return current
+  },
 
   signOut: async () => {
     // Invalidate any in-flight profile fetch immediately (P7)
@@ -109,6 +147,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       profileError: null,
       isRecoverySession: false,
       isEmailConfirmed: false,
+      mfaLevel: 'aal1',
       isLoading: false,
     })
   },
@@ -133,6 +172,7 @@ export function initAuthListener(): void {
           useCartStore.getState().setUser(session.user.id)
           set({
             session,
+            mfaLevel: extractJwtAal(session.access_token),
             isLoading: true,
             isEmailConfirmed: Boolean(session.user?.email_confirmed_at),
           })
@@ -143,6 +183,7 @@ export function initAuthListener(): void {
           set({
             session: null,
             profile: null,
+            mfaLevel: 'aal1',
             isLoading: false,
             isRecoverySession: false,
             isEmailConfirmed: false,
@@ -155,6 +196,7 @@ export function initAuthListener(): void {
           useCartStore.getState().setUser(session.user.id)
           set({
             session,
+            mfaLevel: extractJwtAal(session.access_token),
             isRecoverySession: false,
             isLoading: true,
             isEmailConfirmed: Boolean(session.user?.email_confirmed_at),
@@ -176,6 +218,7 @@ export function initAuthListener(): void {
           profileError: null,
           isRecoverySession: false,
           isEmailConfirmed: false,
+          mfaLevel: 'aal1',
           isLoading: false,
         })
         break
@@ -184,6 +227,7 @@ export function initAuthListener(): void {
         // Session token updated without re-fetching profile
         set({
           session,
+          mfaLevel: extractJwtAal(session?.access_token),
           isEmailConfirmed: Boolean(session?.user?.email_confirmed_at),
         })
         break

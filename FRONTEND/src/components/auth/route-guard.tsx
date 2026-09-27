@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { useAuthStore, type UserRole } from '@/stores/auth-store'
+import { useAuthStore, extractJwtAal, type UserRole } from '@/stores/auth-store'
 import { roleDashboardPath, ROLE_DASHBOARD_MAP } from '@/utils/safe-redirect'
 
 export { roleDashboardPath, ROLE_DASHBOARD_MAP }
@@ -25,7 +25,7 @@ export interface RouteGuardProps {
 }
 
 export function RouteGuard({ allowedRoles }: RouteGuardProps) {
-  const { session, profile, isLoading, profileError, signOut } = useAuthStore()
+  const { session, profile, isLoading, profileError, mfaLevel, signOut } = useAuthStore()
   const location = useLocation()
   const signOutInitiated = useRef(false)
 
@@ -76,6 +76,21 @@ export function RouteGuard({ allowedRoles }: RouteGuardProps) {
     return <Navigate to={roleDashboardPath(profile.role)} replace />
   }
 
-  // 7. Authorized -> render outlet (P9)
+  // 7. Admin MFA / AAL2 Enforcement:
+  // For users with administrative roles accessing administrative routes,
+  // ensure the session is at AAL2 (Authenticator Assurance Level 2).
+  const isAdminTarget =
+    location.pathname.startsWith('/admin') ||
+    (allowedRoles && allowedRoles.length > 0 && allowedRoles.every((r) => r === 'admin' || r === 'super_admin'))
+
+  if (profile && (profile.role === 'admin' || profile.role === 'super_admin') && isAdminTarget) {
+    const currentAal = mfaLevel || extractJwtAal(session?.access_token)
+    if (currentAal !== 'aal2') {
+      const redirectParam = encodeURIComponent(location.pathname + location.search)
+      return <Navigate to={`/auth/mfa?redirect=${redirectParam}`} replace />
+    }
+  }
+
+  // 8. Authorized -> render outlet (P9)
   return <Outlet />
 }

@@ -22,6 +22,7 @@ import {
   clearReadNotifications,
 } from '@/services/supabase/notifications'
 import type { Vendor } from '@/types'
+import { sanitizeSafeUrl } from '@/utils/sanitize-url'
 
 export interface VendorNotificationItem {
   id: string

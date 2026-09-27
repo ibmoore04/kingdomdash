@@ -8,6 +8,8 @@ import type {
   OrderItemLine,
 } from '@/types/admin'
 
+import { sanitizePostgrestSearch } from '@/utils/sanitize-postgrest'
+
 // Scaffold compatibility: cast to any until npm run db:types is executed with real DB.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any
@@ -63,8 +65,11 @@ export async function getUsers(params?: {
   }
 
   if (params?.search && params.search.trim()) {
-    const term = `%${params.search.trim()}%`
-    query = query.or(`full_name.ilike.${term},email.ilike.${term},phone.ilike.${term}`)
+    const clean = sanitizePostgrestSearch(params.search)
+    if (clean) {
+      const term = `%${clean}%`
+      query = query.or(`full_name.ilike.${term},email.ilike.${term},phone.ilike.${term}`)
+    }
   }
 
   return query.order('created_at', { ascending: false }).range(from, to)
@@ -537,7 +542,10 @@ export async function getEligibleUserProfiles(search?: string) {
     .limit(30)
 
   if (search && search.trim()) {
-    query = query.or(`full_name.ilike.%${search.trim()}%,email.ilike.%${search.trim()}%`)
+    const clean = sanitizePostgrestSearch(search)
+    if (clean) {
+      query = query.or(`full_name.ilike.%${clean}%,email.ilike.%${clean}%`)
+    }
   }
 
   return query
@@ -662,7 +670,10 @@ export async function getOrders(params?: {
   }
 
   if (params?.search && params.search.trim()) {
-    query = query.or(`pickup_address.ilike.%${params.search.trim()}%,delivery_address.ilike.%${params.search.trim()}%`)
+    const clean = sanitizePostgrestSearch(params.search)
+    if (clean) {
+      query = query.or(`pickup_address.ilike.%${clean}%,delivery_address.ilike.%${clean}%`)
+    }
   }
 
   const res = await query.order('created_at', { ascending: false }).range(from, to)

@@ -22,6 +22,7 @@ import {
   clearReadNotifications,
 } from '@/services/supabase/notifications'
 import type { Vendor } from '@/types'
+import { sanitizeSafeUrl } from '@/utils/sanitize-url'
 
 export interface VendorNotificationItem {
   id: string
@@ -356,7 +357,7 @@ export function VendorNotificationsTab({
                   {notif.action_url ? (
                     <div className="mt-3">
                       <Button asChild variant="outline" size="sm" className="h-8 gap-1.5 bg-white text-caption">
-                        <a href={notif.action_url}>
+                        <a href={sanitizeSafeUrl(notif.action_url)} target="_blank" rel="noopener noreferrer">
                           {notif.action_label || 'View Details'}
                           <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                         </a>

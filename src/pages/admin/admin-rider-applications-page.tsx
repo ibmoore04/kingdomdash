@@ -22,6 +22,7 @@ import {
   Bike,
 } from 'lucide-react';
 import { DirectOnboardRiderModal } from '@/components/admin/onboarding/direct-onboard-rider-modal';
+import { sanitizeSafeUrl } from '@/utils/sanitize-url';
 
 function formatDateSafe(val?: string | null): string {
   if (!val) return 'Recently';
@@ -405,9 +406,9 @@ export const AdminRiderApplicationsPage: React.FC = () => {
                   )}
                   {detailApp.license_url && (
                     <a
-                      href={detailApp.license_url}
+                      href={sanitizeSafeUrl(detailApp.license_url)}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       className="p-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/20 flex items-center justify-between text-primary"
                     >
                       <span>View License Image</span>

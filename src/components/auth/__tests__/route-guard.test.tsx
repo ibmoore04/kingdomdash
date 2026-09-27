@@ -44,6 +44,7 @@ describe('RouteGuard tests (P9, P10, P11, P13, Email Verification)', () => {
         <Routes>
           <Route path="/auth/login" element={<div>Login Page</div>} />
           <Route path="/auth/verify-email" element={<div>Verify Email Page</div>} />
+          <Route path="/auth/mfa" element={<div>MFA Verification Page</div>} />
           <Route path="/vendor" element={<div>Vendor Dashboard</div>} />
           <Route path="/rider" element={<div>Rider Dashboard</div>} />
           <Route path="/admin" element={<div>Admin Dashboard</div>} />
@@ -216,4 +217,84 @@ describe('RouteGuard tests (P9, P10, P11, P13, Email Verification)', () => {
       unmount()
     }
   })
+
+  describe('MFA / AAL2 Enforcement for Administrative Roles', () => {
+    it('Admin with AAL1 is redirected to /auth/mfa when accessing admin route', () => {
+      useAuthStore.setState({
+        session: sampleSession,
+        profile: { ...activeCustomer, role: 'admin' },
+        mfaLevel: 'aal1',
+        isLoading: false,
+      })
+      renderGuardedRoute('/admin/settings', ['admin'])
+
+      expect(screen.getByText('MFA Verification Page')).toBeInTheDocument()
+      expect(screen.queryByText('Admin Settings')).not.toBeInTheDocument()
+    })
+
+    it('SuperAdmin with AAL1 is redirected to /auth/mfa when accessing admin route', () => {
+      useAuthStore.setState({
+        session: sampleSession,
+        profile: { ...activeCustomer, role: 'super_admin' },
+        mfaLevel: 'aal1',
+        isLoading: false,
+      })
+      renderGuardedRoute('/admin/settings', ['super_admin'])
+
+      expect(screen.getByText('MFA Verification Page')).toBeInTheDocument()
+      expect(screen.queryByText('Admin Settings')).not.toBeInTheDocument()
+    })
+
+    it('Admin with AAL2 is granted access to admin routes', () => {
+      useAuthStore.setState({
+        session: sampleSession,
+        profile: { ...activeCustomer, role: 'admin' },
+        mfaLevel: 'aal2',
+        isLoading: false,
+      })
+      renderGuardedRoute('/admin/settings', ['admin'])
+
+      expect(screen.getByText('Admin Settings')).toBeInTheDocument()
+      expect(screen.queryByText('MFA Verification Page')).not.toBeInTheDocument()
+    })
+
+    it('Non-admin roles (customer, vendor, rider) are never forced into MFA and access routes normally at AAL1', () => {
+      // Customer
+      useAuthStore.setState({
+        session: sampleSession,
+        profile: { ...activeCustomer, role: 'customer' },
+        mfaLevel: 'aal1',
+        isLoading: false,
+      })
+      const { unmount: unmountCust } = renderGuardedRoute('/dashboard/orders', ['customer'])
+      expect(screen.getByText('Customer Orders')).toBeInTheDocument()
+      expect(screen.queryByText('MFA Verification Page')).not.toBeInTheDocument()
+      unmountCust()
+
+      // Vendor
+      useAuthStore.setState({
+        session: sampleSession,
+        profile: { ...activeCustomer, role: 'vendor' },
+        mfaLevel: 'aal1',
+        isLoading: false,
+      })
+      const { unmount: unmountVend } = renderGuardedRoute('/protected', ['vendor'])
+      expect(screen.getByText('Protected Content')).toBeInTheDocument()
+      expect(screen.queryByText('MFA Verification Page')).not.toBeInTheDocument()
+      unmountVend()
+
+      // Rider
+      useAuthStore.setState({
+        session: sampleSession,
+        profile: { ...activeCustomer, role: 'rider' },
+        mfaLevel: 'aal1',
+        isLoading: false,
+      })
+      const { unmount: unmountRider } = renderGuardedRoute('/protected', ['rider'])
+      expect(screen.getByText('Protected Content')).toBeInTheDocument()
+      expect(screen.queryByText('MFA Verification Page')).not.toBeInTheDocument()
+      unmountRider()
+    })
+  })
 })
+
