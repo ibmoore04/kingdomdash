@@ -21,12 +21,24 @@ jobs:
       - name: Trigger Supabase Settlement Worker Edge Function
         run: |
           set -e
+          SECRET_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
+          if [ -z "$SECRET_KEY" ]; then
+            echo "::error::Secret SUPABASE_SERVICE_ROLE_KEY is not configured or empty in GitHub Repository Secrets."
+            echo "Navigate to Repo Settings -> Secrets and variables -> Actions -> New repository secret and add SUPABASE_SERVICE_ROLE_KEY."
+            exit 1
+          fi
+
+          # Trim any accidental carriage returns or whitespace
+          CLEAN_KEY=$(echo -n "$SECRET_KEY" | tr -d '\r\n ')
           LIMIT="${{ inputs.limit || github.event.inputs.limit || '10' }}"
           echo "Batch limit: $LIMIT"
+          echo "Invoking settlement-worker on project kbrfaccrhmvgcdtdfjna..."
+
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             "https://kbrfaccrhmvgcdtdfjna.supabase.co/functions/v1/settlement-worker" \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "apikey: $CLEAN_KEY" \
+            -H "Authorization: Bearer $CLEAN_KEY" \
             -d "{\"limit\": $LIMIT}")
 
           HTTP_BODY=$(echo "$RESPONSE" | sed '$d')
@@ -38,6 +50,6 @@ jobs:
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             echo "Settlement worker executed successfully."
           else
-            echo "Settlement worker failed or returned non-2xx status."
+            echo "Settlement worker failed or returned non-2xx status ($HTTP_CODE)."
             exit 1
           fi
