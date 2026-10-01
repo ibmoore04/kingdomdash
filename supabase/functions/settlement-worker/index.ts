@@ -48,15 +48,25 @@ serve(async (req: Request) => {
         )
       }
 
+      // High-Assurance MFA check: if administrator has verified MFA factors, require AAL2 (§16)
+      const enrolledFactors = user.factors?.filter((f: any) => f.status === 'verified') || []
+      const currentAal = (user as any).aal || user.app_metadata?.aal
+      if (enrolledFactors.length > 0 && currentAal && currentAal !== 'aal2') {
+        return new Response(
+          JSON.stringify({ error: 'Access denied: high-assurance multi-factor authentication (AAL2) required' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
       const { data: profile } = await supabaseAdmin
         .from('profiles')
-        .select('role')
+        .select('role, is_active')
         .eq('id', user.id)
         .single()
 
-      if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      if (!profile || !profile.is_active || !['super_admin', 'admin'].includes(profile.role)) {
         return new Response(
-          JSON.stringify({ error: 'Access denied: requires administrator privileges' }),
+          JSON.stringify({ error: 'Access denied: active administrator privileges required' }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }

@@ -29,6 +29,7 @@ describe('Step 4 — Settlement Engine End-to-End Smoke Test Suite', () => {
     '20261007000001_partner_bank_vault_and_receivables_clawback.sql',
     '20261008000001_paystack_webhook_events_ledger.sql',
     '20261009000001_settlement_worker_cron.sql',
+    '20261010000001_settlement_security_hardening.sql',
   ]
 
   describe('1. Global Schema & Migration Parity Invariants', () => {

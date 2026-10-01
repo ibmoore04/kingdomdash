@@ -58,6 +58,20 @@ serve(async (req: Request) => {
       )
     }
 
+    // Role check: Only active vendors, riders, and administrators can query bank resolution
+    const { data: profile, error: profileErr } = await supabaseUserClient
+      .from('profiles')
+      .select('role, is_active')
+      .eq('id', user.id)
+      .single()
+
+    if (profileErr || !profile || !profile.is_active || !['vendor', 'rider', 'super_admin', 'admin'].includes(profile.role)) {
+      return new Response(
+        JSON.stringify({ error: 'Access denied: bank account resolution is restricted to active registered partners and administrators' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // 2. Parse and validate request parameters
     const body: ResolveBankRequest = await req.json().catch(() => ({} as ResolveBankRequest))
     const { account_number, bank_code } = body
