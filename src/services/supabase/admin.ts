@@ -1772,3 +1772,233 @@ export async function updatePersonalShopperStatus(
     .update({ status: orderStatus, updated_at: now })
     .eq('id', id)
 }
+
+// =============================================================================
+// §16 ROLE IMPERSONATION & AUDIT TRAIL
+// =============================================================================
+
+export interface ImpersonateUserResponse {
+  success: boolean
+  log_id: string
+  target_user: {
+    id: string
+    email: string
+    full_name: string
+    phone: string | null
+    avatar_url: string | null
+    role: string
+    is_active: boolean
+    created_at: string
+    updated_at: string
+  }
+  started_at: string
+}
+
+export async function startAdminImpersonation(
+  targetUserId: string,
+  reason: string,
+  metadata: Record<string, unknown> = {}
+): Promise<{ data: ImpersonateUserResponse | null; error: Error | null }> {
+  try {
+    const { data, error } = await db.rpc('admin_start_impersonation', {
+      p_target_user_id: targetUserId,
+      p_reason: reason,
+      p_metadata: metadata,
+    })
+
+    if (error) {
+      return { data: null, error: new Error(error.message || 'Failed to start impersonation session') }
+    }
+
+    return { data: data as ImpersonateUserResponse, error: null }
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error('Network error starting impersonation session'),
+    }
+  }
+}
+
+export async function stopAdminImpersonation(
+  targetUserId: string,
+  metadata: Record<string, unknown> = {}
+): Promise<{ data: { success: boolean; log_id: string; ended_at: string } | null; error: Error | null }> {
+  try {
+    const { data, error } = await db.rpc('admin_stop_impersonation', {
+      p_target_user_id: targetUserId,
+      p_metadata: metadata,
+    })
+
+    if (error) {
+      return { data: null, error: new Error(error.message || 'Failed to stop impersonation session') }
+    }
+
+    return { data: data as { success: boolean; log_id: string; ended_at: string }, error: null }
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error('Network error stopping impersonation session'),
+    }
+  }
+}
+
+export async function getAdminImpersonationLogs(limit: number = 50) {
+  return db
+    .from('admin_impersonation_logs')
+    .select(`
+      id,
+      admin_id,
+      target_user_id,
+      target_role,
+      reason,
+      action,
+      metadata,
+      ip_address,
+      created_at,
+      admin:profiles!admin_impersonation_logs_admin_id_fkey(full_name, email),
+      target:profiles!admin_impersonation_logs_target_user_id_fkey(full_name, email)
+    `)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+}
+
+// =============================================================================
+// §17 AUTOMATED SETTLEMENT CONTROL & WORKER DISPATCH
+// =============================================================================
+
+export interface AdminSettlementControlData {
+  float_control: {
+    last_polled_balance_kobo: number
+    last_polled_balance: number
+    active_reserved_kobo: number
+    available_float_kobo: number
+    available_float: number
+    last_polled_at: string
+    is_stale: boolean
+  }
+  queue_metrics: {
+    pending_jobs: number
+    action_required_jobs: number
+    completed_jobs: number
+  }
+  recent_jobs: Array<{
+    id: string
+    order_id: string
+    status: string
+    attempts: number
+    max_attempts: number
+    locked_by: string | null
+    last_error: string | null
+    scheduled_at: string
+    completed_at: string | null
+    created_at: string
+    updated_at: string
+    order_status: string
+    subtotal: number
+    delivery_fee: number
+    service_fee: number
+    gross_customer_charge: number
+    vendor_gross_amount: number
+    rider_gross_amount: number
+    settlement_status: string
+    vendor_status: string
+    rider_status: string
+  }>
+  recent_payouts: Array<{
+    id: string
+    payable_id: string
+    attempt_number: number
+    transfer_reference: string
+    paystack_transfer_code: string | null
+    paystack_recipient_code: string
+    amount: number
+    amount_kobo: number
+    expected_transfer_fee_kobo: number
+    expected_stamp_duty_kobo: number
+    actual_transfer_fee_kobo: number | null
+    actual_stamp_duty_kobo: number | null
+    status: string
+    failure_reason: string | null
+    reversed_at: string | null
+    created_at: string
+    updated_at: string
+    order_id: string
+    recipient_type: 'vendor' | 'rider'
+    recipient_name: string
+    recipient_email: string
+  }>
+}
+
+export async function getAdminSettlementControlData(): Promise<{
+  data: AdminSettlementControlData | null
+  error: Error | null
+}> {
+  try {
+    const { data, error } = await db.rpc('get_admin_settlement_control_data')
+
+    if (error) {
+      return { data: null, error: new Error(error.message || 'Failed to load settlement control data') }
+    }
+
+    return { data: data as AdminSettlementControlData, error: null }
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error('Network error loading settlement control data'),
+    }
+  }
+}
+
+export async function retryFailedSettlementJob(orderId: string): Promise<{
+  data: { success: boolean; order_id: string; new_status: string } | null
+  error: Error | null
+}> {
+  try {
+    const { data, error } = await db.rpc('retry_failed_settlement_job', {
+      p_order_id: orderId,
+    })
+
+    if (error) {
+      return { data: null, error: new Error(error.message || 'Failed to retry settlement job') }
+    }
+
+    return { data, error: null }
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error('Network error retrying settlement job'),
+    }
+  }
+}
+
+export async function triggerSettlementWorkerRun(options?: {
+  limit?: number
+  orderId?: string
+  syncFloatOnly?: boolean
+}): Promise<{
+  data: any
+  error: Error | null
+}> {
+  try {
+    const { data, error } = await supabase.functions.invoke('settlement-worker', {
+      body: {
+        limit: options?.limit ?? 10,
+        order_id: options?.orderId,
+        sync_float_only: options?.syncFloatOnly ?? false,
+      },
+    })
+
+    if (error) {
+      return { data: null, error: new Error(error.message || 'Worker execution failed') }
+    }
+
+    return { data, error: null }
+  } catch (err) {
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error('Network error executing settlement worker'),
+    }
+  }
+}
+
+

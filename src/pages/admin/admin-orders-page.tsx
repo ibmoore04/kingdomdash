@@ -1057,9 +1057,9 @@ export const AdminOrdersPage: React.FC = () => {
                       </p>
                     </div>
                     <div>
-                      <span className="text-text-muted text-[10px]">Tax / Surcharge</span>
+                      <span className="text-text-muted text-[10px]">Service Fee</span>
                       <p className="text-text-primary">
-                        ₦{Number(orderDetails.order.tax_amount || 0).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                        ₦{Number((orderDetails.order as any).service_fee || 150).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
                       </p>
                     </div>
                     <div>

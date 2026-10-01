@@ -95,6 +95,7 @@ export default function CheckoutPage() {
   const [baseFee, setBaseFee] = useState<number | null>(null)
   const [distanceRate, setDistanceRate] = useState<number | null>(null)
   const [pricingTier, setPricingTier] = useState<number | null>(null)
+  const [serviceFee, setServiceFee] = useState<number>(150)
   const [isLoadingPricing, setIsLoadingPricing] = useState(false)
   const [pricingError, setPricingError] = useState<string | null>(null)
   const [isAddressServiceable, setIsAddressServiceable] = useState(true)
@@ -177,6 +178,9 @@ export default function CheckoutPage() {
           setBaseFee(res.data.base_fee ?? null)
           setDistanceRate(res.data.distance_rate ?? null)
           setPricingTier(res.data.pricing_tier ?? null)
+          if (typeof res.data.service_fee === 'number') {
+            setServiceFee(res.data.service_fee)
+          }
           if (res.data.service_area_name) {
             setServiceAreaName(res.data.service_area_name)
           }
@@ -720,7 +724,7 @@ export default function CheckoutPage() {
               items={items}
               subtotal={subtotal}
               deliveryFee={effectiveDeliveryFee}
-              serviceFee={150}
+              serviceFee={serviceFee}
               promoDiscount={promoDiscount}
               appliedPromoCode={appliedPromoCode}
               onApplyPromo={handleApplyPromo}

@@ -13,6 +13,7 @@ import {
   Settings,
   Globe,
   HelpCircle,
+  Wallet,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useCurrentVendor } from '@/hooks/use-current-vendor'
@@ -21,6 +22,7 @@ import { VendorOverviewTab } from '@/components/vendor/vendor-overview-tab'
 import { VendorOrdersList } from '@/components/vendor/VendorOrdersList'
 import { VendorProductsTab } from '@/components/vendor/vendor-products-tab'
 import { VendorCategoriesTab } from '@/components/vendor/vendor-categories-tab'
+import { VendorEarningsTab } from '@/components/vendor/vendor-earnings-tab'
 import { VendorProfileTab } from '@/components/vendor/vendor-profile-tab'
 import { VendorSettingsTab } from '@/components/vendor/vendor-settings-tab'
 import { VendorNotificationsTab } from '@/components/vendor/vendor-notifications-tab'
@@ -57,11 +59,12 @@ import type {
   VendorUpdate,
 } from '@/types'
 
-type TabType = 'overview' | 'orders' | 'products' | 'categories' | 'profile' | 'notifications' | 'settings' | 'support'
+type TabType = 'overview' | 'orders' | 'products' | 'categories' | 'earnings' | 'profile' | 'notifications' | 'settings' | 'support'
 
 const NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'orders', label: 'Orders & Fulfillment', icon: ShoppingBag },
+  { id: 'earnings', label: 'Earnings & Settlements', icon: Wallet },
   { id: 'products', label: 'Products & Menu', icon: UtensilsCrossed },
   { id: 'categories', label: 'Categories', icon: FolderTree },
   { id: 'profile', label: 'Business Profile', icon: Store },
@@ -73,6 +76,7 @@ const NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] 
 const VENDOR_MOBILE_NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'orders', label: 'Orders', icon: ShoppingBag },
+  { id: 'earnings', label: 'Earnings', icon: Wallet },
   { id: 'products', label: 'Products', icon: UtensilsCrossed },
   { id: 'support', label: 'Support', icon: HelpCircle },
   { id: 'settings', label: 'Settings', icon: Settings },
@@ -81,6 +85,7 @@ const VENDOR_MOBILE_NAV_ITEMS: { id: TabType; label: string; icon: typeof Layout
 const TAB_DESCRIPTIONS: Record<TabType, string> = {
   overview: 'Store analytics, stock health, and catalog performance overview',
   orders: 'Incoming orders, kitchen preparation, and courier fulfillment',
+  earnings: 'Gross merchandise revenue, verified payout bank accounts, and settlement statements',
   products: 'Manage menu items, dish pricing, and stock availability',
   categories: 'Store taxonomy, dish sections, and menu organization',
   profile: 'Business storefront details, brand profile, and contact information',
@@ -96,7 +101,7 @@ export default function VendorDashboardPage() {
 
   const initialTab = (searchParams.get('tab') as TabType) || 'overview'
   const [activeTab, setActiveTab] = useState<TabType>(
-    ['overview', 'orders', 'products', 'categories', 'profile', 'notifications', 'settings', 'support'].includes(initialTab)
+    ['overview', 'orders', 'products', 'categories', 'earnings', 'profile', 'notifications', 'settings', 'support'].includes(initialTab)
       ? initialTab
       : 'overview'
   )
@@ -559,6 +564,10 @@ export default function VendorDashboardPage() {
 
             {activeTab === 'orders' && (
               <VendorOrdersList vendorId={vendor.id} />
+            )}
+
+            {activeTab === 'earnings' && (
+              <VendorEarningsTab vendor={vendor} />
             )}
 
             {activeTab === 'products' && (

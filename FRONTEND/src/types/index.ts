@@ -82,6 +82,7 @@ export interface DeliveryFeePreviewResult {
   max_fee?: number | null
   raw_fee?: number | null
   delivery_fee?: number | null
+  service_fee?: number | null
   pricing_tier?: number | null
   pricing_rule_id?: string | null
   service_area_id?: string | null

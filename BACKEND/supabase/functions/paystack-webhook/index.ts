@@ -104,6 +104,34 @@ serve(async (req: Request) => {
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
 
+    // Compute event fingerprint (§11): SHA-256(event : identifier : timestamp)
+    const eventIdentifier = data.reference || data.transfer_code || data.id || 'no_id'
+    const eventTimestamp = data.transferred_at || data.paid_at || data.created_at || ''
+    const fingerprintSource = `${event}:${eventIdentifier}:${eventTimestamp}`
+    const encoder = new TextEncoder()
+    const hashBytes = await crypto.subtle.digest('SHA-256', encoder.encode(fingerprintSource))
+    const eventFingerprint = Array.from(new Uint8Array(hashBytes)).map(b => b.toString(16).padStart(2, '0')).join('')
+
+    // Idempotent insertion into paystack_webhook_events
+    const { error: insertErr } = await supabaseAdmin
+      .from('paystack_webhook_events')
+      .insert({
+        event_fingerprint: eventFingerprint,
+        event_type: event || 'unknown',
+        reference: data.reference || null,
+        transfer_code: data.transfer_code || null,
+        payload,
+        processed: false,
+      })
+
+    // If duplicate event fingerprint, acknowledge immediately (idempotency replay)
+    if (insertErr && (insertErr.code === '23505' || insertErr.message?.includes('duplicate key'))) {
+      return new Response(
+        JSON.stringify({ success: true, message: 'Event already recorded and processed' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // 4. Handle 'charge.success' event (§19, §20)
     if (event === 'charge.success') {
       const reference = data.reference
@@ -154,7 +182,69 @@ serve(async (req: Request) => {
       )
     }
 
-    // 5. Audit non-success events (e.g. charge.failed)
+    // 5. Handle Paystack Transfer Events (Automated Settlement Engine §11)
+    if (event === 'transfer.success' || event === 'transfer.failed' || event === 'transfer.reversed') {
+      const transferCode = data.transfer_code
+      const transferReference = data.reference
+      const transferFeeKobo = data.fee ? Number(data.fee) : null
+
+      // Look up payout_transaction by transfer_reference or transfer_code
+      let txQuery = supabaseAdmin
+        .from('payout_transactions')
+        .select('id, payable_id, status, transfer_reference')
+      
+      if (transferReference) {
+        txQuery = txQuery.eq('transfer_reference', transferReference)
+      } else if (transferCode) {
+        txQuery = txQuery.eq('paystack_transfer_code', transferCode)
+      }
+
+      const { data: matchedTxs } = await txQuery
+      const matchedTx = matchedTxs && matchedTxs.length > 0 ? matchedTxs[0] : null
+
+      if (matchedTx) {
+        if (event === 'transfer.success') {
+          await supabaseAdmin
+            .from('payout_transactions')
+            .update({
+              status: 'success',
+              paystack_transfer_code: transferCode || undefined,
+              actual_transfer_fee_kobo: transferFeeKobo || undefined,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', matchedTx.id)
+            .in('status', ['pending', 'failed'])
+        } else if (event === 'transfer.failed') {
+          await supabaseAdmin
+            .from('payout_transactions')
+            .update({
+              status: 'failed',
+              failure_reason: data.reason || 'Paystack transfer failed',
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', matchedTx.id)
+            .in('status', ['pending'])
+        } else if (event === 'transfer.reversed') {
+          await supabaseAdmin
+            .from('payout_transactions')
+            .update({
+              status: 'reversed',
+              reversed_at: new Date().toISOString(),
+              failure_reason: data.reason || 'Transfer reversed by NIBSS',
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', matchedTx.id)
+            .in('status', ['pending', 'success'])
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: `Transfer event ${event} processed` }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // 6. Audit non-success events (e.g. charge.failed)
     if (event === 'charge.failed' && data.reference) {
       await supabaseAdmin.from('payment_events').insert({
         paystack_reference: data.reference,

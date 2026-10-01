@@ -1,0 +1,42 @@
+name: Automated Settlement Worker Cron
+
+on:
+  schedule:
+    # Runs every 5 minutes (standard GitHub Actions cron resolution)
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Batch size limit of queued orders to disburse'
+        required: false
+        default: '10'
+
+jobs:
+  trigger-settlement-worker:
+    name: Run Settlement Worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Trigger Supabase Settlement Worker Edge Function
+        run: |
+          set -e
+          echo "Invoking settlement-worker on project kbrfaccrhmvgcdtdfjna..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://kbrfaccrhmvgcdtdfjna.supabase.co/functions/v1/settlement-worker" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -d "{\"limit\": ${{ github.event.inputs.limit || 10 }}}")
+
+          HTTP_BODY=$(echo "$RESPONSE" | sed '$d')
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+
+          echo "Response HTTP Status: $HTTP_CODE"
+          echo "Response Body: $HTTP_BODY"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "Settlement worker executed successfully."
+          else
+            echo "Settlement worker failed or returned non-2xx status."
+            exit 1
+          fi

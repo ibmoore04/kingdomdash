@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getUsers, toggleUserActive, getCorporateLeads, updateCorporateLeadStatus, type CorporateLeadRow } from '../../services/supabase/admin';
 import type { AdminUserRow } from '../../types/admin';
 import { useAuthStore } from '@/stores/auth-store';
+import { roleDashboardPath } from '@/utils/safe-redirect';
 import {
   Select,
   SelectContent,
@@ -23,6 +24,7 @@ import {
   Phone,
   Mail,
   Clock,
+  Eye,
 } from 'lucide-react';
 
 export const AdminUsersPage: React.FC = () => {
@@ -50,6 +52,7 @@ export const AdminUsersPage: React.FC = () => {
 
   const currentProfile = useAuthStore((s) => s.profile);
   const isSuperAdmin = currentProfile?.role === 'super_admin';
+  const startImpersonation = useAuthStore((s) => s.startImpersonation);
 
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -60,6 +63,72 @@ export const AdminUsersPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Impersonation State
+  const [impersonatingUser, setImpersonatingUser] = useState<AdminUserRow | null>(null);
+  const [impersonationReason, setImpersonationReason] = useState('');
+  const [impersonationModalOpen, setImpersonationModalOpen] = useState(false);
+  const [impersonationError, setImpersonationError] = useState<string | null>(null);
+
+  const canImpersonateUser = (target: AdminUserRow) => {
+    if (!target.is_active) return false;
+    if (target.id === currentProfile?.id) return false;
+    if (target.role === 'super_admin') return false;
+    if (target.role === 'admin' && !isSuperAdmin) return false;
+    return true;
+  };
+
+  const handleOpenImpersonation = (target: AdminUserRow) => {
+    setImpersonatingUser(target);
+    setImpersonationReason('');
+    setImpersonationError(null);
+    setImpersonationModalOpen(true);
+  };
+
+  const handleConfirmImpersonation = async () => {
+    if (!impersonatingUser) return;
+    const cleanReason = impersonationReason.trim();
+    if (cleanReason.length < 5) {
+      setImpersonationError('A business reason of at least 5 characters is required for audit logging');
+      return;
+    }
+
+    try {
+      setActionLoading('impersonating');
+      setImpersonationError(null);
+      const res = await startImpersonation(
+        {
+          id: impersonatingUser.id,
+          email: impersonatingUser.email || '',
+          full_name: impersonatingUser.full_name || '',
+          phone: impersonatingUser.phone_number,
+          avatar_url: null,
+          role: impersonatingUser.role,
+          is_active: impersonatingUser.is_active,
+          created_at: impersonatingUser.created_at,
+          updated_at: impersonatingUser.created_at,
+        },
+        cleanReason
+      );
+
+      if (!res.success) {
+        setImpersonationError(res.error || 'Failed to start view-as session');
+        setActionLoading(null);
+        return;
+      }
+
+      setImpersonationModalOpen(false);
+      const targetRole = impersonatingUser.role;
+      setImpersonatingUser(null);
+      if (typeof window !== 'undefined') {
+        window.location.href = roleDashboardPath(targetRole);
+      }
+    } catch (err) {
+      setImpersonationError(err instanceof Error ? err.message : 'Network error starting impersonation');
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   // Corporate Leads State
   const [corporateLeads, setCorporateLeads] = useState<CorporateLeadRow[]>([]);
@@ -610,32 +679,46 @@ export const AdminUsersPage: React.FC = () => {
                   </span>
                 </div>
 
-                {user.role === 'super_admin' && !isSuperAdmin ? null : (
-                  <button
-                    type="button"
-                    disabled={
-                      actionLoading === user.id ||
-                      (user.id === currentProfile?.id && user.is_active)
-                    }
-                    title={
-                      user.id === currentProfile?.id && user.is_active
-                        ? 'You cannot deactivate your own account'
-                        : undefined
-                    }
-                    onClick={() => handleToggleActive(user.id, user.is_active)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors disabled:opacity-50 shadow-xs ${
-                      user.is_active
-                        ? 'bg-rose-50 text-primary hover:bg-rose-100 border border-rose-200'
-                        : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
-                    }`}
-                  >
-                    {actionLoading === user.id
-                      ? 'Updating...'
-                      : user.is_active
-                      ? 'Deactivate'
-                      : 'Activate'}
-                  </button>
-                )}
+                <div className="flex items-center gap-1.5">
+                  {user.role === 'super_admin' && !isSuperAdmin ? null : (
+                    <button
+                      type="button"
+                      disabled={
+                        actionLoading === user.id ||
+                        (user.id === currentProfile?.id && user.is_active)
+                      }
+                      title={
+                        user.id === currentProfile?.id && user.is_active
+                          ? 'You cannot deactivate your own account'
+                          : undefined
+                      }
+                      onClick={() => handleToggleActive(user.id, user.is_active)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors disabled:opacity-50 shadow-xs ${
+                        user.is_active
+                          ? 'bg-rose-50 text-primary hover:bg-rose-100 border border-rose-200'
+                          : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                      }`}
+                    >
+                      {actionLoading === user.id
+                        ? 'Updating...'
+                        : user.is_active
+                        ? 'Deactivate'
+                        : 'Activate'}
+                    </button>
+                  )}
+
+                  {canImpersonateUser(user) && (
+                    <button
+                      type="button"
+                      disabled={actionLoading !== null}
+                      onClick={() => handleOpenImpersonation(user)}
+                      className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200 transition-colors inline-flex items-center gap-1 shadow-xs"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-amber-600" />
+                      <span>View As</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))
@@ -703,32 +786,47 @@ export const AdminUsersPage: React.FC = () => {
                       {new Date(user.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {user.role === 'super_admin' && !isSuperAdmin ? null : (
-                        <button
-                          type="button"
-                          disabled={
-                            actionLoading === user.id ||
-                            (user.id === currentProfile?.id && user.is_active)
-                          }
-                          title={
-                            user.id === currentProfile?.id && user.is_active
-                              ? 'You cannot deactivate your own account'
-                              : undefined
-                          }
-                          onClick={() => handleToggleActive(user.id, user.is_active)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors disabled:opacity-50 ${
-                            user.is_active
-                              ? 'bg-rose-50 text-primary hover:bg-rose-100 border border-rose-200'
-                              : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
-                          }`}
-                        >
-                          {actionLoading === user.id
-                            ? 'Updating...'
-                            : user.is_active
-                            ? 'Deactivate'
-                            : 'Activate'}
-                        </button>
-                      )}
+                      <div className="flex items-center justify-end gap-1.5">
+                        {user.role === 'super_admin' && !isSuperAdmin ? null : (
+                          <button
+                            type="button"
+                            disabled={
+                              actionLoading === user.id ||
+                              (user.id === currentProfile?.id && user.is_active)
+                            }
+                            title={
+                              user.id === currentProfile?.id && user.is_active
+                                ? 'You cannot deactivate your own account'
+                                : undefined
+                            }
+                            onClick={() => handleToggleActive(user.id, user.is_active)}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors disabled:opacity-50 ${
+                              user.is_active
+                                ? 'bg-rose-50 text-primary hover:bg-rose-100 border border-rose-200'
+                                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                            }`}
+                          >
+                            {actionLoading === user.id
+                              ? 'Updating...'
+                              : user.is_active
+                              ? 'Deactivate'
+                              : 'Activate'}
+                          </button>
+                        )}
+
+                        {canImpersonateUser(user) && (
+                          <button
+                            type="button"
+                            disabled={actionLoading !== null}
+                            onClick={() => handleOpenImpersonation(user)}
+                            className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200 transition-colors inline-flex items-center gap-1 shadow-xs"
+                            title={`View platform as ${user.full_name || 'user'}`}
+                          >
+                            <Eye className="w-3 h-3 text-amber-600" />
+                            <span>View As</span>
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -764,6 +862,95 @@ export const AdminUsersPage: React.FC = () => {
         </div>
       </div>
       </>
+      )}
+
+      {/* Role Impersonation Modal */}
+      {impersonationModalOpen && impersonatingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-5 border-b border-border bg-light-surface/60 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center border border-amber-200">
+                <Eye className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-text-primary">Role Impersonation (View-As)</h3>
+                <p className="text-[11px] text-text-muted">Strictly gated administrative support session</p>
+              </div>
+            </div>
+
+            <div className="p-5 space-y-4 text-xs">
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 space-y-1">
+                <div className="font-semibold text-xs flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5" />
+                  Audit Logging Active
+                </div>
+                <p className="text-[11px] leading-relaxed text-amber-700">
+                  You will view the platform through the eyes of <strong>{impersonatingUser.full_name}</strong> ({impersonatingUser.role}). All navigation and actions will be logged with your administrator identity.
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-text-primary text-xs">Target User</label>
+                <div className="p-2.5 rounded-xl bg-light-surface border border-border flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold text-text-primary">{impersonatingUser.full_name}</div>
+                    <div className="text-[11px] text-text-muted font-mono">{impersonatingUser.email || impersonatingUser.phone_number}</div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white border border-border text-text-secondary">
+                    {impersonatingUser.role}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-semibold text-text-primary text-xs flex items-center justify-between">
+                  <span>Reason for Impersonation <span className="text-primary">*</span></span>
+                  <span className="text-[10px] text-text-muted">Min. 5 characters</span>
+                </label>
+                <textarea
+                  rows={3}
+                  value={impersonationReason}
+                  onChange={(e) => {
+                    setImpersonationReason(e.target.value);
+                    setImpersonationError(null);
+                  }}
+                  placeholder="e.g. Customer support ticket #442, investigating order delivery dispatch, verifying vendor catalogue layout"
+                  className="w-full p-2.5 bg-white border border-border rounded-xl text-xs text-text-primary placeholder:text-text-muted focus:outline-hidden focus:border-primary shadow-xs transition-colors"
+                />
+                {impersonationError && (
+                  <p className="text-[11px] text-primary flex items-center gap-1 mt-1 font-medium">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{impersonationError}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="p-4 bg-light-surface/40 border-t border-border flex items-center justify-end gap-2">
+              <button
+                type="button"
+                disabled={actionLoading !== null}
+                onClick={() => {
+                  setImpersonationModalOpen(false);
+                  setImpersonatingUser(null);
+                  setImpersonationError(null);
+                }}
+                className="px-3 py-2 rounded-xl text-xs font-semibold text-text-secondary hover:bg-light-surface transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={actionLoading !== null || impersonationReason.trim().length < 5}
+                onClick={handleConfirmImpersonation}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-black shadow-sm transition-all disabled:opacity-50"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>{actionLoading === 'impersonating' ? 'Starting Session...' : 'Start View-As Session'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -333,6 +333,7 @@ export interface Database {
           pickup_address: string
           delivery_address: string
           delivery_fee: number
+          service_fee: number
           subtotal: number
           total: number
           special_instructions: string | null
@@ -352,6 +353,7 @@ export interface Database {
           pickup_address: string
           delivery_address: string
           delivery_fee?: number
+          service_fee?: number
           subtotal?: number
           total?: number
           special_instructions?: string | null
@@ -371,6 +373,7 @@ export interface Database {
           pickup_address?: string
           delivery_address?: string
           delivery_fee?: number
+          service_fee?: number
           subtotal?: number
           total?: number
           special_instructions?: string | null
@@ -675,6 +678,51 @@ export interface Database {
           }
         ]
       }
+      partner_bank_accounts: {
+        Row: {
+          id: string
+          vendor_id: string
+          profile_id: string
+          bank_name: string
+          bank_code: string
+          account_number: string
+          account_name: string
+          recipient_code: string | null
+          is_verified: boolean
+          verified_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          vendor_id: string
+          profile_id: string
+          bank_name: string
+          bank_code: string
+          account_number: string
+          account_name: string
+          recipient_code?: string | null
+          is_verified?: boolean
+          verified_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          vendor_id?: string
+          profile_id?: string
+          bank_name?: string
+          bank_code?: string
+          account_number?: string
+          account_name?: string
+          recipient_code?: string | null
+          is_verified?: boolean
+          verified_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -812,6 +860,36 @@ export interface Database {
           p_service_type: Database['public']['Enums']['service_type']
         }
         Returns: boolean
+      }
+      save_partner_bank_account: {
+        Args: {
+          p_vendor_id: string
+          p_bank_name: string
+          p_bank_code: string
+          p_account_number: string
+          p_account_name: string
+        }
+        Returns: Json
+      }
+      get_partner_bank_account: {
+        Args: {
+          p_vendor_id: string
+        }
+        Returns: Json | null
+      }
+      get_vendor_earnings_summary: {
+        Args: {
+          p_vendor_id: string
+        }
+        Returns: Json
+      }
+      get_vendor_settlement_statements: {
+        Args: {
+          p_vendor_id: string
+          p_limit?: number
+          p_offset?: number
+        }
+        Returns: Json
       }
     }
     CompositeTypes: {

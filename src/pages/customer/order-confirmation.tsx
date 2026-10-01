@@ -608,6 +608,12 @@ export default function OrderConfirmationPage() {
                 <span className="font-semibold text-text-primary">{formatNgn(order.subtotal)}</span>
               </div>
               <div className="flex justify-between text-text-secondary">
+                <span>Platform Service Fee</span>
+                <span className="font-semibold text-text-primary">
+                  {formatNgn((order as any).service_fee ?? 150)}
+                </span>
+              </div>
+              <div className="flex justify-between text-text-secondary">
                 <span>Delivery Fee</span>
                 <span className="font-semibold text-text-primary">
                   {order.delivery_fee && order.delivery_fee > 0

@@ -51,6 +51,7 @@ interface CustomerOrderSummary {
   status: string
   subtotal: number
   delivery_fee: number
+  service_fee?: number
   total: number
   delivery_pin?: string | null
   pickup_address?: string
@@ -204,6 +205,7 @@ export default function CustomerDashboardPage() {
               status,
               subtotal,
               delivery_fee,
+              service_fee,
               total,
               pickup_address,
               delivery_address,

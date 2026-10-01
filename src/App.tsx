@@ -100,6 +100,7 @@ const VendorPendingPage = lazy(() => import('@/pages/customer/vendor-pending-pag
 
 // ── Loading fallback ──────────────────────────────────────────────────────────
 import { OfflineBanner } from '@/components/shared/offline-banner'
+import { ImpersonationBanner } from '@/components/shared/impersonation-banner'
 import { Preloader } from '@/components/shared/preloader'
 import { RouteProgressBar } from '@/components/shared/route-progress'
 
@@ -113,6 +114,7 @@ export default function App() {
       <RouteProgressBar />
       <ScrollToTop />
       <OfflineBanner />
+      <ImpersonationBanner />
       <Suspense fallback={<PageLoader />}>
         <Routes>
         {/* ── Direct auth aliases (preserving query parameters) ─────────────── */}
