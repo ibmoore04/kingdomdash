@@ -63,7 +63,6 @@ jobs:
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             "https://kbrfaccrhmvgcdtdfjna.supabase.co/functions/v1/settlement-worker" \
             -H "Content-Type: application/json" \
-            -H "apikey: $CLEAN_KEY" \
             -H "Authorization: Bearer $CLEAN_KEY" \
             -d "{\"limit\": $LIMIT}")
 
