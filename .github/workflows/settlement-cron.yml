@@ -30,19 +30,28 @@ jobs:
 
           # Trim any accidental quotes, carriage returns or whitespace
           CLEAN_KEY=$(echo -n "$SECRET_KEY" | tr -d '\r\n "' | sed "s/^'//;s/'$//")
+          KEY_LEN=${#CLEAN_KEY}
+          KEY_PREFIX=$(echo "$CLEAN_KEY" | cut -c1-10)
+          echo "Key Diagnostics: length=$KEY_LEN, prefix=${KEY_PREFIX}..."
 
-          KEY_ROLE=$(node -e "try { const p = JSON.parse(Buffer.from(process.env.K.split('.')[1], 'base64').toString()); console.log(p.role || ''); } catch { console.log(''); }" 2>/dev/null env K="$CLEAN_KEY" || true)
-          KEY_REF=$(node -e "try { const p = JSON.parse(Buffer.from(process.env.K.split('.')[1], 'base64').toString()); console.log(p.ref || ''); } catch { console.log(''); }" 2>/dev/null env K="$CLEAN_KEY" || true)
+          PARSED=$(node -e "try { const p = JSON.parse(Buffer.from(process.argv[1].split('.')[1], 'base64').toString()); console.log((p.role || 'unknown') + ' ' + (p.ref || 'unknown')); } catch { console.log('not_a_jwt unknown'); }" "$CLEAN_KEY")
+          KEY_ROLE=$(echo "$PARSED" | awk '{print $1}')
+          KEY_REF=$(echo "$PARSED" | awk '{print $2}')
 
           echo "Configured key type: role='$KEY_ROLE', project='$KEY_REF'"
 
           if [ "$KEY_ROLE" = "anon" ]; then
-            echo "::error::You pasted the public 'anon' key in GitHub Secrets instead of the secret 'service_role' key!"
+            echo "::error::You pasted the public 'anon' key into GitHub Secrets instead of the secret 'service_role' key!"
             echo "Please go to Supabase Dashboard -> Project Settings -> API -> Project API keys and copy the 'service_role' (secret) key."
             exit 1
           fi
 
-          if [ -n "$KEY_REF" ] && [ "$KEY_REF" != "kbrfaccrhmvgcdtdfjna" ]; then
+          if [ "$KEY_ROLE" = "not_a_jwt" ]; then
+            echo "::error::The secret in GitHub is not a valid Supabase JWT (it must start with 'eyJ...' and have 3 dot-separated parts)."
+            exit 1
+          fi
+
+          if [ -n "$KEY_REF" ] && [ "$KEY_REF" != "unknown" ] && [ "$KEY_REF" != "kbrfaccrhmvgcdtdfjna" ]; then
             echo "::error::The key belongs to project '$KEY_REF', but this workflow is targeting 'kbrfaccrhmvgcdtdfjna'!"
             exit 1
           fi
