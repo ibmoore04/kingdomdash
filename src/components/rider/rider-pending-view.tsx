@@ -24,9 +24,9 @@ export function RiderPendingView({ onRefresh, isLoading }: RiderPendingViewProps
           Under Review
         </Badge>
 
-        <h2 className="text-h3 font-bold text-text-primary">
+        <h1 className="text-h3 font-bold text-text-primary">
           Rider Application Awaiting Verification
-        </h2>
+        </h1>
 
         <p className="mt-3 text-body text-text-secondary">
           Welcome{profile?.full_name ? `, ${profile.full_name}` : ''}! Your delivery courier application is currently being reviewed by the KingdomDash operations team for{' '}

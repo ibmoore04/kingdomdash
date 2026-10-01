@@ -171,7 +171,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
 
     try {
-      const { error } = await supabase.rpc('admin_start_impersonation', {
+      const { error } = await (supabase.rpc as any)('admin_start_impersonation', {
         p_target_user_id: targetUser.id,
         p_reason: reason,
       })
@@ -215,7 +215,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err : new Error('Network error starting impersonation'),
+        error: err instanceof Error ? err.message : 'Network error starting impersonation',
       }
     }
   },
@@ -229,7 +229,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     const { originalAdminProfile, targetProfile } = state.impersonation
 
     try {
-      await supabase.rpc('admin_stop_impersonation', {
+      await (supabase.rpc as any)('admin_stop_impersonation', {
         p_target_user_id: targetProfile.id,
       })
     } catch {
@@ -310,7 +310,7 @@ export function initAuthListener(): void {
             isEmailConfirmed: Boolean(session.user?.email_confirmed_at),
           })
           const gen = ++fetchGeneration
-          await startProfileFetch(session.user.id, gen, set)
+          void startProfileFetch(session.user.id, gen, set)
         } else {
           useCartStore.getState().setUser(null)
           set({
@@ -335,7 +335,7 @@ export function initAuthListener(): void {
             isEmailConfirmed: Boolean(session.user?.email_confirmed_at),
           })
           const gen = ++fetchGeneration
-          await startProfileFetch(session.user.id, gen, set)
+          void startProfileFetch(session.user.id, gen, set)
         } else {
           useCartStore.getState().setUser(null)
         }

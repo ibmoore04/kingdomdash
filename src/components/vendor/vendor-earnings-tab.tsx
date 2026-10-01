@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
-  ArrowUpRight,
   TrendingUp,
   Receipt,
   Download,
@@ -13,8 +12,6 @@ import {
   RefreshCw,
   ShieldCheck,
   Info,
-  ChevronRight,
-  HelpCircle,
   Landmark,
   FileSpreadsheet,
 } from 'lucide-react'
@@ -32,7 +29,6 @@ import {
   getVendorBankAccount,
   getVendorEarningsSummary,
   getVendorSettlementStatements,
-  type BankOption,
   type PartnerBankAccount,
   type VendorEarningsSummary,
   type SettlementStatementItem,
@@ -94,8 +90,8 @@ export function VendorEarningsTab({ vendor }: VendorEarningsTabProps) {
       console.error('[VendorEarnings] Failed to load data:', err)
       pushToast({
         title: 'Error loading earnings',
-        description: 'Unable to load real-time financial statements. Please refresh.',
-        variant: 'destructive',
+        message: 'Unable to load real-time financial statements. Please refresh.',
+        variant: 'error',
       })
     } finally {
       setIsLoading(false)
@@ -112,8 +108,8 @@ export function VendorEarningsTab({ vendor }: VendorEarningsTabProps) {
     await loadData()
     pushToast({
       title: 'Earnings Refreshed',
-      description: 'Financial ledger and settlement balances are up to date.',
-      variant: 'default',
+      message: 'Financial ledger and settlement balances are up to date.',
+      variant: 'success',
     })
   }
 
@@ -180,8 +176,8 @@ export function VendorEarningsTab({ vendor }: VendorEarningsTabProps) {
     if (!selectedBankCode || accountNumber.length !== 10 || !finalAccountName || finalAccountName.length < 3) {
       pushToast({
         title: 'Verification Incomplete',
-        description: 'Please select your bank, enter your 10-digit account number, and specify your account name.',
-        variant: 'destructive',
+        message: 'Please select your bank, enter your 10-digit account number, and specify your account name.',
+        variant: 'error',
       })
       return
     }
@@ -204,15 +200,15 @@ export function VendorEarningsTab({ vendor }: VendorEarningsTabProps) {
       setShowBankForm(false)
       pushToast({
         title: 'Payout Bank Account Linked',
-        description: `${bank.name} (${accountNumber}) has been verified and saved for automated settlements.`,
-        variant: 'default',
+        message: `${bank.name} (${accountNumber}) has been verified and saved for automated settlements.`,
+        variant: 'success',
       })
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to save bank account'
       pushToast({
         title: 'Save Failed',
-        description: msg,
-        variant: 'destructive',
+        message: msg,
+        variant: 'error',
       })
     } finally {
       setIsSavingBank(false)
@@ -295,10 +291,10 @@ export function VendorEarningsTab({ vendor }: VendorEarningsTabProps) {
       {/* Header with Title & Refresh */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
             <Wallet className="w-7 h-7 text-[#00875A]" />
             Earnings & Settlement Portal
-          </h2>
+          </h1>
           <p className="text-sm text-slate-500 mt-1">
             Track your gross product revenue, pending disbursement queue, and verified bank payout statements.
           </p>
@@ -435,7 +431,7 @@ export function VendorEarningsTab({ vendor }: VendorEarningsTabProps) {
             </div>
             <div>
               <Button
-                variant={bankAccount ? 'outline' : 'default'}
+                variant={bankAccount ? 'outline' : 'primary'}
                 onClick={() => setShowBankForm(!showBankForm)}
                 className={!bankAccount ? 'bg-[#00875A] hover:bg-[#007048] text-white' : 'border-slate-300'}
               >

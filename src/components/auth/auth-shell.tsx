@@ -15,9 +15,9 @@
 import { Utensils, ShoppingCart, Package, MapPin } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-// ── Shared constants (identical to login.tsx) ──────────────────────────────
+// ── Shared constants (identical across auth views) ─────────────────────────
 
-const SERVICES = [
+export const AUTH_SERVICES = [
   {
     icon: Utensils,
     title: 'Food Delivery',
@@ -34,6 +34,8 @@ const SERVICES = [
     desc: 'Send and receive parcels quickly and reliably.',
   },
 ]
+
+const SERVICES = AUTH_SERVICES
 
 // ── Shared input styling (mirrors login.tsx inputs) ────────────────────────
 
@@ -125,7 +127,7 @@ export function AuthShell({
       />
 
       {/* ── Page grid ────────────────────────────────────────────────────── */}
-      <div className="relative z-10 flex h-svh w-full">
+      <div className="relative z-10 flex min-h-dvh h-dvh w-full">
 
         {/* ══════════════════════════════════════════════════════════════════
             LEFT — KingdomDash brand panel (hidden on mobile, lg+)
@@ -219,6 +221,9 @@ export function AuthShell({
             internally if it ever exceeds the viewport — outer page never scrolls.
         ══════════════════════════════════════════════════════════════════ */}
         <main className="flex flex-1 items-center justify-center lg:justify-end px-4 sm:px-8 lg:px-8 xl:px-12 py-6 overflow-y-auto">
+          <h1 className="sr-only lg:hidden">
+            {headlineLine1} {headlineLine2Prefix}{headlineKeyword}
+          </h1>
           <div
             className="w-full bg-white my-auto"
             style={{
@@ -230,7 +235,7 @@ export function AuthShell({
             }}
           >
             {/* Mobile brand lockup */}
-            <div className="flex items-center gap-2 mb-5 lg:hidden">
+            <div className="flex items-center gap-2 mb-4 lg:hidden">
               <img
                 src="/KingdomDash-logo.jpg"
                 alt="KingdomDash"
@@ -389,11 +394,14 @@ export function AuthErrorAlert({ message, alertRef }: AuthErrorAlertProps) {
 
 // ── Shared SECURE ACCESS divider ──────────────────────────────────────────
 
-export function AuthDivider() {
+export function AuthDivider({ label = 'SECURE ACCESS' }: { label?: string | null } = {}) {
+  if (label === null || label === '') {
+    return <hr className="mt-5 border-t border-[#e5e7eb]" />
+  }
   return (
     <div className="mt-5 flex items-center gap-3">
       <div className="flex-1 h-px bg-[#e5e7eb]" />
-      <span className="text-eyebrow text-[#9ca3af]">SECURE ACCESS</span>
+      <span className="text-eyebrow text-[#9ca3af]">{label}</span>
       <div className="flex-1 h-px bg-[#e5e7eb]" />
     </div>
   )

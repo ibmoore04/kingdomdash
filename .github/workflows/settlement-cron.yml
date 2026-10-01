@@ -21,12 +21,13 @@ jobs:
       - name: Trigger Supabase Settlement Worker Edge Function
         run: |
           set -e
-          echo "Invoking settlement-worker on project kbrfaccrhmvgcdtdfjna..."
+          LIMIT="${{ inputs.limit || github.event.inputs.limit || '10' }}"
+          echo "Batch limit: $LIMIT"
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             "https://kbrfaccrhmvgcdtdfjna.supabase.co/functions/v1/settlement-worker" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
-            -d "{\"limit\": ${{ github.event.inputs.limit || 10 }}}")
+            -d "{\"limit\": $LIMIT}")
 
           HTTP_BODY=$(echo "$RESPONSE" | sed '$d')
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)

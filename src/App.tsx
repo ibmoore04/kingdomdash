@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { ScrollToTop } from '@/components/layout/scroll-to-top'
 import { RouteGuard } from '@/components/auth/route-guard'
@@ -8,6 +8,11 @@ import { useAuthStore } from '@/stores/auth-store'
 function RedirectWithQuery({ to }: { to: string }) {
   const location = useLocation()
   return <Navigate to={`${to}${location.search}`} replace />
+}
+
+function GroceryAliasRedirect() {
+  const { storeId } = useParams()
+  return <Navigate to={storeId ? `/groceries/${storeId}` : '/groceries'} replace />
 }
 
 function NotificationsRedirect() {
@@ -212,8 +217,8 @@ export default function App() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/food" element={<FoodPage />} />
           <Route path="/food/:vendorId" element={<FoodDetailPage />} />
-          <Route path="/grocery" element={<GroceriesPage />} />
-          <Route path="/grocery/:storeId" element={<GroceryDetailPage />} />
+          <Route path="/grocery" element={<Navigate to="/groceries" replace />} />
+          <Route path="/grocery/:storeId" element={<GroceryAliasRedirect />} />
           <Route path="/groceries" element={<GroceriesPage />} />
           <Route path="/groceries/:storeId" element={<GroceryDetailPage />} />
           <Route path="/courier" element={<CourierPage />} />

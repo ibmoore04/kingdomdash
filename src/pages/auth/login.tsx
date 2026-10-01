@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Eye, EyeOff, Utensils, ShoppingCart, Package, MapPin, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, MapPin, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/services/supabase/client'
 import { useAuthStore } from '@/stores/auth-store'
@@ -8,25 +8,7 @@ import { resolvePostLoginTarget } from '@/utils/safe-redirect'
 import { mapAuthError } from '@/utils/auth-errors'
 import { appConfig } from '@/config/app.config'
 import { GoogleSignInButton } from '@/components/auth/google-sign-in-button'
-
-// ─── SERVICE DATA ────────────────────────────────────────────────────────────
-const SERVICES = [
-  {
-    icon: Utensils,
-    title: 'Food Delivery',
-    desc: 'Your favorite meals, delivered to your doorstep.',
-  },
-  {
-    icon: ShoppingCart,
-    title: 'Grocery Delivery',
-    desc: 'Fresh groceries and essentials delivered fast.',
-  },
-  {
-    icon: Package,
-    title: 'Courier Dispatch',
-    desc: 'Send and receive parcels quickly and reliably.',
-  },
-]
+import { AUTH_SERVICES as SERVICES } from '@/components/auth/auth-shell'
 
 // ─── LOGIN PAGE ───────────────────────────────────────────────────────────────
 export default function LoginPage() {
@@ -154,7 +136,7 @@ export default function LoginPage() {
       />
 
       {/* ── Page grid ──────────────────────────────────────────────────────── */}
-      <div className="relative z-10 flex h-svh w-full">
+      <div className="relative z-10 flex min-h-dvh h-dvh w-full">
 
         {/* ════════════════════════════════════════════════════════════════════
             LEFT — KingdomDash brand experience (hidden on mobile)
@@ -268,8 +250,8 @@ export default function LoginPage() {
 
             {/* Heading */}
             <h2
-              className="font-bold leading-none tracking-tight text-[#111111]"
-              style={{ fontSize: 'clamp(2rem,3.5vw,2.6rem)' }}
+              className="font-bold leading-none tracking-tight text-[#111111] whitespace-nowrap"
+              style={{ fontSize: 'clamp(1.75rem,3vw,2.2rem)' }}
             >
               Welcome{' '}
               <span className="text-[#E50914]">back.</span>
@@ -349,6 +331,7 @@ export default function LoginPage() {
                   id="login-email"
                   type="email"
                   required
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value)
@@ -404,6 +387,7 @@ export default function LoginPage() {
                     id="login-password"
                     type={showPassword ? 'text' : 'password'}
                     required
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value)

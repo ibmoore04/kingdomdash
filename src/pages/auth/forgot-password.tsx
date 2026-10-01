@@ -5,7 +5,7 @@
  * FUNCTIONALITY: All auth logic frozen — only presentation changed.
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, KeyRound, MailCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -23,21 +23,12 @@ export default function ForgotPasswordPage() {
   // ── Frozen functional state (unchanged) ─────────────────────────────────
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [fieldError, setFieldError] = useState<string | null>(null)
+  const [fieldError, setFieldError] = useState<string | undefined>(undefined)
   const [isSubmitted, setIsSubmitted] = useState(false)
-
-  const errorRef = useRef<HTMLDivElement>(null)
-
-  // Move focus to error alert for accessibility (P15)
-  useEffect(() => {
-    if (fieldError && errorRef.current) {
-      errorRef.current.focus()
-    }
-  }, [fieldError])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setFieldError(null)
+    setFieldError(undefined)
 
     // Client-side validation: non-empty email (P6)
     if (!email.trim()) {
@@ -148,10 +139,10 @@ export default function ForgotPasswordPage() {
           value={email}
           onChange={(e) => {
             setEmail(e.target.value)
-            if (fieldError) setFieldError(null)
+            if (fieldError) setFieldError(undefined)
           }}
           placeholder="Enter your email address"
-          error={fieldError ?? undefined}
+          error={fieldError}
           errorId="forgot-email-error"
           autoComplete="email"
         />
@@ -167,7 +158,7 @@ export default function ForgotPasswordPage() {
         </Button>
       </form>
 
-      <AuthDivider />
+      <AuthDivider label={null} />
 
       <p className="mt-5 text-center text-body-small text-[#6b7280]">
         <Link

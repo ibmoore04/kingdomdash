@@ -227,7 +227,7 @@ export default function RegisterPage() {
       {/* Heading */}
       <h2
         className="font-bold leading-none tracking-tight text-[#111111]"
-        style={{ fontSize: 'clamp(2rem,3.5vw,2.6rem)' }}
+        style={{ fontSize: 'clamp(1.75rem,3vw,2.2rem)' }}
       >
         Create your{' '}
         <span className="text-[#E50914]">account.</span>
@@ -263,7 +263,7 @@ export default function RegisterPage() {
         noValidate
         onSubmit={handleSubmit}
         aria-label="Create your account"
-        className="mt-6 space-y-5"
+        className="mt-6 space-y-4"
       >
         {/* Full name */}
         <AuthField

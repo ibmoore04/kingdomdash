@@ -186,6 +186,7 @@ export default function RiderActiveDeliveryPage() {
   if (!activeDelivery) {
     return (
       <RiderLayout activeTripCount={0}>
+        <h1 className="sr-only">Active Delivery Trip</h1>
         <div className="flex min-h-[400px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white p-8 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-page-background text-text-muted">
             <Bike className="h-7 w-7" aria-hidden="true" />
@@ -219,6 +220,7 @@ export default function RiderActiveDeliveryPage() {
 
   return (
     <RiderLayout activeTripCount={1}>
+      <h1 className="sr-only">Active Delivery Trip</h1>
       <div className="space-y-5 pb-24">
         {/* Header summary */}
         <div className="flex items-center justify-between gap-2 border-b border-border pb-4">

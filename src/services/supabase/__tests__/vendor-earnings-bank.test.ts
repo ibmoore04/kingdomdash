@@ -3,7 +3,6 @@ import * as fs from 'fs'
 import * as path from 'path'
 import {
   getNigerianBanks,
-  NIGERIAN_BANKS,
   resolveBankAccount,
 } from '@/services/paystack/bank'
 

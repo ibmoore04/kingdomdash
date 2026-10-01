@@ -147,6 +147,7 @@ export default function FoodDetailPage() {
     return (
       <Section tone="soft">
         <ErrorState
+          headingTag="h1"
           title="Restaurant not found"
           description="We couldn't find the restaurant you're looking for or it is currently closed."
         />

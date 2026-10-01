@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth-store'
-import { Eye, LogOut, ShieldAlert, Clock, AlertTriangle } from 'lucide-react'
+import { Eye, LogOut, Clock, AlertTriangle } from 'lucide-react'
 
 export const ImpersonationBanner: React.FC = () => {
   const { impersonation, isImpersonating, stopImpersonation } = useAuthStore()
@@ -12,7 +12,7 @@ export const ImpersonationBanner: React.FC = () => {
     return null
   }
 
-  const { originalAdminProfile, targetProfile, reason, startedAt } = impersonation
+  const { targetProfile, reason, startedAt } = impersonation
 
   const handleExit = async () => {
     try {

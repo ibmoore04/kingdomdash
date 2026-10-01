@@ -101,7 +101,7 @@ export const AdminUsersPage: React.FC = () => {
           id: impersonatingUser.id,
           email: impersonatingUser.email || '',
           full_name: impersonatingUser.full_name || '',
-          phone: impersonatingUser.phone_number,
+          phone: impersonatingUser.phone_number || null,
           avatar_url: null,
           role: impersonatingUser.role,
           is_active: impersonatingUser.is_active,

@@ -165,7 +165,7 @@ export async function saveVendorBankAccount(params: {
     throw new Error(error.message || 'Failed to save bank account')
   }
 
-  return data as PartnerBankAccount
+  return data as unknown as PartnerBankAccount
 }
 
 /**
@@ -181,7 +181,7 @@ export async function getVendorBankAccount(vendorId: string): Promise<PartnerBan
     return null
   }
 
-  return data as PartnerBankAccount | null
+  return data as unknown as PartnerBankAccount | null
 }
 
 /**
@@ -205,7 +205,7 @@ export async function getVendorEarningsSummary(vendorId: string): Promise<Vendor
     }
   }
 
-  return data as VendorEarningsSummary
+  return data as unknown as VendorEarningsSummary
 }
 
 /**
@@ -227,5 +227,5 @@ export async function getVendorSettlementStatements(
     return []
   }
 
-  return (data || []) as SettlementStatementItem[]
+  return (data || []) as unknown as SettlementStatementItem[]
 }

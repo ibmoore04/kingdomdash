@@ -1,0 +1,770 @@
+{
+  "timestamp": "2026-10-01T16:22:57.585Z",
+  "totalViewsAudited": 150,
+  "totalGapsIdentified": 42,
+  "gapsByCategory": {
+    "CRITICAL": [],
+    "HIGH": [],
+    "MEDIUM": [],
+    "LOW": [
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "29 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "29 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "33 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "33 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "MISSING_H1_HEADING",
+        "severity": "LOW",
+        "message": "Page does not contain a primary <h1> heading"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+      },
+      {
+        "type": "MISSING_H1_HEADING",
+        "severity": "LOW",
+        "message": "Page does not contain a primary <h1> heading"
+      },
+      {
+        "type": "MISSING_H1_HEADING",
+        "severity": "LOW",
+        "message": "Page does not contain a primary <h1> heading"
+      },
+      {
+        "type": "MISSING_H1_HEADING",
+        "severity": "LOW",
+        "message": "Page does not contain a primary <h1> heading"
+      },
+      {
+        "type": "TOUCH_TARGET_SIZE",
+        "severity": "LOW",
+        "message": "8 interactive elements have touch targets smaller than 28px on mobile"
+      }
+    ]
+  },
+  "identifiedGaps": [
+    {
+      "page": "Home",
+      "url": "/",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Home",
+      "url": "/",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "About",
+      "url": "/about",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "About",
+      "url": "/about",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Services",
+      "url": "/services",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "29 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Services",
+      "url": "/services",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "29 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Food Catalog",
+      "url": "/food",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Food Catalog",
+      "url": "/food",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Groceries Catalog",
+      "url": "/groceries",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Groceries Catalog",
+      "url": "/groceries",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Courier Dispatch",
+      "url": "/courier",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Courier Dispatch",
+      "url": "/courier",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Contact Us",
+      "url": "/contact",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Contact Us",
+      "url": "/contact",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Help & Support",
+      "url": "/support",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Help & Support",
+      "url": "/support",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "FAQ",
+      "url": "/faq",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "FAQ",
+      "url": "/faq",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Become Vendor",
+      "url": "/become-vendor",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Become Vendor",
+      "url": "/become-vendor",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Become Rider",
+      "url": "/become-rider",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Become Rider",
+      "url": "/become-rider",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Business / Corporate",
+      "url": "/business",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Business / Corporate",
+      "url": "/business",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Personal Shopper",
+      "url": "/personal-shopper",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "33 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Personal Shopper",
+      "url": "/personal-shopper",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "33 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Privacy Policy",
+      "url": "/privacy",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Privacy Policy",
+      "url": "/privacy",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Terms of Service",
+      "url": "/terms",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Terms of Service",
+      "url": "/terms",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "28 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Refund Policy",
+      "url": "/refund-policy",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Refund Policy",
+      "url": "/refund-policy",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Cart View",
+      "url": "/cart",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Cart View",
+      "url": "/cart",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "30 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "404 Catch-All",
+      "url": "/unknown-route-test",
+      "viewport": "mobile",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "404 Catch-All",
+      "url": "/unknown-route-test",
+      "viewport": "mobileNarrow",
+      "category": "public",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Dashboard Profile",
+      "url": "/dashboard?tab=profile",
+      "viewport": "mobile",
+      "category": "customer",
+      "gaps": [
+        {
+          "type": "MISSING_H1_HEADING",
+          "severity": "LOW",
+          "message": "Page does not contain a primary <h1> heading"
+        }
+      ]
+    },
+    {
+      "page": "Checkout Page",
+      "url": "/checkout",
+      "viewport": "mobile",
+      "category": "customer",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "27 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    },
+    {
+      "page": "Vendor Orders",
+      "url": "/vendor?tab=orders",
+      "viewport": "mobile",
+      "category": "vendor",
+      "gaps": [
+        {
+          "type": "MISSING_H1_HEADING",
+          "severity": "LOW",
+          "message": "Page does not contain a primary <h1> heading"
+        }
+      ]
+    },
+    {
+      "page": "Vendor Catalog",
+      "url": "/vendor?tab=catalog",
+      "viewport": "desktop",
+      "category": "vendor",
+      "gaps": [
+        {
+          "type": "MISSING_H1_HEADING",
+          "severity": "LOW",
+          "message": "Page does not contain a primary <h1> heading"
+        }
+      ]
+    },
+    {
+      "page": "Vendor Settings",
+      "url": "/vendor?tab=settings",
+      "viewport": "mobile",
+      "category": "vendor",
+      "gaps": [
+        {
+          "type": "MISSING_H1_HEADING",
+          "severity": "LOW",
+          "message": "Page does not contain a primary <h1> heading"
+        }
+      ]
+    },
+    {
+      "page": "Rider Settings",
+      "url": "/rider/settings",
+      "viewport": "mobile",
+      "category": "rider",
+      "gaps": [
+        {
+          "type": "TOUCH_TARGET_SIZE",
+          "severity": "LOW",
+          "message": "8 interactive elements have touch targets smaller than 28px on mobile"
+        }
+      ]
+    }
+  ]
+}
