@@ -38,8 +38,23 @@ serve(async (req: Request) => {
       )
     }
 
-    const token = authHeader.replace(/^Bearer\s+/i, '')
-    if (token !== supabaseServiceKey) {
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim()
+    const serviceRoleKey = (supabaseServiceKey || '').trim()
+    const secretKeys = (Deno.env.get('SUPABASE_SECRET_KEYS') || '').trim()
+
+    let isServiceRole = (token === serviceRoleKey || (secretKeys && secretKeys.includes(token)))
+    if (!isServiceRole) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        if (payload.role === 'service_role' && payload.ref === 'kbrfaccrhmvgcdtdfjna') {
+          isServiceRole = true
+        }
+      } catch {
+        // Not a service_role JWT, proceed to user check
+      }
+    }
+
+    if (!isServiceRole) {
       const { data: { user }, error: authErr } = await supabaseAdmin.auth.getUser(token)
       if (authErr || !user) {
         return new Response(
