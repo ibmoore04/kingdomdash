@@ -28,8 +28,25 @@ jobs:
             exit 1
           fi
 
-          # Trim any accidental carriage returns or whitespace
-          CLEAN_KEY=$(echo -n "$SECRET_KEY" | tr -d '\r\n ')
+          # Trim any accidental quotes, carriage returns or whitespace
+          CLEAN_KEY=$(echo -n "$SECRET_KEY" | tr -d '\r\n "' | sed "s/^'//;s/'$//")
+
+          KEY_ROLE=$(node -e "try { const p = JSON.parse(Buffer.from(process.env.K.split('.')[1], 'base64').toString()); console.log(p.role || ''); } catch { console.log(''); }" 2>/dev/null env K="$CLEAN_KEY" || true)
+          KEY_REF=$(node -e "try { const p = JSON.parse(Buffer.from(process.env.K.split('.')[1], 'base64').toString()); console.log(p.ref || ''); } catch { console.log(''); }" 2>/dev/null env K="$CLEAN_KEY" || true)
+
+          echo "Configured key type: role='$KEY_ROLE', project='$KEY_REF'"
+
+          if [ "$KEY_ROLE" = "anon" ]; then
+            echo "::error::You pasted the public 'anon' key in GitHub Secrets instead of the secret 'service_role' key!"
+            echo "Please go to Supabase Dashboard -> Project Settings -> API -> Project API keys and copy the 'service_role' (secret) key."
+            exit 1
+          fi
+
+          if [ -n "$KEY_REF" ] && [ "$KEY_REF" != "kbrfaccrhmvgcdtdfjna" ]; then
+            echo "::error::The key belongs to project '$KEY_REF', but this workflow is targeting 'kbrfaccrhmvgcdtdfjna'!"
+            exit 1
+          fi
+
           LIMIT="${{ inputs.limit || github.event.inputs.limit || '10' }}"
           echo "Batch limit: $LIMIT"
           echo "Invoking settlement-worker on project kbrfaccrhmvgcdtdfjna..."
