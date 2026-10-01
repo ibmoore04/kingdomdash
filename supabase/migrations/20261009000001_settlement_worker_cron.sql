@@ -50,7 +50,7 @@ BEGIN
       v_service_key := current_setting('app.settings.service_role_key', true);
     EXCEPTION WHEN OTHERS THEN
       v_service_key := NULL;
-    END IF;
+    END;
   END IF;
 
   -- If key is available, dispatch asynchronous HTTP POST via pg_net
