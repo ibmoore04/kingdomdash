@@ -13,7 +13,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import {
   Eye,
   EyeOff,
-  UserPlus,
   CheckCircle2,
   XCircle,
   Loader2 as LoaderIcon,
@@ -29,7 +28,6 @@ import { GoogleSignInButton } from '@/components/auth/google-sign-in-button'
 import {
   AuthShell,
   AuthField,
-  AuthIconBadge,
   AuthErrorAlert,
   AuthDivider,
   BUTTON_STYLE,
@@ -226,13 +224,10 @@ export default function RegisterPage() {
   // ── Registration form ─────────────────────────────────────────────────
   return (
     <AuthShell headlineLine1="Join the" headlineLine2Prefix="" headlineKeyword="KingdomDash">
-      {/* Auth icon */}
-      <AuthIconBadge icon={UserPlus} />
-
       {/* Heading */}
       <h2
         className="font-bold leading-none tracking-tight text-[#111111]"
-        style={{ fontSize: 'clamp(2rem,3.5vw,2.6rem)' }}
+        style={{ fontSize: 'clamp(1.75rem,3vw,2.2rem)' }}
       >
         Create your{' '}
         <span className="text-[#E50914]">account.</span>
@@ -268,7 +263,7 @@ export default function RegisterPage() {
         noValidate
         onSubmit={handleSubmit}
         aria-label="Create your account"
-        className="mt-6 space-y-5"
+        className="mt-6 space-y-4"
       >
         {/* Full name */}
         <AuthField

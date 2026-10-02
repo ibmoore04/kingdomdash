@@ -36,12 +36,12 @@ export const SelectContent = forwardRef<
       ref={ref}
       position={position}
       className={cn(
-        'z-50 min-w-[8rem] overflow-hidden rounded-md border border-border bg-white shadow-card',
+        'z-[10002] min-w-[8rem] overflow-hidden rounded-xl border border-neutral-200 bg-white text-neutral-900 shadow-2xl animate-in fade-in-80',
         className,
       )}
       {...props}
     >
-      <SelectPrimitive.Viewport className="p-1">{children}</SelectPrimitive.Viewport>
+      <SelectPrimitive.Viewport className="p-1.5">{children}</SelectPrimitive.Viewport>
     </SelectPrimitive.Content>
   </SelectPrimitive.Portal>
 ))
@@ -54,17 +54,18 @@ export const SelectItem = forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex cursor-pointer select-none items-center rounded-sm py-2 pl-8 pr-3 text-body-small outline-none transition-all duration-150 ease-out data-[highlighted]:bg-primary-soft data-[highlighted]:text-text-primary focus-visible:bg-primary-soft focus-visible:ring-1 focus-visible:ring-primary disabled:opacity-60 disabled:pointer-events-none disabled:transition-none motion-reduce:transition-none',
+      'relative flex cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-3 text-xs font-medium text-neutral-800 outline-none transition-all duration-150 ease-out hover:bg-neutral-100 hover:text-neutral-900 data-[highlighted]:bg-neutral-100 data-[highlighted]:text-neutral-900 focus-visible:bg-neutral-100 focus-visible:ring-1 focus-visible:ring-primary disabled:opacity-60 disabled:pointer-events-none disabled:transition-none motion-reduce:transition-none',
       className,
     )}
     {...props}
   >
     <span className="absolute left-2 flex h-4 w-4 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4 text-primary-hover" aria-hidden="true" />
+        <Check className="h-4 w-4 text-primary" aria-hidden="true" />
       </SelectPrimitive.ItemIndicator>
     </span>
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
   </SelectPrimitive.Item>
 ))
 SelectItem.displayName = 'SelectItem'
+

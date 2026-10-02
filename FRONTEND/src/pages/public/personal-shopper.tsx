@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import {
   ShoppingBag,
   Plus,
@@ -8,12 +9,14 @@ import {
   ExternalLink,
   ShieldCheck,
   Send,
+  KeyRound,
 } from 'lucide-react'
 import { PageContainer } from '@/components/layout/section'
 import { Button } from '@/components/ui/button'
 import { formatNgn } from '@/utils/formatting'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/services/supabase/client'
+import { submitPersonalShopperRequestSecure } from '@/services/supabase/orders'
 import { generateWhatsAppLink } from '@/utils/whatsapp'
 
 interface ShopperItem {
@@ -84,6 +87,7 @@ export default function PersonalShopperPage() {
   const [budgetCap, setBudgetCap] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderPlaced, setOrderPlaced] = useState(false)
+  const [placedOrder, setPlacedOrder] = useState<{ id: string; deliveryPin?: string | null } | null>(null)
 
   const itemsTotal = items.reduce((acc, curr) => acc + curr.estimatedCost, 0)
   const conciergeFee = 1000 // flat ₦1,000 shopper service fee
@@ -155,61 +159,64 @@ export default function PersonalShopperPage() {
     }
 
     setIsSubmitting(true)
+    let resolvedOrderId: string | null = null
+    let resolvedPin: string | null = null
+
     try {
       const activeMarketObj = POPULAR_MARKETS.find((m) => m.id === selectedMarket)
       const marketTitle = selectedMarket === 'custom' ? (customMarketName || 'Custom Store') : activeMarketObj?.name
 
-      const shopperOrder = {
-        id: `shopper_${Date.now()}`,
-        marketName: marketTitle,
-        customerName,
-        customerPhone,
-        deliveryAddress,
-        budgetCap: budgetCap ? Number(budgetCap) : grandEstimatedTotal + 2000,
-        items,
-        estimatedTotal: grandEstimatedTotal,
-        createdAt: new Date().toISOString(),
-      }
-
-      // 1. Submit to Supabase directly (triggers real-time database notification for Admins)
+      // Submit via SECURITY DEFINER RPC to enforce server-side financial calculation and authority
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase.rpc as any)('submit_personal_shopper_request', {
-          p_customer_name: customerName,
-          p_customer_phone: customerPhone,
-          p_delivery_address: deliveryAddress,
-          p_market_name: marketTitle,
-          p_budget_cap: budgetCap ? Number(budgetCap) : grandEstimatedTotal + 2000,
-          p_estimated_total: grandEstimatedTotal,
-          p_items: items,
-          p_notes: `Delivery to ${deliveryAddress}`,
+        const rpcRes = await submitPersonalShopperRequestSecure({
+          customerName,
+          customerPhone,
+          deliveryAddress,
+          marketName: marketTitle || 'Custom Store',
+          budgetCap: budgetCap ? Number(budgetCap) : grandEstimatedTotal + 2000,
+          estimatedTotal: grandEstimatedTotal,
+          items,
+          notes: `Delivery to ${deliveryAddress}`,
         })
+
+        if (!rpcRes?.error && rpcRes?.data) {
+          const shopperId = rpcRes.data as string
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data: shopperRec } = await (supabase.from as any)('personal_shopper_requests')
+            .select('order_id, orders(id, delivery_pin)')
+            .eq('id', shopperId)
+            .maybeSingle()
+
+          if (shopperRec?.orders) {
+            resolvedOrderId = shopperRec.orders.id
+            resolvedPin = shopperRec.orders.delivery_pin
+          } else if (shopperRec?.order_id) {
+            resolvedOrderId = shopperRec.order_id
+          }
+        } else if (rpcRes?.error) {
+          console.error('Failed to submit personal shopper request via server RPC:', rpcRes.error)
+          pushToast({
+            variant: 'error',
+            title: 'Order Submission Failed',
+            message: 'Unable to submit personal shopper request. Please try again or contact support.',
+          })
+          setIsSubmitting(false)
+          return
+        }
       } catch (err) {
-        console.warn('Failed to submit shopper request to Supabase directly:', err)
+        console.error('Failed to submit shopper request:', err)
+        pushToast({
+          variant: 'error',
+          title: 'Submission Error',
+          message: 'An unexpected error occurred while placing your request.',
+        })
+        setIsSubmitting(false)
+        return
       }
 
-      // 2. Local storage cache as client-side backup
-      const existing = JSON.parse(localStorage.getItem('kingdomdash_shopper_requests') || '[]')
-      existing.push(shopperOrder)
-      localStorage.setItem('kingdomdash_shopper_requests', JSON.stringify(existing))
-
-      // 3. Notify admin panel local cache
-      const adminNotif = {
-        id: `notif_shopper_${Date.now()}`,
-        type: 'personal_shopper_request',
-        title: '🛒 New Personal Shopper Request',
-        message: `${customerName} (${customerPhone}) requested a market run at ${marketTitle}. ${items.length} item(s) · Est. ${formatNgn(grandEstimatedTotal)}.`,
-        customerName,
-        customerPhone,
-        deliveryAddress,
-        orderId: shopperOrder.id,
-        createdAt: new Date().toISOString(),
-        read: false,
+      if (resolvedOrderId) {
+        setPlacedOrder({ id: resolvedOrderId, deliveryPin: resolvedPin })
       }
-      const adminCache = JSON.parse(localStorage.getItem('kd_admin_notifications_cache') || '[]')
-      adminCache.unshift(adminNotif)
-      localStorage.setItem('kd_admin_notifications_cache', JSON.stringify(adminCache.slice(0, 100)))
-
       setIsSubmitting(false)
       setOrderPlaced(true)
       pushToast({
@@ -470,18 +477,54 @@ export default function PersonalShopperPage() {
               </h3>
 
               {orderPlaced ? (
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-5 text-center space-y-3">
-                  <CheckCircle2 className="h-8 w-8 text-emerald-600 mx-auto" />
-                  <h4 className="text-sm font-bold text-emerald-950">Market Run Initiated!</h4>
-                  <p className="text-xs text-emerald-800 leading-relaxed">
-                    Thank you <strong>{customerName}</strong>. A personal shopper is preparing to head to the market. We will call you on <strong>{customerPhone}</strong>.
-                  </p>
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-5 text-center space-y-4">
+                  <CheckCircle2 className="h-9 w-9 text-emerald-600 mx-auto" />
+                  <div>
+                    <h4 className="text-base font-bold text-emerald-950">Market Run Initiated!</h4>
+                    <p className="mt-1 text-xs text-emerald-800 leading-relaxed">
+                      Thank you <strong>{customerName}</strong>. A personal concierge shopper is preparing for your run. We will call you on <strong>{customerPhone}</strong>.
+                    </p>
+                  </div>
+
+                  {placedOrder?.deliveryPin && (
+                    <div className="rounded-xl border border-primary/20 bg-white p-4 shadow-xs text-center space-y-1.5">
+                      <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-primary">
+                        <KeyRound className="h-4 w-4" />
+                        <span>Delivery Confirmation PIN</span>
+                      </div>
+                      <div className="font-mono text-3xl font-extrabold tracking-widest text-primary">
+                        {placedOrder.deliveryPin}
+                      </div>
+                      <p className="text-[11px] text-neutral-600 leading-snug">
+                        Keep this 4-digit code ready. Give it to your concierge rider upon physical arrival to verify and complete hand-off.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    {placedOrder?.id && (
+                      <Button asChild variant="primary" size="sm" className="w-full text-xs font-bold text-white bg-primary hover:bg-primary-hover">
+                        <Link to={`/order/${placedOrder.id}/confirmation`}>
+                          Track Run Live
+                        </Link>
+                      </Button>
+                    )}
+                    <Button asChild variant="outline" size="sm" className="w-full text-xs font-semibold">
+                      <Link to="/dashboard/customer?tab=orders">
+                        My Orders
+                      </Link>
+                    </Button>
+                  </div>
+
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    onClick={() => setOrderPlaced(false)}
-                    className="text-xs"
+                    onClick={() => {
+                      setOrderPlaced(false)
+                      setPlacedOrder(null)
+                    }}
+                    className="text-xs text-neutral-600 hover:text-neutral-900"
                   >
                     Start Another Run
                   </Button>

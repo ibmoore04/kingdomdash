@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   CheckCircle2,
   Clock,
@@ -60,8 +61,8 @@ export function ExpansionWaitlistModal({ isOpen, onClose }: ExpansionWaitlistMod
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-lg rounded-3xl border border-neutral-200 bg-white p-6 sm:p-8 shadow-2xl">
         <button
           type="button"
@@ -173,6 +174,7 @@ export function ExpansionWaitlistModal({ isOpen, onClose }: ExpansionWaitlistMod
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

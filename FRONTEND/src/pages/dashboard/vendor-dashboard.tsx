@@ -13,6 +13,7 @@ import {
   Settings,
   Globe,
   HelpCircle,
+  Wallet,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useCurrentVendor } from '@/hooks/use-current-vendor'
@@ -21,6 +22,7 @@ import { VendorOverviewTab } from '@/components/vendor/vendor-overview-tab'
 import { VendorOrdersList } from '@/components/vendor/VendorOrdersList'
 import { VendorProductsTab } from '@/components/vendor/vendor-products-tab'
 import { VendorCategoriesTab } from '@/components/vendor/vendor-categories-tab'
+import { VendorEarningsTab } from '@/components/vendor/vendor-earnings-tab'
 import { VendorProfileTab } from '@/components/vendor/vendor-profile-tab'
 import { VendorSettingsTab } from '@/components/vendor/vendor-settings-tab'
 import { VendorNotificationsTab } from '@/components/vendor/vendor-notifications-tab'
@@ -57,11 +59,12 @@ import type {
   VendorUpdate,
 } from '@/types'
 
-type TabType = 'overview' | 'orders' | 'products' | 'categories' | 'profile' | 'notifications' | 'settings' | 'support'
+type TabType = 'overview' | 'orders' | 'products' | 'categories' | 'earnings' | 'profile' | 'notifications' | 'settings' | 'support'
 
 const NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'orders', label: 'Orders & Fulfillment', icon: ShoppingBag },
+  { id: 'earnings', label: 'Earnings & Settlements', icon: Wallet },
   { id: 'products', label: 'Products & Menu', icon: UtensilsCrossed },
   { id: 'categories', label: 'Categories', icon: FolderTree },
   { id: 'profile', label: 'Business Profile', icon: Store },
@@ -73,6 +76,7 @@ const NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] 
 const VENDOR_MOBILE_NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'orders', label: 'Orders', icon: ShoppingBag },
+  { id: 'earnings', label: 'Earnings', icon: Wallet },
   { id: 'products', label: 'Products', icon: UtensilsCrossed },
   { id: 'support', label: 'Support', icon: HelpCircle },
   { id: 'settings', label: 'Settings', icon: Settings },
@@ -81,6 +85,7 @@ const VENDOR_MOBILE_NAV_ITEMS: { id: TabType; label: string; icon: typeof Layout
 const TAB_DESCRIPTIONS: Record<TabType, string> = {
   overview: 'Store analytics, stock health, and catalog performance overview',
   orders: 'Incoming orders, kitchen preparation, and courier fulfillment',
+  earnings: 'Gross merchandise revenue, verified payout bank accounts, and settlement statements',
   products: 'Manage menu items, dish pricing, and stock availability',
   categories: 'Store taxonomy, dish sections, and menu organization',
   profile: 'Business storefront details, brand profile, and contact information',
@@ -96,7 +101,7 @@ export default function VendorDashboardPage() {
 
   const initialTab = (searchParams.get('tab') as TabType) || 'overview'
   const [activeTab, setActiveTab] = useState<TabType>(
-    ['overview', 'orders', 'products', 'categories', 'profile', 'notifications', 'settings', 'support'].includes(initialTab)
+    ['overview', 'orders', 'products', 'categories', 'earnings', 'profile', 'notifications', 'settings', 'support'].includes(initialTab)
       ? initialTab
       : 'overview'
   )
@@ -181,12 +186,14 @@ export default function VendorDashboardPage() {
   }
 
   const handleToggleCategoryStatus = async (categoryId: string, newStatus: boolean) => {
+    // Optimistic update
     setCategories((prev) =>
       prev.map((c) => (c.id === categoryId ? { ...c, is_active: newStatus } : c))
     )
     try {
       await updateCategory(categoryId, { is_active: newStatus })
     } catch {
+      // Revert on error
       setCategories((prev) =>
         prev.map((c) => (c.id === categoryId ? { ...c, is_active: !newStatus } : c))
       )
@@ -199,6 +206,7 @@ export default function VendorDashboardPage() {
     try {
       await deleteCategory(deleteDialog.item.id)
       setCategories((prev) => prev.filter((c) => c.id !== deleteDialog.item?.id))
+      // Unlink category on locally cached products
       setProducts((prev) =>
         prev.map((p) => (p.category_id === deleteDialog.item?.id ? { ...p, category_id: null } : p))
       )
@@ -232,12 +240,14 @@ export default function VendorDashboardPage() {
   }
 
   const handleToggleProductAvailability = async (productId: string, newStatus: boolean) => {
+    // Optimistic update
     setProducts((prev) =>
       prev.map((p) => (p.id === productId ? { ...p, is_available: newStatus } : p))
     )
     try {
       await toggleProductAvailability(productId, newStatus)
     } catch {
+      // Revert on error
       setProducts((prev) =>
         prev.map((p) => (p.id === productId ? { ...p, is_available: !newStatus } : p))
       )
@@ -322,6 +332,8 @@ export default function VendorDashboardPage() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-page-background">
+      {/* ── Desktop Sidebar ──────────────────────────────────────────────────── */}
+      {/* ── Desktop Sidebar ──────────────────────────────────────────────────── */}
       <aside
         className="
           hidden lg:flex lg:flex-col
@@ -331,6 +343,7 @@ export default function VendorDashboardPage() {
         "
         aria-label="Vendor dashboard sidebar"
       >
+        {/* Brand Header - FIXED */}
         <div className="flex h-16 items-center gap-3 border-b border-border px-4 shrink-0 bg-white">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-primary/10 border border-primary/20 shrink-0 p-1">
             {vendor.logo_url ? (
@@ -356,6 +369,7 @@ export default function VendorDashboardPage() {
           </div>
         </div>
 
+        {/* Store status card - FIXED */}
         <div className="p-3 mx-3 my-2.5 rounded-xl bg-page-background border border-border/80 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
@@ -375,6 +389,7 @@ export default function VendorDashboardPage() {
           </div>
         </div>
 
+        {/* Navigation - SCROLLABLE ONLY */}
         <div className="flex-1 overflow-y-auto min-h-0 px-3 py-1 space-y-1" aria-label="Vendor dashboard navigation">
           <div className="px-3 pt-2 pb-1 text-[10px] font-bold text-text-muted uppercase tracking-wider">
             Store Operations
@@ -405,6 +420,7 @@ export default function VendorDashboardPage() {
           </nav>
         </div>
 
+        {/* Footer Actions - FIXED AT BOTTOM */}
         <div className="border-t border-border p-3 shrink-0 space-y-1 bg-white">
           <div className="px-3 py-1 text-[10px] font-bold text-text-muted uppercase tracking-wider">
             Quick Links
@@ -439,7 +455,9 @@ export default function VendorDashboardPage() {
         </div>
       </aside>
 
+      {/* ── Main Content Area ────────────────────────────────────────────────── */}
       <div className="flex flex-1 flex-col overflow-hidden min-h-0">
+        {/* Top Header */}
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-white/95 backdrop-blur-md px-4 sm:px-6">
           <div className="flex items-center gap-3 min-w-0">
             <button
@@ -522,6 +540,7 @@ export default function VendorDashboardPage() {
           </div>
         </header>
 
+        {/* Main Scrollable View */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-28 lg:pb-8">
           <div className="mx-auto max-w-6xl">
             {activeTab === 'overview' && (
@@ -545,6 +564,10 @@ export default function VendorDashboardPage() {
 
             {activeTab === 'orders' && (
               <VendorOrdersList vendorId={vendor.id} />
+            )}
+
+            {activeTab === 'earnings' && (
+              <VendorEarningsTab vendor={vendor} />
             )}
 
             {activeTab === 'products' && (
@@ -625,6 +648,7 @@ export default function VendorDashboardPage() {
         </main>
       </div>
 
+      {/* ── Mobile Sticky Bottom Navigation Bar ─────────────────────────────── */}
       <nav
         className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-border bg-white/95 backdrop-blur-md px-2 py-1 shadow-lg lg:hidden"
         aria-label="Vendor mobile bottom navigation"
@@ -649,6 +673,7 @@ export default function VendorDashboardPage() {
         })}
       </nav>
 
+      {/* ── Mobile Drawer Navigation ─────────────────────────────────────────── */}
       {mobileNavOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <div
@@ -760,6 +785,7 @@ export default function VendorDashboardPage() {
         </div>
       )}
 
+      {/* ── Dialogs / Modals ─────────────────────────────────────────────────── */}
       <ProductFormModal
         isOpen={productModalOpen}
         vendorId={vendor.id}
@@ -789,11 +815,15 @@ export default function VendorDashboardPage() {
 
       <DeleteConfirmDialog
         isOpen={deleteDialog.isOpen}
-        title={`Delete ${deleteDialog.type === 'category' ? 'Category' : 'Product'}?`}
-        description={
-          deleteDialog.type === 'category'
-            ? `Are you sure you want to delete "${deleteDialog.item?.name}"? Products in this category will become unassigned.`
-            : `Are you sure you want to delete "${deleteDialog.item?.name}"? This action cannot be undone.`
+        title={deleteDialog.type === 'category' ? 'Delete Category' : 'Delete Product'}
+        description={`Are you sure you want to delete "${deleteDialog.item?.name}"? This action cannot be undone.`}
+        warning={
+          deleteDialog.type === 'category' &&
+          products.filter((p) => p.category_id === deleteDialog.item?.id).length > 0
+            ? `There are ${
+                products.filter((p) => p.category_id === deleteDialog.item?.id).length
+              } products in this category. They will become uncategorized.`
+            : undefined
         }
         isDeleting={isMutating}
         onClose={() => setDeleteDialog({ isOpen: false, type: 'product', item: null })}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { getAllVendors, toggleVendorActive } from '../../services/supabase/admin';
 import { setVendorServices } from '../../services/supabase/vendors';
@@ -233,132 +234,211 @@ export const AdminVendorsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Vendors Table */}
-      <div className="rounded-2xl bg-white border border-border overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-text-secondary">
-            <thead className="bg-light-surface/80 text-text-secondary font-semibold uppercase tracking-wider border-b border-border text-[11px]">
-              <tr>
-                <th className="px-4 py-3">Store / Brand</th>
-                <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">Location</th>
-                <th className="px-4 py-3">Contact</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-text-muted">
-                    <div className="inline-flex items-center gap-2">
-                      <RefreshCw className="w-4 h-4 animate-spin text-primary" />
-                      <span>Loading vendors...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : filteredVendors.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-text-muted">
-                    No vendors found matching criteria.
-                  </td>
-                </tr>
-              ) : (
-                filteredVendors.map((vendor) => (
-                  <tr key={vendor.id} className="hover:bg-light-surface/60 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-text-primary">{vendor.business_name}</div>
-                      <div className="text-[10px] text-text-muted font-mono">{vendor.id}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap items-center gap-1">
-                        {vendor.services && vendor.services.length > 0 ? (
-                          vendor.services.map((srv) => (
-                            <span
-                              key={srv}
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                                srv === 'food'
-                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                              }`}
-                            >
-                              {srv}
+      {/* Vendors List: Responsive Mobile Cards (md:hidden) & Desktop Table (hidden md:block) */}
+      {loading ? (
+        <div className="rounded-2xl bg-white border border-border p-8 text-center text-text-muted shadow-xs">
+          <RefreshCw className="w-5 h-5 animate-spin text-primary mx-auto mb-2" />
+          <p className="text-xs">Loading registered merchant partners...</p>
+        </div>
+      ) : filteredVendors.length === 0 ? (
+        <div className="rounded-2xl bg-white border border-border p-8 text-center text-text-muted shadow-xs">
+          <p className="text-xs font-semibold text-neutral-700">No vendors found matching criteria.</p>
+          <p className="text-[11px] text-neutral-400 mt-1">Try changing search query or category filters.</p>
+        </div>
+      ) : (
+        <>
+          {/* Mobile Card List (md:hidden) */}
+          <div className="md:hidden space-y-3">
+            {filteredVendors.map((vendor) => (
+              <div key={vendor.id} className="p-4 rounded-2xl bg-white border border-border shadow-xs space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-text-primary text-sm truncate">{vendor.business_name}</h4>
+                    <p className="text-[10px] text-text-muted font-mono truncate">{vendor.id}</p>
+                  </div>
+                  <div className="shrink-0">
+                    {vendor.is_active ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Active
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-primary border border-rose-200">
+                        <XCircle className="w-3 h-3" />
+                        Suspended
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1">
+                  {vendor.services && vendor.services.length > 0 ? (
+                    vendor.services.map((srv) => (
+                      <span
+                        key={srv}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                          srv === 'food'
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        }`}
+                      >
+                        {srv}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-light-surface text-text-secondary border border-border">
+                      {vendor.business_type}
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 gap-1 text-xs py-2 border-y border-border/60 text-text-secondary">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <MapPin className="w-3.5 h-3.5 text-text-muted shrink-0" />
+                    <span className="truncate">{vendor.business_address || vendor.address || 'No physical address'}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                    <Phone className="w-3.5 h-3.5 text-text-muted shrink-0" />
+                    <span>{vendor.phone || vendor.phone_number || (vendor as any).profiles?.phone || '—'}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => openServiceModal(vendor)}
+                    className="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-light-surface text-text-primary hover:bg-slate-100 border border-border shadow-xs text-center transition-colors"
+                  >
+                    Manage Services
+                  </button>
+                  <button
+                    type="button"
+                    disabled={actionId === vendor.id}
+                    onClick={() => handleToggleActive(vendor.id, vendor.is_active)}
+                    className={`py-2 px-3.5 rounded-xl text-xs font-semibold transition-colors disabled:opacity-50 text-center shadow-xs ${
+                      vendor.is_active
+                        ? 'bg-rose-50 text-primary hover:bg-rose-100 border border-rose-200'
+                        : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200'
+                    }`}
+                  >
+                    {actionId === vendor.id ? 'Updating...' : vendor.is_active ? 'Suspend' : 'Activate'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table (hidden md:block) */}
+          <div className="hidden md:block rounded-2xl bg-white border border-border overflow-hidden shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-text-secondary">
+                <thead className="bg-light-surface/80 text-text-secondary font-semibold uppercase tracking-wider border-b border-border text-[11px]">
+                  <tr>
+                    <th className="px-4 py-3 w-56">Store / Brand</th>
+                    <th className="px-4 py-3 w-36">Category</th>
+                    <th className="px-4 py-3">Location</th>
+                    <th className="px-4 py-3 w-36">Contact</th>
+                    <th className="px-4 py-3 w-28">Status</th>
+                    <th className="px-4 py-3 text-right w-48">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredVendors.map((vendor) => (
+                    <tr key={vendor.id} className="hover:bg-light-surface/60 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="font-semibold text-text-primary">{vendor.business_name}</div>
+                        <div className="text-[10px] text-text-muted font-mono truncate max-w-[180px]">{vendor.id}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap items-center gap-1">
+                          {vendor.services && vendor.services.length > 0 ? (
+                            vendor.services.map((srv) => (
+                              <span
+                                key={srv}
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                                  srv === 'food'
+                                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                }`}
+                              >
+                                {srv}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-light-surface text-text-secondary border border-border">
+                              {vendor.business_type}
                             </span>
-                          ))
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-text-secondary">
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-text-muted shrink-0" />
+                          <span className="truncate max-w-[220px]">
+                            {vendor.business_address || vendor.address || '—'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-text-secondary">
+                        <div className="flex items-center gap-1">
+                          <Phone className="w-3 h-3 text-text-muted shrink-0" />
+                          <span>
+                            {vendor.phone || vendor.phone_number || (vendor as any).profiles?.phone || '—'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {vendor.is_active ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Active
+                          </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-light-surface text-text-secondary border border-border">
-                            {vendor.business_type}
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+                            <XCircle className="w-3.5 h-3.5" />
+                            Suspended
                           </span>
                         )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-text-secondary">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-text-muted shrink-0" />
-                        <span className="truncate max-w-[200px]">
-                          {vendor.business_address || vendor.address || '—'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-text-secondary">
-                      <div className="flex items-center gap-1">
-                        <Phone className="w-3 h-3 text-text-muted shrink-0" />
-                        <span>
-                          {vendor.phone || vendor.phone_number || (vendor as any).profiles?.phone || '—'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      {vendor.is_active ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          Active
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                          <XCircle className="w-3.5 h-3.5" />
-                          Suspended
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="inline-flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => openServiceModal(vendor)}
-                          className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-light-surface text-text-secondary hover:text-text-primary hover:bg-slate-100 border border-border transition-colors shadow-xs"
-                        >
-                          Services
-                        </button>
-                        <button
-                          type="button"
-                          disabled={actionId === vendor.id}
-                          onClick={() => handleToggleActive(vendor.id, vendor.is_active)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors disabled:opacity-50 ${
-                            vendor.is_active
-                              ? 'bg-rose-50 text-primary hover:bg-rose-100 border border-rose-200 shadow-xs'
-                              : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 shadow-xs'
-                          }`}
-                        >
-                          {actionId === vendor.id
-                            ? 'Updating...'
-                            : vendor.is_active
-                            ? 'Suspend Store'
-                            : 'Activate Store'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="inline-flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => openServiceModal(vendor)}
+                            className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-light-surface text-text-secondary hover:text-text-primary hover:bg-slate-100 border border-border transition-colors shadow-xs cursor-pointer"
+                          >
+                            Services
+                          </button>
+                          <button
+                            type="button"
+                            disabled={actionId === vendor.id}
+                            onClick={() => handleToggleActive(vendor.id, vendor.is_active)}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors disabled:opacity-50 cursor-pointer ${
+                              vendor.is_active
+                                ? 'bg-rose-50 text-primary hover:bg-rose-100 border border-rose-200 shadow-xs'
+                                : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 shadow-xs'
+                            }`}
+                          >
+                            {actionId === vendor.id
+                              ? 'Updating...'
+                              : vendor.is_active
+                              ? 'Suspend'
+                              : 'Activate'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Manage Services Modal */}
-      {managingVendor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      {managingVendor && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white border border-border rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
             <div className="flex items-center gap-3 border-b border-border pb-4">
               <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
@@ -433,7 +513,8 @@ export const AdminVendorsPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Direct Onboard Vendor Modal */}

@@ -307,6 +307,7 @@ REVOKE EXECUTE ON FUNCTION public.mark_delivery_picked_up(uuid, text) FROM PUBLI
 GRANT  EXECUTE ON FUNCTION public.mark_delivery_picked_up(uuid, text) TO authenticated;
 
 -- ── 3. Grant service_role access too (consistent with existing grants) ────────
+-- Re-apply execute grants to service_role to preserve administrative tooling
 GRANT EXECUTE ON FUNCTION public.assign_delivery_to_rider(uuid, uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.mark_delivery_picked_up(uuid, text)  TO service_role;
 
@@ -321,4 +322,3 @@ WHERE d.order_id = o.id
   AND d.status = 'assigned'
   AND o.status = 'in_transit'
   AND o.service_type IN ('courier', 'custom', 'personal_shopper');
-

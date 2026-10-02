@@ -33,9 +33,9 @@ export function RiderPendingView({ onRefresh, isLoading, isSuspended }: RiderPen
           {isSuspended ? 'Account Inactive' : 'Verification Under Review'}
         </Badge>
 
-        <h2 className="text-h3 font-bold text-text-primary">
+        <h1 className="text-h3 font-bold text-text-primary">
           {isSuspended ? 'Rider Account Suspended' : 'Rider Account Awaiting Verification'}
-        </h2>
+        </h1>
 
         <p className="mt-3 text-body text-text-secondary">
           Welcome{profile?.full_name ? `, ${profile.full_name}` : ''}!{' '}

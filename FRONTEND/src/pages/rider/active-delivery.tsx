@@ -29,6 +29,8 @@ import {
   Inbox,
 } from 'lucide-react'
 
+import { supabase } from '@/services/supabase/client'
+
 export default function RiderActiveDeliveryPage() {
   const navigate = useNavigate()
   const { refreshRider } = useCurrentRider()
@@ -51,6 +53,26 @@ export default function RiderActiveDeliveryPage() {
   useEffect(() => {
     loadActiveDelivery()
 
+    // Real-time Supabase subscription for active delivery status updates with guaranteed teardown
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    if (activeDelivery?.order_id) {
+      channel = supabase
+        .channel(`rider_active_delivery_${activeDelivery.order_id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'deliveries',
+            filter: `order_id=eq.${activeDelivery.order_id}`,
+          },
+          () => {
+            loadActiveDelivery()
+          }
+        )
+        .subscribe()
+    }
+
     // 10-second adaptive poll for vendor readiness status changes
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
@@ -58,8 +80,13 @@ export default function RiderActiveDeliveryPage() {
       }
     }, 10000)
 
-    return () => clearInterval(interval)
-  }, [loadActiveDelivery])
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+      clearInterval(interval)
+    }
+  }, [loadActiveDelivery, activeDelivery?.order_id])
 
   const handlePickup = async (notes?: string) => {
     if (!activeDelivery) return
@@ -89,11 +116,15 @@ export default function RiderActiveDeliveryPage() {
     }
   }
 
-  const handleDelivered = async (notes?: string) => {
+  const handleDelivered = async (notes?: string, pin?: string) => {
     if (!activeDelivery) return
     setIsMutating(true)
     try {
-      const { success, error } = await markDeliveryDelivered(activeDelivery.delivery_id, notes)
+      const { success, error } = await markDeliveryDelivered(
+        activeDelivery.delivery_id,
+        notes,
+        pin
+      )
       if (!success && error) {
         throw error
       }
@@ -155,6 +186,7 @@ export default function RiderActiveDeliveryPage() {
   if (!activeDelivery) {
     return (
       <RiderLayout activeTripCount={0}>
+        <h1 className="sr-only">Active Delivery Trip</h1>
         <div className="flex min-h-[400px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white p-8 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-page-background text-text-muted">
             <Bike className="h-7 w-7" aria-hidden="true" />
@@ -188,6 +220,7 @@ export default function RiderActiveDeliveryPage() {
 
   return (
     <RiderLayout activeTripCount={1}>
+      <h1 className="sr-only">Active Delivery Trip</h1>
       <div className="space-y-5 pb-24">
         {/* Header summary */}
         <div className="flex items-center justify-between gap-2 border-b border-border pb-4">
@@ -336,6 +369,7 @@ export default function RiderActiveDeliveryPage() {
           orderStatus={activeDelivery.order_status}
           serviceType={activeDelivery.service_type}
           isMutating={isMutating}
+          hasDeliveryPin={activeDelivery.has_delivery_pin}
           onPickup={handlePickup}
           onTransit={handleTransit}
           onDelivered={handleDelivered}

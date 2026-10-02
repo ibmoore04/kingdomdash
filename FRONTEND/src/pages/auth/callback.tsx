@@ -6,7 +6,7 @@
  * FUNCTIONALITY: All auth logic frozen — only presentation changed.
  */
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { supabase } from '@/services/supabase/client'
@@ -26,11 +26,13 @@ export default function AuthCallbackPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { session, profile, isLoading, isRecoverySession } = useAuthStore()
+  const hasExchanged = useRef(false)
 
   // Exchange effect (runs once on mount)
   useEffect(() => {
     let cancelled = false
-    const params = new URLSearchParams(location.search)
+    const search = location.search || (typeof window !== 'undefined' ? window.location.search : '')
+    const params = new URLSearchParams(search)
     const code = params.get('code')
     const oauthError = params.get('error')
 
@@ -56,9 +58,10 @@ export default function AuthCallbackPage() {
       return
     }
 
-    if (exchangedCodes.has(code)) {
+    if (hasExchanged.current || exchangedCodes.has(code)) {
       return
     }
+    hasExchanged.current = true
     exchangedCodes.add(code)
 
     supabase.auth

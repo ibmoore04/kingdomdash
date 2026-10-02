@@ -97,7 +97,8 @@ export default function BusinessPage() {
         status: 'pending' as const,
       }
 
-      // 1. Submit lead directly to Supabase (RPC first, then table insert fallback)
+      // 1. Submit lead directly to Supabase backend (RPC first, then table insert fallback)
+      let submittedToDb = false
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rpcRes = await (supabase.rpc as any)('submit_corporate_lead', {
@@ -110,59 +111,28 @@ export default function BusinessPage() {
           p_estimated_volume: leadPayload.estimated_volume,
           p_notes: leadPayload.notes,
         })
-        if (rpcRes?.error) {
+        if (!rpcRes?.error) {
+          submittedToDb = true
+        } else {
           // Direct table insert fallback
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase as any).from('corporate_leads').insert(leadPayload)
+          const { error: insertErr } = await (supabase as any).from('corporate_leads').insert(leadPayload)
+          if (!insertErr) submittedToDb = true
         }
       } catch (err) {
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase as any).from('corporate_leads').insert(leadPayload)
+          const { error: insertErr } = await (supabase as any).from('corporate_leads').insert(leadPayload)
+          if (!insertErr) submittedToDb = true
         } catch (tableErr) {
           console.warn('Failed to submit corporate lead to Supabase:', tableErr)
         }
       }
 
-      // 2. Persist corporate lead to local storage as client cache (both camelCase and snake_case)
-      const existingLeads = JSON.parse(localStorage.getItem('kingdomdash_corporate_leads') || '[]')
-      const newLead = {
-        id: `corp_${Date.now()}`,
-        ...leadPayload,
-        companyName: leadPayload.company_name,
-        contactName: leadPayload.contact_name,
-        businessType: leadPayload.business_type,
-        estimatedVolume: monthlyVolume,
-        createdAt: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-      existingLeads.unshift(newLead)
-      localStorage.setItem('kingdomdash_corporate_leads', JSON.stringify(existingLeads))
-
-      // 3. Dispatch local notification cache
-      try {
-        const notifs = JSON.parse(localStorage.getItem('kd_admin_notifications_cache') || '[]')
-        notifs.unshift({
-          id: `notif_${newLead.id}`,
-          title: `🏢 Corporate Account Lead: ${companyName}`,
-          message: `${contactName} (${phone} • ${email || 'No email'}) requested business courier account for ${businessType} (~${monthlyVolume} deliveries/mo). Address: ${address || 'Ijebu-Ode'}${notes ? `. Notes: ${notes}` : ''}`,
-          severity: 'info',
-          is_read: false,
-          category: 'application',
-          action_href: '/admin/users?tab=corporate',
-          action_label: 'View Corporate Leads',
-          created_at: new Date().toISOString(),
-        })
-        localStorage.setItem('kd_admin_notifications_cache', JSON.stringify(notifs))
-      } catch (e) {
-        console.error('Failed to dispatch corporate admin notification cache', e)
-      }
-
       setIsSubmitting(false)
       setSubmitted(true)
       pushToast({
-        variant: 'success',
+        variant: submittedToDb ? 'success' : 'info',
         title: 'Inquiry Received!',
         message: 'Our corporate account manager will contact you within 2 business hours.',
       })

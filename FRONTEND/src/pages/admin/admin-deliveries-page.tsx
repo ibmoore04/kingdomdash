@@ -162,8 +162,73 @@ export const AdminDeliveriesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Deliveries Table */}
-      <div className="rounded-2xl bg-white border border-border overflow-hidden shadow-xs">
+      {/* Mobile Deliveries Cards (md:hidden) */}
+      <div className="md:hidden space-y-3">
+        {loading ? (
+          <div className="p-8 text-center text-text-muted bg-white border border-border rounded-2xl shadow-xs">
+            <RefreshCw className="w-5 h-5 animate-spin text-primary mx-auto mb-2" />
+            <p className="text-xs">Loading delivery records...</p>
+          </div>
+        ) : deliveries.length === 0 ? (
+          <div className="p-8 text-center text-text-muted bg-white border border-border rounded-2xl shadow-xs">
+            <p className="text-xs">No delivery records found matching filters.</p>
+          </div>
+        ) : (
+          deliveries.map((delivery) => (
+            <div
+              key={delivery.id}
+              className="p-4 bg-white border border-border rounded-2xl shadow-xs space-y-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-0.5">
+                  <div className="font-mono font-semibold text-text-primary text-xs">
+                    Ref: {delivery.id.slice(0, 8)}...
+                  </div>
+                  <div className="text-[11px] font-mono text-text-muted">
+                    Order: {delivery.order_id ? `${delivery.order_id.slice(0, 8)}...` : '—'}
+                  </div>
+                </div>
+                <div>{getDeliveryStatusBadge(delivery.status)}</div>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-light-surface border border-border space-y-1">
+                <div className="text-[10px] uppercase font-bold text-text-muted">Assigned Courier</div>
+                {delivery.rider ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-white border border-border flex items-center justify-center text-text-secondary text-xs">
+                      <User className="w-3 h-3" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-text-primary text-xs">{delivery.rider.full_name}</div>
+                      <div className="text-[10px] text-text-muted font-mono">{delivery.rider.phone_number || 'No phone'}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-primary italic font-medium text-xs">Unassigned</span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-text-secondary pt-1 border-t border-border">
+                <div>
+                  <span className="text-text-muted block text-[10px]">Pickup Time:</span>
+                  <span className="font-mono text-text-primary">
+                    {delivery.picked_up_at ? new Date(delivery.picked_up_at).toLocaleTimeString() : '—'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-text-muted block text-[10px]">Delivered Time:</span>
+                  <span className="font-mono text-text-primary">
+                    {delivery.delivered_at ? new Date(delivery.delivered_at).toLocaleTimeString() : '—'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Deliveries Table (hidden md:block) */}
+      <div className="hidden md:block rounded-2xl bg-white border border-border overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-text-secondary">
             <thead className="bg-light-surface/80 text-text-secondary font-semibold uppercase tracking-wider border-b border-border text-[11px]">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuthStore } from '@/stores/auth-store';
 import { getAuditLogs } from '../../services/supabase/admin';
 import type { AuditLogRow } from '../../types/admin';
@@ -93,8 +94,65 @@ export const AdminAuditLogsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Logs Table */}
-      <div className="rounded-2xl bg-white border border-border shadow-xs overflow-hidden">
+      {/* Mobile Cards View (md:hidden) */}
+      <div className="md:hidden space-y-3">
+        {loading ? (
+          <div className="p-8 text-center text-text-muted bg-white border border-border rounded-2xl shadow-xs">
+            <RefreshCw className="w-5 h-5 animate-spin text-primary mx-auto mb-2" />
+            <p className="text-xs">Scanning audit log ledger...</p>
+          </div>
+        ) : logs.length === 0 ? (
+          <div className="p-8 text-center text-text-muted bg-white border border-border rounded-2xl shadow-xs">
+            <p className="text-xs">No audit records recorded yet.</p>
+          </div>
+        ) : (
+          logs.map((log) => (
+            <div
+              key={log.id}
+              className="p-4 bg-white border border-border rounded-2xl shadow-xs space-y-2.5 font-mono"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span className="font-semibold text-primary uppercase text-[11px] px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20">
+                  {log.action}
+                </span>
+                <span className="text-text-muted text-[10px]">
+                  {new Date(log.created_at).toLocaleString()}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-[11px] bg-light-surface p-2.5 rounded-xl border border-border">
+                <div>
+                  <span className="text-text-muted block text-[10px] uppercase">Actor</span>
+                  <span className="text-text-primary font-semibold truncate block">
+                    {log.user_id ? `${log.user_id.slice(0, 8)}...` : 'SYSTEM_RPC'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-text-muted block text-[10px] uppercase">Entity</span>
+                  <span className="text-text-secondary truncate block">
+                    {log.entity_type} {log.entity_id ? `(${log.entity_id.slice(0, 6)}...)` : ''}
+                  </span>
+                </div>
+              </div>
+
+              {log.details && (
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedLog(log)}
+                    className="px-3 py-1.5 rounded-xl bg-light-surface border border-border hover:bg-slate-100 text-text-secondary text-xs font-semibold transition-colors"
+                  >
+                    View Diff Payload
+                  </button>
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View (hidden md:block) */}
+      <div className="hidden md:block rounded-2xl bg-white border border-border shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-text-secondary">
             <thead className="bg-light-surface/80 text-text-secondary font-semibold uppercase tracking-wider border-b border-border text-[11px]">
@@ -161,8 +219,8 @@ export const AdminAuditLogsPage: React.FC = () => {
       </div>
 
       {/* JSON Payload Inspector */}
-      {selectedLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      {selectedLog && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white border border-border rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
@@ -194,7 +252,8 @@ export const AdminAuditLogsPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

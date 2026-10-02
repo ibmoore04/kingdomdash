@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Store,
   UtensilsCrossed,
@@ -184,7 +185,7 @@ export const DirectOnboardVendorModal: React.FC<DirectOnboardVendorModalProps> =
 
   if (!isOpen) return null
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -192,7 +193,7 @@ export const DirectOnboardVendorModal: React.FC<DirectOnboardVendorModalProps> =
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
-      className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-fadeIn"
+      className="fixed inset-0 z-[9999] flex flex-col justify-end sm:justify-center sm:items-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
     >
       <div className="relative w-full sm:max-w-xl bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border-t sm:border border-neutral-200/80 overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[88vh] animate-slideUp sm:animate-none">
         {/* Mobile Pull Handle Indicator */}
@@ -459,18 +460,24 @@ export const DirectOnboardVendorModal: React.FC<DirectOnboardVendorModalProps> =
                   <SelectTrigger className="w-full px-3 py-2 bg-white border border-neutral-200 rounded-lg text-xs font-medium text-neutral-900 truncate h-10">
                     <SelectValue placeholder="-- Choose registered customer to elevate --" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[10002] bg-white text-neutral-900 border border-neutral-200 shadow-2xl max-h-60 overflow-y-auto">
                     <SelectItem value="none">-- Choose registered customer to elevate --</SelectItem>
                     {profiles.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         {p.full_name || 'Unnamed'} ({p.email}) - {p.role}
                       </SelectItem>
                     ))}
+                    {!loadingProfiles && profiles.length === 0 && (
+                      <div className="px-3 py-2 text-xs text-neutral-500 italic">
+                        No active user accounts found matching &quot;{profileSearch}&quot;
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
                 {loadingProfiles && (
                   <p className="text-[10px] text-neutral-400 italic">Searching profiles...</p>
                 )}
+
               </div>
             ) : (
               <div>
@@ -557,6 +564,7 @@ export const DirectOnboardVendorModal: React.FC<DirectOnboardVendorModalProps> =
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

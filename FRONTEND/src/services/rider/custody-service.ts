@@ -73,7 +73,8 @@ export async function markDeliveryInTransit(
 
 export async function markDeliveryDelivered(
   deliveryId: string,
-  notes?: string
+  notes?: string,
+  pin?: string
 ): Promise<{
   success: boolean
   error: Error | null
@@ -82,6 +83,7 @@ export async function markDeliveryDelivered(
     const { error } = await db.rpc('mark_delivery_delivered', {
       p_delivery_id: deliveryId,
       p_notes: notes || null,
+      p_pin: pin || null,
     })
     if (error) {
       return { success: false, error: new Error(mapRiderRpcError(error)) }

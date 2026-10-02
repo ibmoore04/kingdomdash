@@ -24,9 +24,9 @@ export function VendorPendingView({ onRefresh, isLoading }: VendorPendingViewPro
           Under Review
         </Badge>
 
-        <h2 className="text-h3 font-bold text-text-primary">
+        <h1 className="text-h3 font-bold text-text-primary">
           Vendor Account Awaiting Activation
-        </h2>
+        </h1>
 
         <p className="mt-3 text-body text-text-secondary">
           Welcome{profile?.full_name ? `, ${profile.full_name}` : ''}! Your vendor profile is currently being verified by the KingdomDash operations team for{' '}

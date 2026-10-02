@@ -51,6 +51,7 @@ interface CustomerOrderSummary {
   status: string
   subtotal: number
   delivery_fee: number
+  service_fee?: number
   total: number
   delivery_pin?: string | null
   pickup_address?: string
@@ -204,6 +205,7 @@ export default function CustomerDashboardPage() {
               status,
               subtotal,
               delivery_fee,
+              service_fee,
               total,
               pickup_address,
               delivery_address,
@@ -226,11 +228,13 @@ export default function CustomerDashboardPage() {
           if (!res?.error && res?.data) {
             return res.data
           }
+          // If join query returned an error, fallback to direct query
           console.warn('[CustomerDashboard] Complex order join failed, falling back to direct table select:', res?.error)
         } catch (innerErr) {
           console.warn('[CustomerDashboard] Join query exception, trying fallback:', innerErr)
         }
 
+        // Direct fallback query without joins
         const fallbackRes = await db
           .from('orders')
           .select('*')
@@ -315,6 +319,7 @@ export default function CustomerDashboardPage() {
     async function checkPendingApplications() {
       if (!profile) return
       try {
+        // Scaffold compatibility: cast untyped supabase
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const db = supabase as any
         const [riderRes, vendorRes] = await Promise.all([
@@ -416,6 +421,7 @@ export default function CustomerDashboardPage() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-page-background">
+      {/* Header */}
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-white px-4 sm:px-6 z-20">
         <div className="flex items-center gap-3 min-w-0">
           <Link to="/" className="flex items-center gap-2.5 overflow-hidden group">
@@ -487,6 +493,7 @@ export default function CustomerDashboardPage() {
         </div>
       </header>
 
+      {/* Desktop Horizontal Tab Bar */}
       <nav aria-label="Customer dashboard tabs" className="hidden lg:flex items-center gap-1 border-b border-border bg-white px-6 py-2 shrink-0 z-10">
         {NAV_ITEMS.map(({ id, icon: Icon, label }) => {
           const isActive = activeTab === id
@@ -517,8 +524,10 @@ export default function CustomerDashboardPage() {
         })}
       </nav>
 
+      {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden min-h-0">
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 space-y-6">
+          {/* Pending Application Banner */}
           {pendingApplication && (
             <div className="mx-auto max-w-4xl rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-sm">
               <div className="flex items-start gap-4">
@@ -566,6 +575,7 @@ export default function CustomerDashboardPage() {
           )}
 
           <div className="mx-auto max-w-4xl">
+            {/* Tab: Orders */}
             {activeTab === 'orders' && (
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -600,6 +610,7 @@ export default function CustomerDashboardPage() {
                   </div>
                 </div>
 
+                {/* Filter Tabs — responsive edge-to-edge scroll on mobile with shrink-0 pills */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-0.5 border-b border-border -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
                   {[
                     { id: 'all', label: 'All Orders', count: orders.length },
@@ -648,6 +659,7 @@ export default function CustomerDashboardPage() {
                   ))}
                 </div>
 
+                {/* Loading state */}
                 {isLoadingOrders && orders.length === 0 && (
                   <div className="py-16 text-center text-text-muted bg-white rounded-2xl border border-border">
                     <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-3" />
@@ -656,6 +668,7 @@ export default function CustomerDashboardPage() {
                   </div>
                 )}
 
+                {/* Error state */}
                 {ordersError && (
                   <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -668,6 +681,7 @@ export default function CustomerDashboardPage() {
                   </div>
                 )}
 
+                {/* Empty State */}
                 {!isLoadingOrders && filteredOrders.length === 0 && (
                   <div className="rounded-2xl border border-border bg-white p-8 text-center shadow-xs">
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-muted text-text-muted mb-4">
@@ -696,6 +710,7 @@ export default function CustomerDashboardPage() {
                   </div>
                 )}
 
+                {/* Orders List */}
                 {!isLoadingOrders && filteredOrders.length > 0 && (
                   <div className="space-y-4">
                     {filteredOrders.map((order) => {
@@ -714,6 +729,7 @@ export default function CustomerDashboardPage() {
                   </div>
                 )}
 
+                {/* Order Review Feedback Modal */}
                 <OrderReviewModal
                   isOpen={!!reviewingOrder}
                   onClose={() => setReviewingOrder(null)}
@@ -725,6 +741,7 @@ export default function CustomerDashboardPage() {
                   }}
                 />
 
+                {/* Order Cancellation Modal */}
                 <CancelOrderModal
                   isOpen={!!cancellingOrder}
                   onClose={() => setCancellingOrder(null)}
@@ -738,6 +755,7 @@ export default function CustomerDashboardPage() {
               </div>
             )}
 
+            {/* Tab: Addresses */}
             {activeTab === 'addresses' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -779,6 +797,7 @@ export default function CustomerDashboardPage() {
               </div>
             )}
 
+            {/* Tab: Profile */}
             {activeTab === 'profile' && (
               <div className="space-y-6">
                 <div>
@@ -806,6 +825,7 @@ export default function CustomerDashboardPage() {
                   </div>
                 )}
 
+                {/* Identity Summary Card */}
                 <div className="p-6 rounded-2xl border border-border bg-white shadow-xs">
                   <div className="flex items-center gap-4">
                     <div className="h-16 w-16 rounded-2xl bg-primary text-white font-bold text-h3 flex items-center justify-center shrink-0">
@@ -823,6 +843,7 @@ export default function CustomerDashboardPage() {
                   </div>
                 </div>
 
+                {/* Editable Profile Form */}
                 <div className="p-6 rounded-2xl border border-border bg-white shadow-xs">
                   <h3 className="text-body-large font-bold text-text-primary border-b border-border pb-4 mb-5">
                     Edit Personal Information
@@ -902,10 +923,12 @@ export default function CustomerDashboardPage() {
               </div>
             )}
 
+            {/* Tab: Corporate Dispatch Portal */}
             {activeTab === 'corporate' && (
               <CustomerCorporateTab />
             )}
 
+            {/* Tab: Rewards & Passes */}
             {activeTab === 'rewards' && (
               <CustomerRewardsTab
                 userId={profile?.id || 'guest'}
@@ -913,14 +936,17 @@ export default function CustomerDashboardPage() {
               />
             )}
 
+            {/* Tab: Support & Reference Tracking */}
             {activeTab === 'support' && (
               <CustomerSupportTab />
             )}
 
+            {/* Tab: Notifications */}
             {activeTab === 'notifications' && (
               <CustomerNotificationsTab />
             )}
 
+            {/* Tab: Settings */}
             {activeTab === 'settings' && (
               <CustomerSettingsTab />
             )}

@@ -13,8 +13,8 @@ export function AuthSpinner({ label = 'Verifying authorization…' }: { label?: 
       className="flex min-h-[60vh] w-full items-center justify-center p-8"
     >
       <div className="flex flex-col items-center gap-4">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-border border-t-primary" />
-        <span className="text-body-small text-text-secondary">{label}</span>
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#E50914]/20 border-t-[#E50914]" />
+        <span className="text-body-small font-medium text-text-secondary">{label}</span>
       </div>
     </div>
   )

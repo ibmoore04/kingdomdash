@@ -164,13 +164,14 @@ describe('Rider Service Layer Integration', () => {
       expect(res.success).toBe(true)
     })
 
-    it('markDeliveryDelivered calls mark_delivery_delivered RPC', async () => {
+    it('markDeliveryDelivered calls mark_delivery_delivered RPC with optional pin', async () => {
       vi.mocked(supabase.rpc).mockResolvedValueOnce({ data: null, error: null } as any)
 
-      const res = await markDeliveryDelivered('del-1', 'Handed to customer')
+      const res = await markDeliveryDelivered('del-1', 'Handed to customer', '4921')
       expect(supabase.rpc).toHaveBeenCalledWith('mark_delivery_delivered', {
         p_delivery_id: 'del-1',
         p_notes: 'Handed to customer',
+        p_pin: '4921',
       })
       expect(res.success).toBe(true)
     })

@@ -85,7 +85,7 @@ export default function UpdatePasswordPage() {
       const { error: updateError } = await supabase.auth.updateUser({ password })
 
       if (updateError) {
-        setError(mapAuthError(updateError, 'Password update failed. Failed to update password'))
+        setError(mapAuthError(updateError, 'Failed to update password'))
       } else {
         useAuthStore.setState?.({ isRecoverySession: false })
         signOutInitiated.current = true
@@ -93,12 +93,16 @@ export default function UpdatePasswordPage() {
         navigate('/auth/login', { replace: true })
       }
     } catch (err) {
-      setError(mapAuthError(err, 'Password update failed. Failed to update password'))
+      setError(mapAuthError(err, 'Password update'))
     } finally {
       setIsLoading(false)
     }
   }
   // ── End frozen logic ────────────────────────────────────────────────────
+
+  if (!isRecoverySession && !signOutInitiated.current) {
+    return null
+  }
 
   return (
     <AuthShell headlineLine1="Delivering what" headlineLine2Prefix="matters " headlineKeyword="most">
@@ -108,7 +112,7 @@ export default function UpdatePasswordPage() {
       {/* Heading */}
       <h2
         className="font-bold leading-none tracking-tight text-[#111111]"
-        style={{ fontSize: 'clamp(2rem,3.5vw,2.6rem)' }}
+        style={{ fontSize: 'clamp(1.75rem,3vw,2.2rem)' }}
       >
         Update your password
       </h2>
@@ -231,7 +235,7 @@ export default function UpdatePasswordPage() {
         </Button>
       </form>
 
-      <AuthDivider />
+      <AuthDivider label={null} />
 
       <p className="mt-5 text-center text-body-small text-[#6b7280]">
         Remember your password?{' '}

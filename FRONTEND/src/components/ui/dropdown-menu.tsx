@@ -15,7 +15,7 @@ export const DropdownMenuContent = forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        'z-50 min-w-44 overflow-hidden rounded-md border border-border bg-white p-1 shadow-card',
+        'z-[10002] min-w-44 overflow-hidden rounded-xl border border-neutral-200 bg-white text-neutral-900 p-1.5 shadow-2xl',
         className,
       )}
       {...props}
@@ -23,6 +23,7 @@ export const DropdownMenuContent = forwardRef<
   </DropdownMenuPrimitive.Portal>
 ))
 DropdownMenuContent.displayName = 'DropdownMenuContent'
+
 
 export const DropdownMenuItem = forwardRef<
   ElementRef<typeof DropdownMenuPrimitive.Item>,

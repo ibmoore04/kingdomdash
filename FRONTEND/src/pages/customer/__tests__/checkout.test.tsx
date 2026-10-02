@@ -422,7 +422,9 @@ describe('CheckoutPage', () => {
     fireEvent.click(placeOrderBtn)
 
     // Should only be called once because duplicate prevention blocks re-entry
-    expect(createOrderSpy).toHaveBeenCalledTimes(1)
+    await waitFor(() => {
+      expect(createOrderSpy).toHaveBeenCalledTimes(1)
+    })
 
     // Resolve order creation
     resolveOrder!({ data: 'order-uuid-double-click', error: null })

@@ -12,7 +12,9 @@ export const appConfig = {
   name: import.meta.env.VITE_APP_NAME || 'KingdomDash',
   tagline: 'SWIFT IN MOTION.',
   philosophy: 'Powered by Excellence. Guided by Grace.',
-  url: import.meta.env.VITE_APP_URL || 'https://kingdomdash.net',
+  url:
+    import.meta.env.VITE_APP_URL ||
+    (import.meta.env.DEV ? 'http://localhost:5173' : 'https://kingdomdash.net'),
   launchMarket: 'Ijebu-Ode, Ogun State',
   expansionMarkets: 'Ogun State and subsequent markets',
   support: {
@@ -40,5 +42,9 @@ export const appConfig = {
       number: rawWhatsAppNumber,
       url: `https://wa.me/${rawWhatsAppNumber.replace(/[^0-9]/g, '')}`,
     },
+  },
+  maps: {
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    defaultCenter: { latitude: 6.8227, longitude: 3.9213 }, // Ijebu-Ode, Ogun State
   },
 } as const

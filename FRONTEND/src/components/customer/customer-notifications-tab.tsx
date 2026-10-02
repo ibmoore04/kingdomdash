@@ -52,7 +52,7 @@ export function CustomerNotificationsTab() {
           type: (row.type as CustomerNotificationItem['type']) || 'info',
           is_read: Boolean(row.is_read),
           action_url: row.action_url,
-          action_label: 'View Details',
+          action_label: row.action_url?.includes('support') || row.title?.toLowerCase().includes('support') ? 'View Support Ticket' : 'View Details',
           created_at: row.created_at || new Date().toISOString(),
         }))
         setNotifications(mapped)

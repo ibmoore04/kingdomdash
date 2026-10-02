@@ -73,26 +73,41 @@ export function RiderLayout({
   }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-page-background">
-      {/* Offline connectivity warning banner */}
-      {!isOnline && (
-        <div className="shrink-0 flex items-center justify-center gap-2 bg-error px-4 py-2 text-caption font-bold text-white shadow-xs">
-          <WifiOff className="h-4 w-4" aria-hidden="true" />
-          <span>No internet connection. Actions will resume once connection is restored.</span>
-        </div>
-      )}
+    <div className="flex h-screen overflow-hidden bg-page-background">
+      {/* ── Left Sidebar (Desktop Only) ─────────────────────────────────────── */}
+      <RiderSidebar
+        rider={rider}
+        activeTripCount={activeTripCount}
+        inboxCount={inboxCount}
+      />
 
-      <RiderHeader rider={rider} onToggleAvailability={handleToggleAvailability} />
+      {/* ── Right Content Area ──────────────────────────────────────────────── */}
+      <div className="flex flex-1 flex-col overflow-hidden min-h-0">
+        {/* Offline connectivity warning banner */}
+        {!isOnline && (
+          <div className="shrink-0 flex items-center justify-center gap-2 bg-error px-4 py-2 text-caption font-bold text-white shadow-xs">
+            <WifiOff className="h-4 w-4" aria-hidden="true" />
+            <span>No internet connection. Actions will resume once connection is restored.</span>
+          </div>
+        )}
 
-      <div className="flex flex-1 overflow-hidden min-h-0">
-        <RiderSidebar rider={rider} activeTripCount={activeTripCount} />
+        {/* Top Header */}
+        <RiderHeader
+          rider={rider}
+          onToggleAvailability={handleToggleAvailability}
+        />
 
-        <main className="flex-1 overflow-y-auto w-full p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
-          <div className="mx-auto w-full max-w-4xl">{children}</div>
+        {/* Main Scrollable View */}
+        <main className="flex-1 overflow-y-auto w-full p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 min-h-0">
+          <div className="mx-auto w-full max-w-5xl">{children}</div>
         </main>
       </div>
 
-      <RiderBottomNav activeTripCount={activeTripCount} inboxCount={inboxCount} />
+      {/* ── Bottom Navigation (Mobile Only) ─────────────────────────────────── */}
+      <RiderBottomNav
+        activeTripCount={activeTripCount}
+        inboxCount={inboxCount}
+      />
     </div>
   )
 }

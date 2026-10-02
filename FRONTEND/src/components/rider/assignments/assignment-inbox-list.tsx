@@ -1,7 +1,7 @@
 import type { AssignmentInboxOffer } from '@/types/rider'
 import { AssignmentCard } from './assignment-card'
 import { Button } from '@/components/ui/button'
-import { Radio, RefreshCw } from 'lucide-react'
+import { Radio, RefreshCw, AlertTriangle } from 'lucide-react'
 
 interface AssignmentInboxListProps {
   offers: AssignmentInboxOffer[]
@@ -31,7 +31,7 @@ export function AssignmentInboxList({
     )
   }
 
-  if (!isAvailable) {
+  if (!isAvailable && offers.length === 0) {
     return (
       <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white p-8 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-border text-text-muted">
@@ -75,6 +75,14 @@ export function AssignmentInboxList({
 
   return (
     <div className="space-y-4">
+      {!isAvailable && (
+        <div className="flex items-center gap-2.5 rounded-xl border border-warning/40 bg-warning/10 p-3 text-body-small text-text-primary">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
+          <span>
+            <strong>You are offline</strong> — but you have a pending dispatch. Go online to accept new jobs automatically.
+          </span>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <span className="text-body-small font-semibold text-text-primary">
           Available Offers ({offers.length})

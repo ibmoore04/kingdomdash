@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import {
   getPendingRiderApplications,
@@ -334,8 +335,8 @@ export const AdminRiderApplicationsPage: React.FC = () => {
       )}
 
       {/* Details Modal / Drawer */}
-      {detailApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      {detailApp && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white border border-border rounded-2xl max-w-lg w-full p-6 space-y-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div className="flex items-center gap-3">
@@ -445,12 +446,13 @@ export const AdminRiderApplicationsPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Rider Approval Modal */}
-      {approvingRiderApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      {approvingRiderApp && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white border border-border rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
             <div className="flex items-center gap-3 border-b border-border pb-4">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600">
@@ -507,12 +509,13 @@ export const AdminRiderApplicationsPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Reject Modal */}
-      {isRejectModalOpen && selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+      {isRejectModalOpen && selectedApp && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <h3 className="text-sm font-bold text-text-primary">Reject Rider Application</h3>
             <p className="text-xs text-text-secondary">
@@ -545,7 +548,8 @@ export const AdminRiderApplicationsPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Direct Onboard Rider Modal */}

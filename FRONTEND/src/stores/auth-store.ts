@@ -32,6 +32,13 @@ export function extractJwtAal(token?: string | null): 'aal1' | 'aal2' {
   return 'aal1'
 }
 
+export interface ImpersonationSession {
+  originalAdminProfile: Profile
+  targetProfile: Profile
+  reason: string
+  startedAt: string
+}
+
 export interface AuthState {
   session: Session | null
   profile: Profile | null
@@ -40,9 +47,13 @@ export interface AuthState {
   isEmailConfirmed: boolean
   mfaLevel: 'aal1' | 'aal2'
   profileError: Error | null
+  impersonation: ImpersonationSession | null
+  isImpersonating: boolean
   signOut: () => Promise<void>
   setMfaLevel: (level: 'aal1' | 'aal2') => void
   checkMfaAssuranceLevel: () => Promise<'aal1' | 'aal2'>
+  startImpersonation: (targetUser: Profile, reason: string) => Promise<{ success: boolean; error?: string }>
+  stopImpersonation: () => Promise<{ success: boolean; error?: string }>
 }
 
 // Module-level generation counter to prevent race conditions (Guarantee A and B, P7)
@@ -80,8 +91,32 @@ async function startProfileFetch(
       return
     }
 
+    const userProfile = data as unknown as Profile
+
+    // Restore impersonation session if one was active for this admin
+    let savedImpersonation: ImpersonationSession | null = null
+    try {
+      const raw = typeof window !== 'undefined' ? sessionStorage.getItem('kingdomdash_impersonation_session') : null
+      if (raw) savedImpersonation = JSON.parse(raw)
+    } catch {
+      // safe
+    }
+
+    if (savedImpersonation && savedImpersonation.originalAdminProfile.id === userProfile.id) {
+      set({
+        profile: savedImpersonation.targetProfile,
+        impersonation: savedImpersonation,
+        isImpersonating: true,
+        profileError: null,
+        isLoading: false,
+      })
+      return
+    }
+
     set({
-      profile: data as unknown as Profile,
+      profile: userProfile,
+      impersonation: null,
+      isImpersonating: false,
       profileError: null,
       isLoading: false,
     })
@@ -106,6 +141,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   mfaLevel: 'aal1',
   profileError: null,
 
+  impersonation: null,
+  isImpersonating: false,
+
   setMfaLevel: (mfaLevel) => set({ mfaLevel }),
 
   checkMfaAssuranceLevel: async () => {
@@ -126,12 +164,105 @@ export const useAuthStore = create<AuthState>((set) => ({
     return current
   },
 
+  startImpersonation: async (targetUser: Profile, reason: string) => {
+    const state = useAuthStore.getState()
+    if (!state.profile || (state.profile.role !== 'admin' && state.profile.role !== 'super_admin')) {
+      return { success: false, error: 'Only administrators can impersonate roles' }
+    }
+
+    try {
+      const { error } = await (supabase.rpc as any)('admin_start_impersonation', {
+        p_target_user_id: targetUser.id,
+        p_reason: reason,
+      })
+
+      if (error) {
+        return { success: false, error: error.message || 'Failed to start impersonation' }
+      }
+
+      const activeTarget: Profile = {
+        id: targetUser.id,
+        email: targetUser.email,
+        full_name: targetUser.full_name,
+        phone: targetUser.phone ?? null,
+        avatar_url: targetUser.avatar_url ?? null,
+        role: targetUser.role,
+        is_active: targetUser.is_active,
+        created_at: targetUser.created_at,
+        updated_at: targetUser.updated_at,
+      }
+
+      const impersonationSession: ImpersonationSession = {
+        originalAdminProfile: state.profile,
+        targetProfile: activeTarget,
+        reason,
+        startedAt: new Date().toISOString(),
+      }
+
+      try {
+        sessionStorage.setItem('kingdomdash_impersonation_session', JSON.stringify(impersonationSession))
+      } catch {
+        // storage quota safe
+      }
+
+      set({
+        impersonation: impersonationSession,
+        isImpersonating: true,
+        profile: activeTarget,
+      })
+
+      return { success: true }
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : 'Network error starting impersonation',
+      }
+    }
+  },
+
+  stopImpersonation: async () => {
+    const state = useAuthStore.getState()
+    if (!state.impersonation) {
+      return { success: false, error: 'No active impersonation session' }
+    }
+
+    const { originalAdminProfile, targetProfile } = state.impersonation
+
+    try {
+      await (supabase.rpc as any)('admin_stop_impersonation', {
+        p_target_user_id: targetProfile.id,
+      })
+    } catch {
+      // Swallowed so admin is never trapped in impersonated view
+    }
+
+    try {
+      sessionStorage.removeItem('kingdomdash_impersonation_session')
+    } catch {
+      // safe
+    }
+
+    set({
+      impersonation: null,
+      isImpersonating: false,
+      profile: originalAdminProfile,
+    })
+
+    return { success: true }
+  },
+
   signOut: async () => {
     // Invalidate any in-flight profile fetch immediately (P7)
     invalidateFetch()
 
     // Explicitly reset active in-memory cart and isolate guest state
     useCartStore.getState().setUser(null)
+
+    try {
+      sessionStorage.removeItem('kingdomdash_impersonation_session')
+    } catch {
+      // safe
+    }
 
     // Remote sign-out: ignore network errors so user is never trapped client-side (P14)
     try {
@@ -145,6 +276,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       session: null,
       profile: null,
       profileError: null,
+      impersonation: null,
+      isImpersonating: false,
       isRecoverySession: false,
       isEmailConfirmed: false,
       mfaLevel: 'aal1',
@@ -177,7 +310,7 @@ export function initAuthListener(): void {
             isEmailConfirmed: Boolean(session.user?.email_confirmed_at),
           })
           const gen = ++fetchGeneration
-          await startProfileFetch(session.user.id, gen, set)
+          void startProfileFetch(session.user.id, gen, set)
         } else {
           useCartStore.getState().setUser(null)
           set({
@@ -202,7 +335,7 @@ export function initAuthListener(): void {
             isEmailConfirmed: Boolean(session.user?.email_confirmed_at),
           })
           const gen = ++fetchGeneration
-          await startProfileFetch(session.user.id, gen, set)
+          void startProfileFetch(session.user.id, gen, set)
         } else {
           useCartStore.getState().setUser(null)
         }

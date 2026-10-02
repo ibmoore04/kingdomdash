@@ -147,6 +147,7 @@ export default function GroceryDetailPage() {
     return (
       <Section tone="soft">
         <ErrorState
+          headingTag="h1"
           title="Store not found"
           description="We couldn't find the grocery store you're looking for or it is currently closed."
         />

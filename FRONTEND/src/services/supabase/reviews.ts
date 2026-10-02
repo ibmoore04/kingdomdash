@@ -14,25 +14,11 @@ export interface OrderReview {
   createdAt: string
 }
 
-const LOCAL_STORAGE_REVIEWS_KEY = 'kingdomdash_order_reviews'
+// In-memory runtime cache for instant component lookups
+const memoryReviews = new Map<string, OrderReview>()
 
-function getLocalReviews(): Record<string, OrderReview> {
-  try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_REVIEWS_KEY)
-    return raw ? JSON.parse(raw) : {}
-  } catch {
-    return {}
-  }
-}
-
-function saveLocalReview(review: OrderReview) {
-  try {
-    const existing = getLocalReviews()
-    existing[review.orderId] = review
-    localStorage.setItem(LOCAL_STORAGE_REVIEWS_KEY, JSON.stringify(existing))
-  } catch {
-    // Ignore localStorage write failures
-  }
+export function setMemoryReview(review: OrderReview) {
+  memoryReviews.set(review.orderId, review)
 }
 
 export async function submitOrderReview(params: {
@@ -43,44 +29,54 @@ export async function submitOrderReview(params: {
   comment: string
 }): Promise<{ data: OrderReview | null; error: string | null }> {
   const reviewId = `rev-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
-  const newReview: OrderReview = {
-    id: reviewId,
-    orderId: params.orderId,
-    customerId: params.customerId,
-    rating: params.rating,
-    tags: params.tags,
-    comment: params.comment.trim(),
-    createdAt: new Date().toISOString(),
-  }
+  const trimmedComment = params.comment.trim()
 
-  // Always cache locally so customer immediately sees reviewed status
-  saveLocalReview(newReview)
-
-  // Try persisting to database if table exists
   try {
-    await db.from('order_reviews').insert({
-      id: reviewId,
-      order_id: params.orderId,
-      customer_id: params.customerId,
-      rating: params.rating,
-      tags: params.tags,
-      comment: params.comment.trim(),
-    })
-  } catch {
-    // Graceful fallback to client persistence
-  }
+    const { data, error } = await db
+      .from('order_reviews')
+      .insert({
+        id: reviewId,
+        order_id: params.orderId,
+        customer_id: params.customerId || null,
+        rating: params.rating,
+        tags: params.tags,
+        comment: trimmedComment,
+      })
+      .select()
+      .maybeSingle()
 
-  return { data: newReview, error: null }
+    if (error) {
+      console.error('[submitOrderReview] Supabase insert error:', error)
+      return { data: null, error: error.message }
+    }
+
+    const review: OrderReview = {
+      id: data?.id || reviewId,
+      orderId: data?.order_id || params.orderId,
+      customerId: data?.customer_id || params.customerId,
+      rating: data?.rating ?? params.rating,
+      tags: data?.tags || params.tags,
+      comment: data?.comment || trimmedComment,
+      createdAt: data?.created_at || new Date().toISOString(),
+    }
+
+    memoryReviews.set(review.orderId, review)
+
+    // DashPoints loyalty bonus (+50 points) is awarded automatically by PostgreSQL
+    // server-side trigger (trg_review_loyalty_points) upon insert of order_reviews.
+
+    return { data: review, error: null }
+  } catch (err: any) {
+    return { data: null, error: err?.message || 'Failed to submit review' }
+  }
 }
 
 export function getOrderReview(orderId: string): OrderReview | null {
-  const reviews = getLocalReviews()
-  return reviews[orderId] || null
+  return memoryReviews.get(orderId) || null
 }
 
 export async function fetchOrderReview(orderId: string): Promise<OrderReview | null> {
-  // First check local cache
-  const cached = getOrderReview(orderId)
+  const cached = memoryReviews.get(orderId)
   if (cached) return cached
 
   try {
@@ -100,11 +96,38 @@ export async function fetchOrderReview(orderId: string): Promise<OrderReview | n
         comment: data.comment || '',
         createdAt: data.created_at || new Date().toISOString(),
       }
-      saveLocalReview(review)
+      memoryReviews.set(review.orderId, review)
       return review
     }
-  } catch {
-    // Fallback to null
+  } catch (err) {
+    console.warn('[fetchOrderReview] Supabase select error:', err)
   }
   return null
+}
+
+export async function fetchCustomerReviews(customerId: string): Promise<OrderReview[]> {
+  if (!customerId) return []
+  try {
+    const { data, error } = await db
+      .from('order_reviews')
+      .select('*')
+      .eq('customer_id', customerId)
+
+    if (!error && Array.isArray(data)) {
+      const reviews = data.map((d: any) => ({
+        id: d.id,
+        orderId: d.order_id,
+        customerId: d.customer_id,
+        rating: d.rating,
+        tags: d.tags || [],
+        comment: d.comment || '',
+        createdAt: d.created_at || new Date().toISOString(),
+      }))
+      reviews.forEach((r) => memoryReviews.set(r.orderId, r))
+      return reviews
+    }
+  } catch (err) {
+    console.warn('[fetchCustomerReviews] Supabase select error:', err)
+  }
+  return []
 }

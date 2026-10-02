@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Star, X, CheckCircle2 } from 'lucide-react'
 import { submitOrderReview, type OrderReview } from '@/services/supabase/reviews'
 
@@ -78,8 +79,8 @@ export function OrderReviewModal({
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
       <div className="bg-white border border-neutral-200 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-6">
         {submitted ? (
           <div className="py-8 text-center space-y-3">
@@ -212,6 +213,7 @@ export function OrderReviewModal({
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

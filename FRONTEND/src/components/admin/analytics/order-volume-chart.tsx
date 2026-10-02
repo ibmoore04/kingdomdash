@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react'
 import type { OrderOverTimeItem, AdminDateRangePreset } from '@/types/admin'
 
-interface OrderVolumeChartProps {
+export interface OrderVolumeChartProps {
   data: OrderOverTimeItem[]
   isLoading?: boolean
   activePreset?: AdminDateRangePreset
   onPresetChange?: (preset: AdminDateRangePreset) => void
+  title?: string
+  subtitle?: string
 }
 
 type MetricType = 'revenue' | 'volume' | 'fulfilled'
@@ -68,6 +70,8 @@ export function OrderVolumeChart({
   isLoading = false,
   activePreset,
   onPresetChange,
+  title = 'Orders & Fulfillment Trends',
+  subtitle = 'Platform throughput, gross volume, and fulfillment dynamics',
 }: OrderVolumeChartProps) {
   const [metric, setMetric] = useState<MetricType>('revenue')
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
@@ -181,10 +185,10 @@ export function OrderVolumeChart({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">
-            Orders & Fulfillment Trends
+            {title}
           </h3>
           <p className="text-xs text-text-secondary mt-0.5">
-            Platform throughput, gross volume, and fulfillment dynamics
+            {subtitle}
           </p>
         </div>
 

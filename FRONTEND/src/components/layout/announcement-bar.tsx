@@ -25,7 +25,7 @@ export function AnnouncementBar() {
         {/* Right: Help & Socials */}
         <div className="hidden sm:flex items-center gap-4 text-white/70">
           <Link
-            to="/contact"
+            to="/support"
             className="inline-flex items-center gap-1 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary rounded"
           >
             <HelpCircle className="h-3 w-3 text-primary" aria-hidden="true" />

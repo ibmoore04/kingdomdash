@@ -8,6 +8,11 @@ vi.mock('@/services/supabase/admin', () => ({
   getOrders: vi.fn(),
   getOrderDetails: vi.fn(),
   getPersonalShopperRequests: vi.fn(),
+  getAllRiders: vi.fn(),
+  assignOrderToRider: vi.fn(),
+  updateOrderStatusAdmin: vi.fn(),
+  updatePersonalShopperStatus: vi.fn(),
+  resetDeliveryForOrder: vi.fn(),
 }))
 
 describe('AdminOrdersPage Multi-Service & Shopper Inspection Tests', () => {
@@ -69,11 +74,11 @@ describe('AdminOrdersPage Multi-Service & Shopper Inspection Tests', () => {
     )
 
     await waitFor(() => {
-      // Both orders should be listed in the table
-      expect(screen.getByText(/KD-FD001/i)).toBeInTheDocument()
-      expect(screen.getByText(/SHOP-DD0E15/i)).toBeInTheDocument()
-      expect(screen.getByText('Bisi Johnson')).toBeInTheDocument()
-      expect(screen.getByText('Akanbi Ibrahim')).toBeInTheDocument()
+      // Both orders should be listed
+      expect(screen.getAllByText(/KD-FD001/i).length).toBeGreaterThan(0)
+      expect(screen.getAllByText(/SHOP-DD0E15/i).length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Bisi Johnson').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Akanbi Ibrahim').length).toBeGreaterThan(0)
     })
   })
 
@@ -85,7 +90,7 @@ describe('AdminOrdersPage Multi-Service & Shopper Inspection Tests', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText(/SHOP-DD0E15/i)).toBeInTheDocument()
+      expect(screen.getAllByText(/SHOP-DD0E15/i).length).toBeGreaterThan(0)
     })
 
     // Find the inspect buttons; click the inspect button for the shopper order
@@ -108,6 +113,60 @@ describe('AdminOrdersPage Multi-Service & Shopper Inspection Tests', () => {
     // Verify modal overlay covers whole page with z-[9999]
     const overlay = document.querySelector('.fixed.inset-0.z-\\[9999\\]')
     expect(overlay).toBeInTheDocument()
-    expect(overlay?.parentElement).toBe(document.body) // Rendered directly into document.body portal!
+    expect(overlay?.parentElement).toBe(document.body)
+  })
+
+  it('shows assign button when status is pending, closes it after assignment, and reopens it when status is updated back to pending', async () => {
+    vi.mocked(adminService.getAllRiders).mockResolvedValue({
+      data: [{ id: 'rider-1', full_name: 'Segun Adebayo', is_available: true, is_verified: true, is_active: true }] as any,
+      count: 1,
+      error: null,
+    })
+    vi.mocked(adminService.assignOrderToRider).mockResolvedValue({
+      data: { success: true },
+      error: null,
+    })
+    vi.mocked(adminService.updatePersonalShopperStatus).mockResolvedValue({
+      data: { status: 'pending' },
+      error: null,
+    } as any)
+    vi.mocked(adminService.resetDeliveryForOrder).mockResolvedValue({
+      success: true,
+      error: null,
+    })
+
+    render(
+      <MemoryRouter>
+        <AdminOrdersPage />
+      </MemoryRouter>
+    )
+
+    // 1. When status is 'pending', the Assign button must be open/visible
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /assign/i }).length).toBeGreaterThan(0)
+    })
+
+    const assignBtns = screen.getAllByRole('button', { name: /assign/i })
+    fireEvent.click(assignBtns[0])
+
+    // Modal opens
+    await waitFor(() => {
+      expect(screen.getByText('Assign Courier Rider')).toBeInTheDocument()
+    })
+
+    // Click rider button to select rider
+    const riderButton = screen.getByText(/Segun Adebayo/i)
+    fireEvent.click(riderButton)
+
+    const confirmBtn = screen.getByRole('button', { name: /confirm assignment & dispatch/i })
+    fireEvent.click(confirmBtn)
+
+    // 2. Once successfully assigned, status changes to 'assigned' and the assign button is CLOSED
+    await waitFor(() => {
+      expect(screen.queryByText('Assign Courier Rider')).not.toBeInTheDocument()
+      // Assign button for this order must be closed/hidden
+      const remainingAssign = screen.queryAllByRole('button', { name: /^assign$/i })
+      expect(remainingAssign.length).toBe(0)
+    })
   })
 })

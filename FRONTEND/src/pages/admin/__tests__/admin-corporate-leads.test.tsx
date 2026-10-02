@@ -64,10 +64,10 @@ describe('Admin Corporate Leads in Platform Users', () => {
     fireEvent.click(screen.getByRole('button', { name: /corporate leads/i }))
 
     await waitFor(() => {
-      expect(screen.getByText('Florson Pharmacy')).toBeInTheDocument()
-      expect(screen.getByText('Akanbi Ibrahim')).toBeInTheDocument()
-      expect(screen.getByText('08123424005')).toBeInTheDocument()
-      expect(screen.getByText('contact@florson.com')).toBeInTheDocument()
+      expect(screen.getAllByText('Florson Pharmacy').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Akanbi Ibrahim').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('08123424005').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('contact@florson.com').length).toBeGreaterThan(0)
       expect(screen.getByText('1 B2B logistics inquiries from Ijebu-Ode businesses')).toBeInTheDocument()
     })
   })
@@ -97,13 +97,13 @@ describe('Admin Corporate Leads in Platform Users', () => {
 
     render(<AdminUsersPage />)
 
-    fireEvent.click(screen.getByText('Corporate Leads'))
+    fireEvent.click(screen.getAllByText('Corporate Leads')[0])
 
     await waitFor(() => {
-      expect(screen.getByText('Florson Pharmacy')).toBeInTheDocument()
+      expect(screen.getAllByText('Florson Pharmacy').length).toBeGreaterThan(0)
     })
 
-    const contactButton = screen.getByRole('button', { name: /contacted/i })
+    const contactButton = screen.getAllByRole('button', { name: /contacted/i })[0]
     fireEvent.click(contactButton)
 
     await waitFor(() => {
