@@ -10,24 +10,26 @@ export function CartItemRow({ item }: CartItemRowProps) {
   const updateQuantity = useCartStore((state) => state.updateQuantity)
   const removeItem = useCartStore((state) => state.removeItem)
 
+  const itemKey = item.itemKey || item.productId
+
   const handleDecrement = () => {
     if (item.quantity <= 1) {
-      removeItem(item.productId)
+      removeItem(itemKey)
     } else {
-      updateQuantity(item.productId, item.quantity - 1)
+      updateQuantity(itemKey, item.quantity - 1)
     }
   }
 
   const handleIncrement = () => {
     if (item.quantity < 999) {
-      updateQuantity(item.productId, item.quantity + 1)
+      updateQuantity(itemKey, item.quantity + 1)
     }
   }
 
   return (
-    <div className="flex items-center gap-3 py-3 border-b border-border/60 last:border-b-0">
+    <div className="flex items-start gap-3 py-3 border-b border-border/60 last:border-b-0">
       {/* Thumbnail */}
-      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-dark-surface">
+      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-dark-surface mt-0.5">
         <img
           src={item.imageUrl || '/kingdomdash-backup.jpg'}
           alt={item.name}
@@ -46,7 +48,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
           </h4>
           <button
             type="button"
-            onClick={() => removeItem(item.productId)}
+            onClick={() => removeItem(itemKey)}
             className="text-text-muted hover:text-error transition-colors p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label={`Remove ${item.name} from cart`}
           >
@@ -54,7 +56,29 @@ export function CartItemRow({ item }: CartItemRowProps) {
           </button>
         </div>
 
-        <p className="text-caption text-text-secondary mt-0.5">
+        {/* Selected Modifiers Pills */}
+        {item.selectedModifiers && item.selectedModifiers.length > 0 && (
+          <div className="mt-1 flex flex-wrap gap-1">
+            {item.selectedModifiers.map((mod) => (
+              <span
+                key={`${mod.groupId}-${mod.optionId}`}
+                className="inline-flex items-center rounded-md bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-600"
+              >
+                {mod.optionName}
+                {mod.price > 0 && ` (+${formatNgn(mod.price)})`}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Special Instructions Note */}
+        {item.specialInstructions && (
+          <p className="mt-1 text-[11px] text-neutral-500 italic line-clamp-1">
+            Note: &ldquo;{item.specialInstructions}&rdquo;
+          </p>
+        )}
+
+        <p className="text-caption text-text-secondary mt-1">
           {formatNgn(item.price)} each
         </p>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ShoppingBag, User, LogOut, LayoutDashboard, LogIn, UserPlus, Gift } from 'lucide-react'
 import { NavLink, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -33,6 +33,17 @@ export function Navbar() {
   const signOut = useAuthStore((state) => state.signOut)
 
   const [scrolled, setScrolled] = useState(false)
+  const [isCartBouncing, setIsCartBouncing] = useState(false)
+  const prevCountRef = useRef(itemCount)
+
+  useEffect(() => {
+    if (itemCount > prevCountRef.current) {
+      setIsCartBouncing(true)
+      const timer = setTimeout(() => setIsCartBouncing(false), 600)
+      return () => clearTimeout(timer)
+    }
+    prevCountRef.current = itemCount
+  }, [itemCount])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -96,14 +107,26 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setCartOpen(true)}
-            className="relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className={cn(
+              'relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+              isCartBouncing && 'animate-cart-spring text-primary'
+            )}
             aria-label={`Open shopping cart with ${itemCount} items`}
           >
-            <ShoppingBag className="h-5 w-5" aria-hidden="true" />
+            <ShoppingBag
+              className={cn(
+                'h-5 w-5 transition-transform duration-300',
+                isCartBouncing && 'text-primary'
+              )}
+              aria-hidden="true"
+            />
             {itemCount > 0 && (
               <span
                 data-testid="cart-badge-desktop"
-                className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-white shadow-xs"
+                className={cn(
+                  'absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-white shadow-xs transition-all duration-300',
+                  isCartBouncing && 'animate-cart-spring ring-2 ring-primary/40'
+                )}
               >
                 {itemCount > 99 ? '99+' : itemCount}
               </span>

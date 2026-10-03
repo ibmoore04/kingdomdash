@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { MapPin, Clock, ArrowLeft, UtensilsCrossed } from 'lucide-react'
 import { Section, PageContainer } from '@/components/layout/section'
 import { SectionHeading } from '@/components/shared/section-heading'
 import { ProductCard } from '@/components/shared/product-card'
+import { StickyCategoryRail } from '@/components/shared/sticky-category-rail'
 import { WhatsAppCta } from '@/components/shared/whatsapp-cta'
 import { Badge } from '@/components/ui/badge'
 import { ErrorState } from '@/components/ui/error-state'
@@ -15,6 +16,7 @@ import type { Category, Product, Vendor } from '@/types'
 import { VendorConflictModal } from '@/components/cart/vendor-conflict-modal'
 import { useCartStore, type CartVendor, type CartItem } from '@/stores/cart-store'
 import { useToast } from '@/hooks/use-toast'
+import { ProductCardSkeleton } from '@/components/ui/skeletons'
 
 export default function FoodDetailPage() {
   const { vendorId } = useParams<{ vendorId: string }>()
@@ -26,6 +28,7 @@ export default function FoodDetailPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
+  const [activeCategoryId, setActiveCategoryId] = useState<string>('')
 
   const [conflictState, setConflictState] = useState<{
     isOpen: boolean
@@ -130,15 +133,81 @@ export default function FoodDetailPage() {
     }
   }, [vendorId])
 
+  const categoryRailItems = useMemo(() => {
+    const items = categories
+      .map((cat) => ({
+        id: cat.id,
+        name: cat.name,
+        count: products.filter((p) => p.category_id === cat.id).length,
+      }))
+      .filter((cat) => (cat.count ?? 0) > 0)
+
+    const uncategorizedCount = products.filter(
+      (p) => !p.category_id || !categories.some((c) => c.id === p.category_id)
+    ).length
+
+    if (uncategorizedCount > 0 && items.length > 0) {
+      items.push({
+        id: 'uncategorized',
+        name: 'Other Dishes',
+        count: uncategorizedCount,
+      })
+    }
+
+    return items
+  }, [categories, products])
+
+  useEffect(() => {
+    if (categoryRailItems.length === 0) return
+    if (!activeCategoryId && categoryRailItems[0]) {
+      setActiveCategoryId(categoryRailItems[0].id)
+    }
+
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const id = entry.target.id.replace('category-', '')
+            setActiveCategoryId(id)
+            break
+          }
+        }
+      },
+      { rootMargin: '-100px 0px -60% 0px' }
+    )
+
+    categoryRailItems.forEach((cat) => {
+      const el = document.getElementById(`category-${cat.id}`)
+      if (el) observer.observe(el)
+    })
+
+    return () => observer.disconnect()
+  }, [categoryRailItems, activeCategoryId])
+
+  const handleCategorySelect = (id: string) => {
+    setActiveCategoryId(id)
+    const targetElement = document.getElementById(`category-${id}`)
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   if (isLoading) {
     return (
       <Section tone="soft">
-        <div className="flex min-h-[50vh] items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-border border-t-primary" />
-            <span className="text-body-small text-text-secondary">Loading restaurant menu…</span>
+        <PageContainer>
+          <div className="space-y-8 py-6">
+            <div className="h-56 w-full rounded-3xl animate-shimmer bg-neutral-200" />
+            <div className="h-10 w-48 rounded-xl animate-shimmer bg-neutral-200" />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <ProductCardSkeleton count={6} />
+            </div>
           </div>
-        </div>
+        </PageContainer>
       </Section>
     )
   }
@@ -243,8 +312,17 @@ export default function FoodDetailPage() {
           size="large"
         />
 
+        {categoryRailItems.length > 1 && (
+          <StickyCategoryRail
+            categories={categoryRailItems}
+            activeId={activeCategoryId}
+            onSelect={handleCategorySelect}
+            className="mt-6 mb-8"
+          />
+        )}
+
         {products.length > 0 ? (
-          <div className="mt-10 space-y-10">
+          <div className="mt-8 space-y-10">
             {/* If categories exist, group by category */}
             {categories.length > 0 ? (
               categories.map((category) => {
@@ -252,7 +330,11 @@ export default function FoodDetailPage() {
                 if (categoryProducts.length === 0) return null
 
                 return (
-                  <div key={category.id} className="space-y-4">
+                  <div
+                    key={category.id}
+                    id={`category-${category.id}`}
+                    className="scroll-mt-32 space-y-4"
+                  >
                     <div className="border-b border-border pb-2">
                       <h3 className="text-h4 font-bold text-text-primary">{category.name}</h3>
                       {category.description && (
@@ -276,7 +358,7 @@ export default function FoodDetailPage() {
 
             {/* Uncategorized products or if no categories defined */}
             {products.some((p) => !p.category_id || !categories.some((c) => c.id === p.category_id)) && (
-              <div className="space-y-4">
+              <div id="category-uncategorized" className="scroll-mt-32 space-y-4">
                 {categories.length > 0 && (
                   <h3 className="border-b border-border pb-2 text-h4 font-bold text-text-primary">
                     Other Dishes

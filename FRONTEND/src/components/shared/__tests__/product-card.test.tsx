@@ -128,4 +128,48 @@ describe('ProductCard component', () => {
     expect(useCartStore.getState().vendor?.id).toBe(mockVendorA.id)
     expect(useCartStore.getState().items).toHaveLength(1)
   })
+
+  it('renders inline quantity stepper when product is already in cart and allows increment/decrement', () => {
+    // Populate cart with 2 of prod-104
+    useCartStore.getState().addItem(
+      {
+        productId: 'prod-104',
+        vendorId: mockVendorA.id,
+        serviceType: 'food',
+        name: 'Fried Rice Combo',
+        price: 2200,
+        imageUrl: null,
+      },
+      mockVendorA
+    )
+    useCartStore.getState().updateQuantity('prod-104', 2)
+
+    render(
+      <ProductCard
+        product={{
+          id: 'prod-104',
+          name: 'Fried Rice Combo',
+          price: 2200,
+          is_available: true,
+        }}
+        vendor={mockVendorA}
+      />
+    )
+
+    // Verify stepper exists with count 2
+    expect(screen.getByText('2')).toBeDefined()
+    const decreaseBtn = screen.getByRole('button', { name: /decrease fried rice combo quantity/i })
+    const increaseBtn = screen.getByRole('button', { name: /increase fried rice combo quantity/i })
+
+    expect(decreaseBtn).toBeDefined()
+    expect(increaseBtn).toBeDefined()
+
+    // Test increment
+    fireEvent.click(increaseBtn)
+    expect(useCartStore.getState().items[0].quantity).toBe(3)
+
+    // Test decrement
+    fireEvent.click(decreaseBtn)
+    expect(useCartStore.getState().items[0].quantity).toBe(2)
+  })
 })

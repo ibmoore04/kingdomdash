@@ -12,8 +12,9 @@ import {
   CreditCard,
   RotateCcw,
   Loader2,
-  KeyRound,
   XCircle,
+  Copy,
+  Check,
 } from 'lucide-react'
 import { PageContainer, Section } from '@/components/layout/section'
 import { Badge } from '@/components/ui/badge'
@@ -29,7 +30,9 @@ import {
 import type { Order, OrderItem } from '@/types'
 import type { PaymentRow } from '@/services/paystack/types'
 import { OrderStatusTimeline } from '@/components/customer/OrderStatusTimeline'
+import { DeliveryPinCard } from '@/components/order/delivery-pin-card'
 import { CancelOrderModal } from '@/components/customer/cancel-order-modal'
+import { OrderTrackingSkeleton } from '@/components/ui/skeletons'
 
 interface FullOrder extends Order {
   order_items: OrderItem[]
@@ -48,6 +51,7 @@ export default function OrderConfirmationPage() {
   const [error, setError] = useState<string | null>(null)
   const [verificationNotice, setVerificationNotice] = useState<string | null>(null)
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+  const [copiedOrderId, setCopiedOrderId] = useState(false)
 
   useEffect(() => {
     document.title = 'Order Confirmation — KingdomDash'
@@ -209,10 +213,9 @@ export default function OrderConfirmationPage() {
   if (isLoading) {
     return (
       <PageContainer>
-        <Section tone="light" className="py-16">
-          <div className="mx-auto max-w-xl space-y-6">
-            <div className="h-40 w-full animate-pulse rounded-2xl bg-neutral-100 border border-border" />
-            <div className="h-64 w-full animate-pulse rounded-2xl bg-neutral-100 border border-border" />
+        <Section tone="light" className="py-8 sm:py-12">
+          <div className="mx-auto max-w-2xl">
+            <OrderTrackingSkeleton />
           </div>
         </Section>
       </PageContainer>
@@ -245,19 +248,26 @@ export default function OrderConfirmationPage() {
     )
   }
 
+  const handleCopyOrderId = () => {
+    if (!order) return
+    navigator.clipboard.writeText(order.id)
+    setCopiedOrderId(true)
+    setTimeout(() => setCopiedOrderId(false), 2000)
+  }
+
   const authoritativeStatus:
     | 'payment_confirmed'
     | 'payment_pending'
     | 'pending'
     | 'failed'
     | 'unknown' = (() => {
-    if (order.status === 'payment_confirmed' || payment?.status === 'successful') {
+    if (
+      ['payment_confirmed', 'preparing', 'ready_for_pickup', 'picked_up', 'in_transit', 'delivered'].includes(order.status) ||
+      payment?.status === 'successful'
+    ) {
       return 'payment_confirmed'
     }
-    if (
-      payment?.status === 'failed' ||
-      order.status === 'cancelled'
-    ) {
+    if (payment?.status === 'failed' || order.status === 'cancelled') {
       return 'failed'
     }
     if (
@@ -281,164 +291,44 @@ export default function OrderConfirmationPage() {
 
   return (
     <PageContainer>
-      <Section tone="light" className="py-8 sm:py-12">
-        <div className="mx-auto max-w-2xl space-y-6">
-          {/* Main Status Banner */}
-          <div
-            data-authoritative-status={authoritativeStatus}
-            className={`rounded-2xl border p-6 text-center sm:p-8 ${
-              isConfirmed
-                ? 'border-success/30 bg-success/5'
-                : isPendingConfirmation
-                ? 'border-amber-300/50 bg-amber-500/5'
-                : isFailedOrCancelled
-                ? 'border-error/30 bg-error/5'
-                : isAwaitingPayment
-                ? 'border-primary/20 bg-primary/5'
-                : 'border-neutral-200 bg-neutral-50'
-            }`}
-          >
-            <div
-              className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full text-white mb-4 shadow-md ${
-                isConfirmed
-                  ? 'bg-success'
-                  : isPendingConfirmation
-                  ? 'bg-amber-500'
-                  : isFailedOrCancelled
-                  ? 'bg-error'
-                  : isAwaitingPayment
-                  ? 'bg-primary'
-                  : 'bg-neutral-600'
-              }`}
-            >
-              {isConfirmed ? (
-                <CheckCircle2 className="h-9 w-9" aria-hidden="true" />
-              ) : isPendingConfirmation ? (
-                <Clock className="h-9 w-9 animate-pulse" aria-hidden="true" />
-              ) : isFailedOrCancelled ? (
-                <AlertCircle className="h-9 w-9" aria-hidden="true" />
-              ) : isAwaitingPayment ? (
-                <CreditCard className="h-9 w-9" aria-hidden="true" />
-              ) : (
-                <FileText className="h-9 w-9" aria-hidden="true" />
-              )}
-            </div>
-
-            <span
-              className={`rounded-full px-3 py-1 text-caption font-bold uppercase tracking-wider ${
-                isConfirmed
-                  ? 'bg-success/15 text-success'
-                  : isPendingConfirmation
-                  ? 'bg-amber-500/15 text-amber-800'
-                  : isFailedOrCancelled
-                  ? 'bg-error/15 text-error'
-                  : isAwaitingPayment
-                  ? 'bg-primary/15 text-primary'
-                  : 'bg-neutral-200 text-neutral-700'
-              }`}
-            >
-              {isConfirmed
-                ? 'Payment Confirmed'
-                : isPendingConfirmation
-                ? 'Payment Being Confirmed'
-                : isFailedOrCancelled
-                ? 'Payment Incomplete or Cancelled'
-                : isAwaitingPayment
-                ? 'Payment Pending'
-                : `Order: ${order.status}`}
-            </span>
-
-            <h1 className="mt-3 text-h2 font-bold text-text-primary">
-              {isConfirmed
-                ? 'Thank you for your order!'
-                : isPendingConfirmation
-                ? 'Payment being confirmed...'
-                : isFailedOrCancelled
-                ? 'Payment Incomplete or Cancelled'
-                : isAwaitingPayment
-                ? 'Order Placed — Awaiting Payment'
-                : 'Order Status Update'}
-            </h1>
-            <p className="mt-1 text-body-small text-text-secondary max-w-lg mx-auto">
-              {isConfirmed
-                ? 'Your payment has been confirmed via Paystack. The vendor has been notified to prepare your order.'
-                : isPendingConfirmation
-                ? 'We are waiting for Paystack to confirm your transaction. Please hold on or refresh once your bank completes the debit.'
-                : isFailedOrCancelled
-                ? 'Your payment was not completed or was cancelled. You can retry paying safely below without re-ordering.'
-                : isAwaitingPayment
-                ? 'Your order has been recorded in KingdomDash. Please complete payment using Paystack so the vendor can begin.'
-                : `Your order is currently logged in the system with status: ${order.status}.`}
-            </p>
-
-            <div className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-body-small font-semibold text-text-primary border border-border shadow-xs">
-              <span className="text-text-muted">Order ID:</span>
-              <span className="font-mono text-primary font-bold">{order.id}</span>
-            </div>
-          </div>
-
-          {/* Live Fulfillment Timeline (Phase 10) */}
-          <OrderStatusTimeline
-            status={order.status}
-            serviceType={order.service_type}
-            cancellationReason={(order as unknown as { cancellation_reason?: string }).cancellation_reason}
-            refundRequired={(order as unknown as { refund_required?: boolean }).refund_required}
-          />
-
-          {/* Delivery Confirmation PIN for Rider Hand-off */}
-          {order.delivery_pin && order.status !== 'delivered' && order.status !== 'cancelled' && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-5 shadow-xs">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <KeyRound className="h-5 w-5" aria-hidden="true" />
+      <Section tone="light" className="py-6 sm:py-10">
+        <div className="mx-auto max-w-6xl">
+          {/* Top Header / Breadcrumb Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6 sm:mb-8 pb-4 border-b border-neutral-200/80">
+            <div className="flex items-center gap-3">
+              <Link
+                to="/"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 transition-colors shadow-2xs"
+                title="Back to Home"
+              >
+                <Home className="h-4 w-4" />
+              </Link>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Order</span>
+                  <span className="font-mono text-xs font-bold text-neutral-900 bg-neutral-100 px-2 py-0.5 rounded-md">
+                    #{order.id.slice(0, 8).toUpperCase()}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyOrderId}
+                    className="inline-flex items-center text-neutral-400 hover:text-neutral-700 transition-colors text-xs"
+                    title="Copy full order ID"
+                  >
+                    {copiedOrderId ? (
+                      <Check className="h-3.5 w-3.5 text-emerald-600" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </button>
                 </div>
-                <div>
-                  <p className="text-body font-bold text-text-primary">Delivery Confirmation PIN</p>
-                  <p className="text-caption text-text-secondary">
-                    Provide this 4-digit security code to your dispatch rider upon physical arrival to complete delivery.
-                  </p>
-                </div>
-              </div>
-              <div className="rounded-xl border border-primary/30 bg-white px-5 py-2 font-mono text-2xl font-extrabold tracking-widest text-primary shadow-xs">
-                {order.delivery_pin}
+                <p className="text-[11px] text-neutral-400">
+                  Placed on {new Date(order.created_at).toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' })}
+                </p>
               </div>
             </div>
-          )}
 
-          {/* Active Verification Spinner if redirecting from Paystack */}
-          {isVerifying && (
-            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-body-small text-primary flex items-center justify-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Verifying transaction status with Paystack...</span>
-            </div>
-          )}
-
-          {/* Verification Notice / Retry Alert if failed */}
-          {verificationNotice && (
-            <div className="rounded-xl border border-neutral-200 bg-white p-4 text-body-small text-neutral-700 flex items-center justify-between">
-              <span>{verificationNotice}</span>
-              {!isConfirmed && (
-                <Button
-                  type="button"
-                  variant="primary"
-                  onClick={handleRetryPayment}
-                  disabled={isRetrying}
-                  className="h-9 px-3 text-xs font-bold gap-1.5 text-white bg-primary hover:bg-primary-hover"
-                >
-                  {isRetrying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
-                  <span>Retry Payment</span>
-                </Button>
-              )}
-            </div>
-          )}
-
-          {/* Paystack Payment Status Box */}
-          <div className="rounded-2xl border border-border bg-white p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-primary" />
-                <h3 className="text-body font-bold text-text-primary">Payment Status</h3>
-              </div>
+            <div className="flex items-center gap-2">
               <Badge
                 variant={
                   isConfirmed
@@ -449,215 +339,397 @@ export default function OrderConfirmationPage() {
                     ? 'warning'
                     : 'default'
                 }
-                className={`capitalize font-bold ${
+                className={`capitalize font-bold px-3 py-1 text-xs rounded-full ${
                   isConfirmed
-                    ? 'bg-success/15 text-success border-success/30'
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
                     : isFailedOrCancelled
-                    ? 'bg-error/10 text-error border-error/20'
+                    ? 'bg-rose-100 text-rose-800 border-rose-200'
                     : isPendingConfirmation
-                    ? 'bg-amber-50 text-amber-800 border-amber-200'
-                    : 'bg-neutral-100 text-neutral-800 border-neutral-200'
+                    ? 'bg-amber-100 text-amber-900 border-amber-200'
+                    : 'bg-primary/10 text-primary border-primary/20'
                 }`}
               >
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-current mr-1.5 animate-pulse" />
                 {isConfirmed
-                  ? 'Paid (Paystack)'
-                  : isFailedOrCancelled
-                  ? 'Payment Failed / Cancelled'
+                  ? 'Confirmed'
                   : isPendingConfirmation
-                  ? 'Payment Being Confirmed'
-                  : 'Payment Pending'}
+                  ? 'Processing'
+                  : isFailedOrCancelled
+                  ? 'Action Required'
+                  : isAwaitingPayment
+                  ? 'Pending'
+                  : `Order: ${order.status}`}
               </Badge>
             </div>
+          </div>
 
-            <div className="space-y-2 text-body-small text-text-secondary">
-              {payment?.paystack_reference && (
-                <div className="flex justify-between">
-                  <span>Reference:</span>
-                  <span className="font-mono text-text-primary font-semibold">
-                    {payment.paystack_reference}
-                  </span>
-                </div>
-              )}
-              {payment?.channel && (
-                <div className="flex justify-between">
-                  <span>Payment Channel:</span>
-                  <span className="capitalize text-text-primary font-semibold">{payment.channel}</span>
-                </div>
-              )}
-              {payment?.paid_at && (
-                <div className="flex justify-between">
-                  <span>Paid At:</span>
-                  <span className="text-text-primary">
-                    {new Date(payment.paid_at).toLocaleTimeString('en-NG', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Retry Button if not paid */}
-            {!isConfirmed && (
-              <div className="pt-2">
+          {/* Verification Notice / Retry Alert if failed */}
+          {verificationNotice && (
+            <div className="mb-6 rounded-2xl border border-neutral-200 bg-white p-4 text-body-small text-neutral-700 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-2.5">
+                <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+                <span>{verificationNotice}</span>
+              </div>
+              {!isConfirmed && (
                 <Button
                   type="button"
                   variant="primary"
                   onClick={handleRetryPayment}
                   disabled={isRetrying}
-                  className="w-full rounded-xl py-3 text-button font-bold flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white shadow-sm"
+                  className="h-9 px-4 text-xs font-bold gap-1.5 text-white bg-primary hover:bg-primary-hover rounded-xl shadow-xs"
                 >
-                  {isRetrying ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                      <span>Connecting to Paystack...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="h-4 w-4" aria-hidden="true" />
-                      <span>
-                        {isFailedOrCancelled
-                          ? `Retry Payment (${formatNgn(order.total)}) with Paystack`
-                          : `Pay ${formatNgn(order.total)} with Paystack`}
-                      </span>
-                    </>
-                  )}
+                  {isRetrying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+                  <span>Retry Payment</span>
                 </Button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
-          {/* Order Details & Summary Card */}
-          <div className="rounded-2xl border border-border bg-white p-6 shadow-xs space-y-6">
-            {/* Meta Row */}
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
-              <div>
-                <p className="text-caption text-text-muted">Order Status</p>
-                <div className="mt-1 flex items-center gap-2">
-                  <Badge variant="default" className="capitalize bg-neutral-100 font-semibold text-text-primary">
-                    <Clock className="h-3 w-3 mr-1 text-text-muted" aria-hidden="true" />
-                    {order.status}
-                  </Badge>
-                  <span className="text-caption text-text-muted font-mono">
-                    ID: {order.id.slice(0, 8)}...
-                  </span>
+          {/* Active Verification Spinner if redirecting from Paystack */}
+          {isVerifying && (
+            <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/5 p-4 text-body-small text-primary flex items-center justify-center gap-2.5 shadow-xs">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="font-semibold">Verifying transaction status with Paystack...</span>
+            </div>
+          )}
+
+          {/* Main 2-Column Responsive Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left Column (7 of 12): Status Hero, Fulfillment Radar, Security Pass, Destination */}
+            <div className="lg:col-span-7 space-y-6">
+              {/* Dynamic Ambient Hero Card */}
+              <div
+                data-authoritative-status={authoritativeStatus}
+                className={`relative overflow-hidden rounded-3xl border p-6 sm:p-8 transition-all ${
+                  isConfirmed
+                    ? 'border-emerald-200/90 bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/30 shadow-md'
+                    : isPendingConfirmation
+                    ? 'border-amber-200/90 bg-gradient-to-br from-amber-50/90 via-white to-orange-50/30 shadow-md'
+                    : isFailedOrCancelled
+                    ? 'border-rose-200/90 bg-gradient-to-br from-rose-50/90 via-white to-orange-50/30 shadow-md'
+                    : 'border-rose-200/80 bg-gradient-to-br from-rose-50/80 via-white to-orange-50/30 shadow-md'
+                }`}
+              >
+                {/* Decorative ambient blur circle */}
+                <div
+                  className={`pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full blur-3xl ${
+                    isConfirmed ? 'bg-emerald-400/20' : 'bg-primary/15'
+                  }`}
+                  aria-hidden="true"
+                />
+
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-md shrink-0 ${
+                        isConfirmed
+                          ? 'bg-emerald-600'
+                          : isPendingConfirmation
+                          ? 'bg-amber-500'
+                          : isFailedOrCancelled
+                          ? 'bg-rose-600'
+                          : 'bg-primary'
+                      }`}
+                    >
+                      {isConfirmed ? (
+                        <CheckCircle2 className="h-6 w-6" aria-hidden="true" />
+                      ) : isPendingConfirmation ? (
+                        <Clock className="h-6 w-6 animate-pulse" aria-hidden="true" />
+                      ) : isFailedOrCancelled ? (
+                        <AlertCircle className="h-6 w-6" aria-hidden="true" />
+                      ) : (
+                        <CreditCard className="h-6 w-6" aria-hidden="true" />
+                      )}
+                    </div>
+                    <div>
+                      <span
+                        className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${
+                          isConfirmed
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : isPendingConfirmation
+                            ? 'bg-amber-100 text-amber-900'
+                            : isFailedOrCancelled
+                            ? 'bg-rose-100 text-rose-800'
+                            : 'bg-primary/15 text-primary'
+                        }`}
+                      >
+                        {isConfirmed
+                          ? 'Payment Confirmed'
+                          : isPendingConfirmation
+                          ? 'Payment Being Confirmed'
+                          : isFailedOrCancelled
+                          ? 'Payment Incomplete or Cancelled'
+                          : 'Payment Pending'}
+                      </span>
+                      <h1 className="text-xl sm:text-2xl font-extrabold text-neutral-900 tracking-tight mt-0.5">
+                        {isConfirmed
+                          ? 'Thank you for your order!'
+                          : isPendingConfirmation
+                          ? 'Payment being confirmed...'
+                          : isFailedOrCancelled
+                          ? 'Payment Incomplete or Cancelled'
+                          : 'Order Placed — Awaiting Payment'}
+                      </h1>
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-neutral-600 leading-relaxed max-w-xl">
+                    {isConfirmed
+                      ? 'Your payment has been confirmed via Paystack. The vendor has been notified to prepare your order.'
+                      : isPendingConfirmation
+                      ? 'We are waiting for Paystack to confirm your transaction. Please hold on or refresh once your bank completes the debit.'
+                      : isFailedOrCancelled
+                      ? 'Your payment was not completed or was cancelled. You can retry paying safely below without re-ordering.'
+                      : 'Your order has been recorded in KingdomDash. Please complete payment using Paystack so the vendor can begin.'}
+                  </p>
+
+                  {/* Immediate Action Banner When Awaiting Payment or Incomplete */}
+                  {!isConfirmed && (
+                    <div className="mt-5 rounded-2xl bg-white/95 border border-rose-200/90 p-4 sm:p-5 shadow-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-3 mb-3.5">
+                        <div>
+                          <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+                            Total Payable
+                          </p>
+                          <p className="text-2xl sm:text-3xl font-black text-primary">
+                            {formatNgn(order.total)}
+                          </p>
+                        </div>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200/80">
+                          <Clock className="h-3.5 w-3.5 text-amber-600 animate-pulse" />
+                          <span>Action Required</span>
+                        </span>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="primary"
+                        onClick={handleRetryPayment}
+                        disabled={isRetrying}
+                        className="w-full h-12 rounded-xl text-sm sm:text-base font-bold flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg transition-all"
+                      >
+                        {isRetrying ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            <span>Connecting to Paystack...</span>
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="h-4 w-4" aria-hidden="true" />
+                            <span>
+                              {isFailedOrCancelled
+                                ? `Retry Payment (${formatNgn(order.total)}) with Paystack`
+                                : `Pay ${formatNgn(order.total)} with Paystack`}
+                            </span>
+                          </>
+                        )}
+                      </Button>
+
+                      <p className="mt-2 text-center text-[11px] text-neutral-400 flex items-center justify-center gap-1 font-medium">
+                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                        <span>Secured via Paystack 256-bit bank encryption</span>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Order ID Reference Pill */}
+                  <div className="mt-4 pt-3 border-t border-neutral-200/60 flex items-center justify-between text-xs text-neutral-500">
+                    <span className="font-mono">Order ID: <strong className="text-neutral-800 font-bold">{order.id}</strong></span>
+                    <button
+                      type="button"
+                      onClick={handleCopyOrderId}
+                      className="text-primary hover:underline font-semibold text-xs flex items-center gap-1"
+                    >
+                      {copiedOrderId ? 'Copied ID' : 'Copy Full ID'}
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="text-right">
-                <p className="text-caption text-text-muted">Placed on</p>
-                <p className="text-body-small font-medium text-text-primary mt-1">
-                  {new Date(order.created_at).toLocaleString('en-NG', {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                  })}
-                </p>
+              {/* Live Fulfillment Timeline Radar */}
+              <div className="rounded-3xl border border-neutral-200/80 bg-white p-5 sm:p-6 shadow-xs">
+                <OrderStatusTimeline
+                  status={order.status}
+                  serviceType={order.service_type}
+                  cancellationReason={(order as unknown as { cancellation_reason?: string }).cancellation_reason}
+                  refundRequired={(order as unknown as { refund_required?: boolean }).refund_required}
+                />
+              </div>
+
+              {/* Delivery Confirmation PIN (Security Pass) - ONLY shown when confirmed/paid */}
+              {isConfirmed && order.delivery_pin && order.status !== 'delivered' && order.status !== 'cancelled' && (
+                <DeliveryPinCard pin={order.delivery_pin} />
+              )}
+
+              {/* Destination & Delivery Address Card */}
+              <div className="rounded-3xl border border-neutral-200/80 bg-white p-5 sm:p-6 shadow-xs space-y-4">
+                <div className="flex items-center gap-2 pb-3 border-b border-neutral-100">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <MapPin className="h-4 w-4" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-900">Delivery Destination</h3>
+                    <p className="text-xs text-neutral-500">Recipient details & handover address</p>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-neutral-50 p-4 border border-neutral-200/60 text-sm">
+                  <p className="font-semibold text-neutral-900">{order.delivery_address}</p>
+                </div>
+
+                {order.special_instructions && (
+                  <div className="rounded-2xl bg-amber-50/50 p-4 border border-amber-200/60 text-xs text-neutral-800 space-y-1">
+                    <span className="font-bold text-amber-900 uppercase tracking-wider text-[10px] flex items-center gap-1">
+                      <FileText className="h-3 w-3 text-amber-700" />
+                      Special Instructions
+                    </span>
+                    <p className="italic font-medium">&ldquo;{order.special_instructions}&rdquo;</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Order Actions Bar */}
+              <div className="flex flex-wrap gap-3 pt-2">
+                {['pending', 'payment_pending', 'payment_processing', 'payment_confirmed'].includes(order.status) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsCancelModalOpen(true)}
+                    className="flex-1 rounded-xl text-rose-700 border-rose-200 bg-rose-50/50 hover:bg-rose-100 hover:text-rose-800 gap-2 font-bold h-11 text-xs sm:text-sm"
+                  >
+                    <XCircle className="h-4 w-4" />
+                    <span>Cancel Order</span>
+                  </Button>
+                )}
+                <Button asChild variant="outline" className="flex-1 rounded-xl h-11 text-xs sm:text-sm font-bold">
+                  <Link to="/" className="inline-flex items-center justify-center gap-2">
+                    <Home className="h-4 w-4" aria-hidden="true" />
+                    <span>Back to Home</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="primary" className="flex-1 rounded-xl bg-primary hover:bg-primary-hover text-white h-11 text-xs sm:text-sm font-bold shadow-xs">
+                  <Link to="/food" className="inline-flex items-center justify-center gap-2">
+                    <Utensils className="h-4 w-4" aria-hidden="true" />
+                    <span>Explore More Vendors</span>
+                  </Link>
+                </Button>
               </div>
             </div>
 
-            {/* Delivery Address */}
-            <div className="space-y-1">
-              <h3 className="text-caption font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                <span>Delivery Address</span>
-              </h3>
-              <p className="text-body-small text-text-primary bg-neutral-50 p-3 rounded-xl border border-border/60">
-                {order.delivery_address}
-              </p>
-            </div>
-
-            {/* Special Instructions if present */}
-            {order.special_instructions && (
-              <div className="space-y-1">
-                <h3 className="text-caption font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
-                  <FileText className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                  <span>Special Instructions</span>
-                </h3>
-                <p className="text-body-small text-text-primary bg-neutral-50 p-3 rounded-xl border border-border/60 italic">
-                  &ldquo;{order.special_instructions}&rdquo;
-                </p>
-              </div>
-            )}
-
-            {/* Itemized Receipt */}
-            <div className="space-y-3">
-              <h3 className="text-caption font-bold uppercase tracking-wider text-text-muted">
-                Order Items ({order.order_items?.length || 0})
-              </h3>
-              <div className="divide-y divide-border/60 rounded-xl border border-border/60 bg-white">
-                {order.order_items?.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 text-body-small">
+            {/* Right Column (5 of 12): Sticky Itemized Receipt & Authoritative Breakdown */}
+            <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
+              <div className="rounded-3xl border border-neutral-200/80 bg-white p-6 shadow-sm space-y-5">
+                {/* Header */}
+                <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-100 text-neutral-800">
+                      <FileText className="h-4 w-4 text-primary" />
+                    </div>
                     <div>
-                      <p className="font-semibold text-text-primary">{item.product_name}</p>
-                      <p className="text-caption text-text-muted">
-                        Qty: {item.quantity} × {formatNgn(item.unit_price)}
+                      <h2 className="text-base font-bold text-neutral-900">Order Summary</h2>
+                      <p className="text-xs text-neutral-500">
+                        {order.order_items?.length || 0} {(order.order_items?.length || 0) === 1 ? 'Item' : 'Items'}
                       </p>
                     </div>
-                    <span className="font-bold text-text-primary">
-                      {formatNgn(item.line_total)}
+                  </div>
+                  <Badge variant="default" className="bg-neutral-100 font-mono text-xs text-neutral-700">
+                    #{order.id.slice(0, 8).toUpperCase()}
+                  </Badge>
+                </div>
+
+                {/* Itemized List */}
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-1 divide-y divide-neutral-100">
+                  {order.order_items?.map((item) => (
+                    <div key={item.id} className="pt-3 first:pt-0 flex items-start justify-between gap-3 text-xs sm:text-sm">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-neutral-100 font-bold text-neutral-700 text-xs">
+                            {item.quantity}×
+                          </span>
+                          <span className="font-semibold text-neutral-900">{item.product_name}</span>
+                        </div>
+                        <p className="text-caption text-neutral-400 pl-6">
+                          Unit: {formatNgn(item.unit_price)}
+                        </p>
+                      </div>
+                      <span className="font-bold text-neutral-900 shrink-0">
+                        {formatNgn(item.line_total)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Authoritative Financial Breakdown */}
+                <div className="space-y-2.5 border-t border-neutral-100 pt-4 text-xs sm:text-sm">
+                  <div className="flex justify-between text-neutral-600">
+                    <span>Subtotal</span>
+                    <span className="font-semibold text-neutral-900">{formatNgn(order.subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-neutral-600">
+                    <span>Platform Service Fee</span>
+                    <span className="font-semibold text-neutral-900">
+                      {formatNgn((order as any).service_fee ?? 150)}
                     </span>
                   </div>
-                ))}
+                  <div className="flex justify-between text-neutral-600">
+                    <span>Delivery Fee</span>
+                    <span className="font-semibold text-neutral-900">
+                      {order.delivery_fee && order.delivery_fee > 0
+                        ? formatNgn(order.delivery_fee)
+                        : '₦0.00 (Launch Preview)'}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline justify-between border-t border-neutral-200/80 pt-3 text-base font-bold text-neutral-900">
+                    <span>Total Amount</span>
+                    <span className="text-xl sm:text-2xl font-black text-primary">
+                      {formatNgn(order.total)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Payment Record Details (if paid or reference present) */}
+                <div className="rounded-2xl bg-neutral-50 p-4 border border-neutral-200/60 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-500 font-medium">Payment Status:</span>
+                    <span
+                      className={`font-bold capitalize ${
+                        isConfirmed
+                          ? 'text-emerald-700'
+                          : isFailedOrCancelled
+                          ? 'text-rose-700'
+                          : 'text-amber-800'
+                      }`}
+                    >
+                      {isConfirmed
+                        ? 'Paid (Paystack)'
+                        : isFailedOrCancelled
+                        ? 'Payment Failed / Cancelled'
+                        : isPendingConfirmation
+                        ? 'Payment Being Confirmed'
+                        : 'Payment Pending'}
+                    </span>
+                  </div>
+                  {payment?.paystack_reference && (
+                    <div className="flex items-center justify-between text-neutral-500">
+                      <span>Reference:</span>
+                      <span className="font-mono font-bold text-neutral-800">{payment.paystack_reference}</span>
+                    </div>
+                  )}
+                  {payment?.channel && (
+                    <div className="flex items-center justify-between text-neutral-500">
+                      <span>Channel:</span>
+                      <span className="capitalize font-medium text-neutral-800">{payment.channel}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Guaranteed Ledger Badge */}
+                <div className="flex items-center justify-center gap-1.5 text-caption text-neutral-400 pt-1">
+                  <ShieldCheck className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+                  <span className="font-medium">Database Authoritative Record Guaranteed</span>
+                </div>
               </div>
             </div>
-
-            {/* Authoritative Financial Breakdown */}
-            <div className="space-y-2 border-t border-border pt-4 text-body-small">
-              <div className="flex justify-between text-text-secondary">
-                <span>Subtotal</span>
-                <span className="font-semibold text-text-primary">{formatNgn(order.subtotal)}</span>
-              </div>
-              <div className="flex justify-between text-text-secondary">
-                <span>Platform Service Fee</span>
-                <span className="font-semibold text-text-primary">
-                  {formatNgn((order as any).service_fee ?? 150)}
-                </span>
-              </div>
-              <div className="flex justify-between text-text-secondary">
-                <span>Delivery Fee</span>
-                <span className="font-semibold text-text-primary">
-                  {order.delivery_fee && order.delivery_fee > 0
-                    ? formatNgn(order.delivery_fee)
-                    : '₦0.00 (Launch Preview)'}
-                </span>
-              </div>
-              <div className="flex justify-between border-t border-border pt-2 text-body font-bold text-text-primary">
-                <span>Total Amount</span>
-                <span className="text-h3 font-extrabold text-primary">{formatNgn(order.total)}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-1.5 text-caption text-text-muted pt-2 border-t border-border/60">
-              <ShieldCheck className="h-3.5 w-3.5 text-success" aria-hidden="true" />
-              <span>Database Authoritative Record Guaranteed</span>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            {['pending', 'payment_pending', 'payment_processing', 'payment_confirmed'].includes(order.status) && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsCancelModalOpen(true)}
-                className="flex-1 rounded-xl text-rose-700 border-rose-200 bg-rose-50/50 hover:bg-rose-100 hover:text-rose-800 gap-2 font-bold"
-              >
-                <XCircle className="h-4 w-4" />
-                <span>Cancel Order</span>
-              </Button>
-            )}
-            <Button asChild variant="outline" className="flex-1 rounded-xl">
-              <Link to="/" className="inline-flex items-center justify-center gap-2">
-                <Home className="h-4 w-4" aria-hidden="true" />
-                <span>Back to Home</span>
-              </Link>
-            </Button>
-            <Button asChild variant="primary" className="flex-1 rounded-xl bg-primary hover:bg-primary-hover text-white">
-              <Link to="/food" className="inline-flex items-center justify-center gap-2">
-                <Utensils className="h-4 w-4" aria-hidden="true" />
-                <span>Explore More Vendors</span>
-              </Link>
-            </Button>
           </div>
         </div>
       </Section>
@@ -675,3 +747,4 @@ export default function OrderConfirmationPage() {
     </PageContainer>
   )
 }
+

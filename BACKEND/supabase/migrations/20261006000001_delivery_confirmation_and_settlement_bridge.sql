@@ -297,19 +297,25 @@ CREATE TRIGGER trg_order_delivery_settlement_bridge
   FOR EACH ROW
   EXECUTE FUNCTION public.trg_order_delivery_settlement_bridge();
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+
 -- 6. Trigger to automatically provision delivery_confirmations when delivery_pin is set on order
 CREATE OR REPLACE FUNCTION public.trg_sync_order_delivery_confirmation()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, pg_catalog
+SET search_path = public, extensions, pg_catalog
 AS $$
 DECLARE
   v_hash text;
 BEGIN
   IF NEW.delivery_pin IS NOT NULL AND trim(NEW.delivery_pin) <> '' THEN
-    -- Store cryptographic hash (SHA-256 fallback if native argon2 is not built into pg)
-    v_hash := encode(digest(trim(NEW.delivery_pin), 'sha256'), 'hex');
+    -- Store cryptographic hash: use pgcrypto digest or native sha256
+    BEGIN
+      v_hash := encode(extensions.digest(convert_to(trim(NEW.delivery_pin), 'UTF8'), 'sha256'), 'hex');
+    EXCEPTION WHEN undefined_function THEN
+      v_hash := encode(sha256(convert_to(trim(NEW.delivery_pin), 'UTF8')), 'hex');
+    END;
 
     INSERT INTO public.delivery_confirmations (
       order_id,

@@ -84,14 +84,32 @@ export function getVendorFallbackCover(vendor?: {
     return vendor.cover_image_url
   }
 
-  const seed = `${vendor?.id ?? ''}-${vendor?.business_name ?? 'kingdomdash'}`
-  const hash = hashString(seed)
+  const name = (vendor?.business_name || '').toLowerCase()
   const isGrocery = vendor?.business_type === 'grocery'
 
-  const pool = isGrocery
-    ? VENDOR_COVER_PRESETS.filter((p) => p.category === 'grocery' || p.category === 'general')
-    : VENDOR_COVER_PRESETS.filter((p) => p.category === 'food' || p.category === 'general')
+  if (isGrocery) {
+    if (name.includes('market') || name.includes('bazaar')) return '/images/story-market.jpg'
+    if (name.includes('produce') || name.includes('farm') || name.includes('fruit')) return '/images/service-grocery.jpg'
+    return '/images/covers/fresh-supermarket.jpg'
+  }
 
+  // Food keyword heuristics for distinct, high-relevance covers
+  if (name.includes('chicken') || name.includes('grill') || name.includes('bbq') || name.includes('wing') || name.includes('suya')) {
+    return '/images/covers/grilled-feast.jpg'
+  }
+  if (name.includes('reigneth') || name.includes('bake') || name.includes('bread') || name.includes('pastr') || name.includes('cake')) {
+    return '/images/covers/bakery-pastries.jpg'
+  }
+  if (name.includes('kitchen') || name.includes('qa') || name.includes('soup') || name.includes('buka') || name.includes('swallow')) {
+    return '/images/covers/traditional-soup.jpg'
+  }
+  if (name.includes('rice') || name.includes('jollof') || name.includes('feast')) {
+    return '/images/hero-jollof.jpg'
+  }
+
+  const seed = `${vendor?.id ?? ''}-${vendor?.business_name ?? 'kingdomdash'}`
+  const hash = hashString(seed)
+  const pool = VENDOR_COVER_PRESETS.filter((p) => p.category === 'food' || p.category === 'general')
   const safePool = pool.length > 0 ? pool : VENDOR_COVER_PRESETS
   const selectedIndex = hash % safePool.length
 

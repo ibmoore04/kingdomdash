@@ -31,16 +31,26 @@ export interface CreateOrderParams {
  * the subtotal, calculates the total, and snapshots the financial values atomically.
  */
 export async function createOrderSecure(params: CreateOrderParams) {
+  if (!params.vendorId) {
+    return { data: null, error: { message: 'A vendor must be specified to place an order.' } }
+  }
+  if (!params.items || !params.items.length) {
+    return { data: null, error: { message: 'Your cart must contain at least one item.' } }
+  }
+
   // Cast needed because Database is a bootstrap scaffold (Record<string, never>);
   // once `npm run db:types` is run the real types replace this scaffold.
   return db.rpc('create_order_secure', {
     p_vendor_id: params.vendorId,
-    p_service_type: params.serviceType,
-    p_pickup_address: params.pickupAddress,
-    p_delivery_address: params.deliveryAddress,
-    p_items: params.items,
-    p_special_instructions: params.specialInstructions ?? null,
-    p_delivery_address_id: params.deliveryAddressId,
+    p_service_type: params.serviceType || 'food',
+    p_pickup_address: params.pickupAddress || 'Ijebu-Ode, Ogun State',
+    p_delivery_address: params.deliveryAddress || 'Ijebu-Ode, Ogun State',
+    p_items: params.items.map((i) => ({
+      product_id: i.product_id,
+      quantity: Math.max(1, Math.floor(Number(i.quantity) || 1)),
+    })),
+    p_special_instructions: params.specialInstructions?.trim() || null,
+    p_delivery_address_id: params.deliveryAddressId || null,
   }) as Promise<{ data: unknown; error: unknown }>
 }
 
@@ -134,7 +144,7 @@ export async function getOrdersByVendor(vendorId: string) {
 
 /**
  * Cancel an order as a customer.
- * Invokes cancel_order_operational RPC with fallback direct updates.
+ * Invokes cancel_order_operational RPC with server-side authorization and validation.
  */
 export async function cancelOrderCustomer(orderId: string, reason: string) {
   try {
@@ -142,30 +152,17 @@ export async function cancelOrderCustomer(orderId: string, reason: string) {
       p_order_id: orderId,
       p_reason: reason,
     })
-    if (!res?.error) return { data: true, error: null }
+    if (res?.error) {
+      return { data: null, error: res.error }
+    }
+    return { data: true, error: null }
   } catch (err) {
-    console.warn('cancel_order_operational RPC call fallback:', err)
+    console.error('cancel_order_operational RPC call error:', err)
+    return {
+      data: null,
+      error: err instanceof Error ? err : { message: 'Failed to cancel order.' },
+    }
   }
-
-  // Fallback direct update
-  const now = new Date().toISOString()
-  const { data, error } = await db
-    .from('orders')
-    .update({
-      status: 'cancelled',
-      cancelled_at: now,
-      cancellation_reason: reason,
-      updated_at: now,
-    })
-    .eq('id', orderId)
-    .select('id')
-    .maybeSingle()
-
-  if (!error) {
-    await db.from('deliveries').update({ status: 'cancelled', updated_at: now }).eq('order_id', orderId)
-  }
-
-  return { data, error }
 }
 
 export interface SubmitPersonalShopperParams {

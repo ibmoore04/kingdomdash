@@ -348,4 +348,91 @@ describe('CartStore', () => {
       expect(userBData.items).toHaveLength(0)
     })
   })
+
+  describe('Item Customization & Modifiers Support', () => {
+    beforeEach(() => {
+      useCartStore.getState().clearCart()
+    })
+
+    it('creates distinct cart line items for different modifier configurations of the same product', () => {
+      const baseItem = {
+        productId: 'prod-amala',
+        vendorId: mockVendorA.id,
+        serviceType: 'food' as const,
+        name: 'Amala Special',
+        price: 2500,
+        imageUrl: null,
+      }
+
+      // Add Amala with Goat Meat
+      useCartStore.getState().addItem(
+        {
+          ...baseItem,
+          price: 3500,
+          selectedModifiers: [
+            {
+              groupId: 'protein',
+              groupName: 'Protein',
+              optionId: 'opt-goat',
+              optionName: 'Goat Meat',
+              price: 1000,
+            },
+          ],
+        },
+        mockVendorA
+      )
+
+      // Add Amala with Assorted Meat
+      useCartStore.getState().addItem(
+        {
+          ...baseItem,
+          price: 2500,
+          selectedModifiers: [
+            {
+              groupId: 'protein',
+              groupName: 'Protein',
+              optionId: 'opt-assorted',
+              optionName: 'Assorted Meat',
+              price: 0,
+            },
+          ],
+        },
+        mockVendorA
+      )
+
+      const items = useCartStore.getState().items
+      expect(items).toHaveLength(2)
+      expect(items[0].price).toBe(3500)
+      expect(items[1].price).toBe(2500)
+      expect(useCartStore.getState().getSubtotal()).toBe(6000)
+    })
+
+    it('increments quantity when adding identical modifier configuration', () => {
+      const customItem = {
+        productId: 'prod-amala',
+        vendorId: mockVendorA.id,
+        serviceType: 'food' as const,
+        name: 'Amala Special',
+        price: 3500,
+        imageUrl: null,
+        selectedModifiers: [
+          {
+            groupId: 'protein',
+            groupName: 'Protein',
+            optionId: 'opt-goat',
+            optionName: 'Goat Meat',
+            price: 1000,
+          },
+        ],
+      }
+
+      useCartStore.getState().addItem(customItem, mockVendorA)
+      useCartStore.getState().addItem(customItem, mockVendorA)
+
+      const items = useCartStore.getState().items
+      expect(items).toHaveLength(1)
+      expect(items[0].quantity).toBe(2)
+      expect(useCartStore.getState().getSubtotal()).toBe(7000)
+    })
+  })
 })

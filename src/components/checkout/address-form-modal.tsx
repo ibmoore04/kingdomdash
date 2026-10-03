@@ -1,10 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { BottomSheet } from '@/components/ui/bottom-sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -276,22 +271,25 @@ export function AddressFormModal({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xl p-6 max-h-[92vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-h4 font-bold text-text-primary flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-primary" />
-            <span>{editingAddress ? 'Edit Delivery Address' : 'Add New Delivery Address'}</span>
-          </DialogTitle>
-        </DialogHeader>
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      className="sm:max-w-xl max-h-[92vh]"
+      dataTestId="address-form-modal"
+      title={
+        <div className="flex items-center gap-2">
+          <MapPin className="w-5 h-5 text-primary" />
+          <span>{editingAddress ? 'Edit Delivery Address' : 'Add New Delivery Address'}</span>
+        </div>
+      }
+    >
+      {serverError && (
+        <div className="mb-4 rounded-lg bg-error/10 border border-error/20 p-3 text-caption text-error">
+          {serverError}
+        </div>
+      )}
 
-        {serverError && (
-          <div className="mt-2 rounded-lg bg-error/10 border border-error/20 p-3 text-caption text-error">
-            {serverError}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+      <form onSubmit={handleSubmit} className="mt-2 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <FormField id="address-label" label="Address Label" required error={errors.label}>
               <Input
@@ -471,7 +469,6 @@ export function AddressFormModal({
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </BottomSheet>
   )
 }

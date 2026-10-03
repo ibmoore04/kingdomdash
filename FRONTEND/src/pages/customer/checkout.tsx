@@ -23,6 +23,7 @@ import {
 } from '@/components/checkout/payment-methods-card'
 import { OrderSummaryCard } from '@/components/checkout/order-summary-card'
 import { CheckoutHelpCard } from '@/components/checkout/checkout-help-card'
+import { CostBreakdownAccordion } from '@/components/cart/cost-breakdown-accordion'
 import { useCartStore } from '@/stores/cart-store'
 import { getCustomerAddresses } from '@/services/supabase/addresses'
 import { createOrderSecure } from '@/services/supabase/orders'
@@ -376,9 +377,9 @@ export default function CheckoutPage() {
     try {
       const res = await createOrderSecure({
         vendorId: vendor.id,
-        serviceType: vendor.serviceType,
-        pickupAddress: vendor.address,
-        deliveryAddress: formattedDeliveryAddress,
+        serviceType: vendor.serviceType || items[0]?.serviceType || 'food',
+        pickupAddress: vendor.address || 'Ijebu-Ode, Ogun State',
+        deliveryAddress: formattedDeliveryAddress || 'Ijebu-Ode, Ogun State',
         deliveryAddressId: selectedAddress.id,
         items: itemsPayload,
         specialInstructions: fullSpecialInstructions || undefined,
@@ -745,6 +746,15 @@ export default function CheckoutPage() {
             />
 
             <CheckoutHelpCard />
+
+            <CostBreakdownAccordion
+              subtotal={subtotal}
+              deliveryFee={effectiveDeliveryFee || 0}
+              serviceFee={serviceFee}
+              distanceKm={estimatedDistanceKm}
+              pricingTier={pricingTier}
+              isLaunchPreview={false}
+            />
           </div>
         </div>
       </PageContainer>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Utensils,
@@ -7,7 +7,6 @@ import {
   Sparkles,
   MapPin,
   Clock,
-  KeyRound,
   CreditCard,
   Star,
   XCircle,
@@ -17,6 +16,8 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatNgn } from '@/utils/formatting'
+import { DeliveryPinCard } from '@/components/order/delivery-pin-card'
+import { DeliveryRadar } from '@/components/order/delivery-radar'
 
 export interface CustomerOrderCardProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,6 +47,16 @@ export const CustomerOrderCard: React.FC<CustomerOrderCardProps> = ({
     order.status === 'payment_pending' ||
     order.status === 'payment_processing' ||
     order.status === 'payment_confirmed'
+
+  const isActive =
+    order.status === 'payment_confirmed' ||
+    order.status === 'preparing' ||
+    order.status === 'ready' ||
+    order.status === 'ready_for_pickup' ||
+    order.status === 'picked_up' ||
+    order.status === 'in_transit'
+
+  const [showRadar, setShowRadar] = useState(isActive)
 
   // Service Badge metadata
   const renderServiceBadge = (type?: string) => {
@@ -274,22 +285,40 @@ export const CustomerOrderCard: React.FC<CustomerOrderCardProps> = ({
           </div>
         )}
 
-        {/* Delivery PIN Security Pill */}
-        {order.delivery_pin && !isDelivered && !isCancelled && (
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-3 sm:px-4">
-            <div className="flex items-center gap-2 text-xs">
-              <KeyRound className="h-4 w-4 text-primary shrink-0" />
-              <div>
-                <span className="font-bold text-neutral-900 block">Delivery Confirmation PIN</span>
-                <span className="text-[11px] text-neutral-600 hidden sm:inline">
-                  Provide this 4-digit security code to your rider upon arrival
+        {/* Live Order Tracking Radar (Phase 2) */}
+        {!isCancelled && !isPending && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setShowRadar((prev) => !prev)}
+                className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:text-primary-hover focus-visible:outline-none transition-colors py-1"
+              >
+                <span className="relative flex h-2 w-2">
+                  {isActive && (
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                  )}
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                 </span>
-              </div>
+                <span>{showRadar ? 'Hide Live Delivery Radar' : 'View Live Delivery Radar'}</span>
+              </button>
             </div>
-            <div className="rounded-xl border border-primary/30 bg-white px-3 py-1 font-mono text-base font-extrabold tracking-widest text-primary shadow-2xs">
-              {order.delivery_pin}
-            </div>
+
+            {showRadar && (
+              <DeliveryRadar
+                status={order.status}
+                serviceType={order.service_type}
+                cancellationReason={order.cancellation_reason}
+                refundRequired={order.refund_required}
+                className="border border-neutral-200/80 shadow-none bg-neutral-50/60 p-4"
+              />
+            )}
           </div>
+        )}
+
+        {/* Delivery PIN Security Pass (Phase 2) */}
+        {order.delivery_pin && !isDelivered && !isCancelled && (
+          <DeliveryPinCard pin={order.delivery_pin} />
         )}
 
         {/* Pending Payment Notice Banner */}

@@ -1,14 +1,19 @@
 import { create } from 'zustand'
 import { supabase } from '@/services/supabase/client'
+import type { SelectedModifier } from '@/types'
 
 export interface CartItem {
   productId: string
+  itemKey?: string
   vendorId: string
   serviceType: 'food' | 'grocery'
   name: string
-  price: number // Display only — authoritative price determined by DB
+  price: number // Total unit price (base + modifiers)
+  basePrice?: number
   quantity: number
   imageUrl: string | null
+  selectedModifiers?: SelectedModifier[]
+  specialInstructions?: string
 }
 
 export interface CartVendor {
@@ -35,8 +40,8 @@ export interface CartState {
   // Actions
   addItem: (item: Omit<CartItem, 'quantity'>, vendor: CartVendor) => AddItemResult
   forceAddItem: (item: Omit<CartItem, 'quantity'>, vendor: CartVendor) => void
-  updateQuantity: (productId: string, quantity: number) => void
-  removeItem: (productId: string) => void
+  updateQuantity: (itemKeyOrProductId: string, quantity: number) => void
+  removeItem: (itemKeyOrProductId: string) => void
   clearCart: () => void
   setCartOpen: (open: boolean) => void
   setUser: (userId: string | null) => void
@@ -47,7 +52,23 @@ export interface CartState {
   getSubtotal: () => number
 }
 
-function isUuid(id: string | null | undefined): boolean {
+export function generateCartItemKey(
+  productId: string,
+  modifiers?: SelectedModifier[],
+  instructions?: string
+): string {
+  if ((!modifiers || modifiers.length === 0) && !instructions) {
+    return productId
+  }
+  const modifierParts = (modifiers || [])
+    .map((m) => `${m.groupId}:${m.optionId}`)
+    .sort()
+    .join('|')
+  const cleanInst = (instructions || '').trim().toLowerCase()
+  return `${productId}_${modifierParts}${cleanInst ? `_${cleanInst}` : ''}`
+}
+
+export function isUuid(id: string | null | undefined): boolean {
   if (!id) return false
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 }
@@ -75,10 +96,17 @@ export function loadCartFromStorage(userId: string | null): { items: CartItem[];
     if (!raw) return { items: [], vendor: null }
     const parsed = JSON.parse(raw)
     const data = parsed?.state ? parsed.state : parsed
-    return {
-      items: Array.isArray(data?.items) ? data.items : [],
-      vendor: data?.vendor || null,
+    const items: CartItem[] = Array.isArray(data?.items) ? data.items : []
+    let vendor: CartVendor | null = data?.vendor || null
+    if (vendor && items.length > 0) {
+      if (!vendor.serviceType) {
+        vendor = { ...vendor, serviceType: items[0]?.serviceType || 'food' }
+      }
+      if (!vendor.address) {
+        vendor = { ...vendor, address: 'Ijebu-Ode, Ogun State' }
+      }
     }
+    return { items, vendor }
   } catch {
     return { items: [], vendor: null }
   }
@@ -140,10 +168,17 @@ export async function fetchCartFromDatabase(
       .maybeSingle()
 
     if (!error && data) {
-      return {
-        items: Array.isArray(data.items) ? data.items : [],
-        vendor: (data.vendor_data as CartVendor) || null,
+      const items: CartItem[] = Array.isArray(data.items) ? data.items : []
+      let vendor = (data.vendor_data as CartVendor) || null
+      if (vendor && items.length > 0) {
+        if (!vendor.serviceType) {
+          vendor = { ...vendor, serviceType: items[0]?.serviceType || 'food' }
+        }
+        if (!vendor.address) {
+          vendor = { ...vendor, address: 'Ijebu-Ode, Ogun State' }
+        }
       }
+      return { items, vendor }
     }
   } catch (err) {
     console.warn('[CartStore] Failed to fetch cart from Supabase:', err)
@@ -268,7 +303,23 @@ export const useCartStore = create<CartState>((set, get) => ({
       return { conflict: true, currentVendorName: state.vendor.name }
     }
 
-    const existingIndex = state.items.findIndex((i) => i.productId === item.productId)
+    const itemKey =
+      item.itemKey ||
+      (item.selectedModifiers?.length || item.specialInstructions
+        ? generateCartItemKey(item.productId, item.selectedModifiers, item.specialInstructions)
+        : undefined)
+
+    const lookupKey = itemKey || item.productId
+
+    const normalizedItem: CartItem = {
+      ...item,
+      ...(itemKey ? { itemKey } : {}),
+      quantity: 1,
+    }
+
+    const existingIndex = state.items.findIndex(
+      (i) => (i.itemKey || i.productId) === lookupKey
+    )
 
     let newItems: CartItem[]
     const newVendor = state.vendor || vendor
@@ -285,7 +336,7 @@ export const useCartStore = create<CartState>((set, get) => ({
       if (state.items.length >= 50) {
         return { conflict: false }
       }
-      newItems = [...state.items, { ...item, quantity: 1 }]
+      newItems = [...state.items, normalizedItem]
     }
 
     set({ items: newItems, vendor: newVendor })
@@ -296,7 +347,10 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   forceAddItem: (item, vendor) => {
     const state = get()
-    const newItems = [{ ...item, quantity: 1 }]
+    const itemKey =
+      item.itemKey ||
+      generateCartItemKey(item.productId, item.selectedModifiers, item.specialInstructions)
+    const newItems: CartItem[] = [{ ...item, itemKey, quantity: 1 }]
     set({
       vendor,
       items: newItems,
@@ -305,25 +359,29 @@ export const useCartStore = create<CartState>((set, get) => ({
     void syncCartToDatabase(state.activeUserId, newItems, vendor)
   },
 
-  updateQuantity: (productId, quantity) => {
+  updateQuantity: (itemKeyOrProductId, quantity) => {
     const state = get()
     if (quantity <= 0) {
-      get().removeItem(productId)
+      get().removeItem(itemKeyOrProductId)
       return
     }
 
     const clampedQuantity = Math.min(999, Math.max(1, Math.floor(quantity)))
     const updatedItems = state.items.map((i) =>
-      i.productId === productId ? { ...i, quantity: clampedQuantity } : i
+      (i.itemKey || i.productId) === itemKeyOrProductId
+        ? { ...i, quantity: clampedQuantity }
+        : i
     )
     set({ items: updatedItems })
     saveCartToStorage(state.activeUserId, updatedItems, state.vendor)
     void syncCartToDatabase(state.activeUserId, updatedItems, state.vendor)
   },
 
-  removeItem: (productId) => {
+  removeItem: (itemKeyOrProductId) => {
     const state = get()
-    const updatedItems = state.items.filter((i) => i.productId !== productId)
+    const updatedItems = state.items.filter(
+      (i) => (i.itemKey || i.productId) !== itemKeyOrProductId
+    )
     const newVendor = updatedItems.length === 0 ? null : state.vendor
     set({
       items: updatedItems,

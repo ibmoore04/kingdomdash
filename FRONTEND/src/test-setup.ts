@@ -71,9 +71,23 @@ const mockLocalStorage = {
     return storageMap.size
   },
 }
-if (typeof window !== 'undefined' && !window.localStorage) {
-  Object.defineProperty(window, 'localStorage', { value: mockLocalStorage, writable: true })
+try {
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: mockLocalStorage,
+    writable: true,
+    configurable: true,
+  })
+} catch {
+  // Ignore
 }
-if (!globalThis.localStorage) {
-  Object.defineProperty(globalThis, 'localStorage', { value: mockLocalStorage, writable: true })
+if (typeof window !== 'undefined') {
+  try {
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true,
+      configurable: true,
+    })
+  } catch {
+    // Ignore
+  }
 }

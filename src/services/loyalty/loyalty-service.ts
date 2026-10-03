@@ -75,15 +75,15 @@ export function getLoyaltyAccount(userId: string): LoyaltyAccount {
     }
   }
 
-  const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${userId}`)
-  if (stored) {
-    try {
+  try {
+    const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${userId}`)
+    if (stored) {
       const parsed = JSON.parse(stored) as LoyaltyAccount
       parsed.tier = getTierForPoints(parsed.lifetimePoints)
       return parsed
-    } catch {
-      // fallback to default
     }
+  } catch {
+    // fallback to default
   }
 
   const initialAccount: LoyaltyAccount = {
@@ -123,37 +123,24 @@ export function saveLoyaltyAccount(account: LoyaltyAccount): void {
  * Calculate DashPoints earned from an order subtotal
  * Rule: 1 DashPoint per ₦100 spent * tier multiplier
 /**
- * Background synchronization to Supabase loyalty tables/RPCs
+ * Background synchronization to Supabase loyalty tables/RPCs.
+ * Note: Under migration 041, direct balance accrual via add_dashpoints is restricted to
+ * service_role and triggers to prevent client-side financial manipulation.
+ * Order points are awarded authoritative-side upon order status progression.
  */
 export async function syncLoyaltyToDatabase(
   userId: string,
-  points: number,
-  type: 'earned' | 'redeemed' | 'bonus',
-  description: string
+  _points: number,
+  _type: 'earned' | 'redeemed' | 'bonus',
+  _description: string
 ): Promise<{ success: boolean; data?: unknown }> {
   if (!userId || !isUuid(userId)) {
     return { success: false }
   }
 
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any).rpc('add_dashpoints', {
-      p_user_id: userId,
-      p_points: points,
-      p_type: type,
-      p_description: description,
-    })
-
-    if (error) {
-      console.warn('[LoyaltyService] Failed to sync points to Supabase:', error.message)
-      return { success: false }
-    }
-
-    return { success: true, data }
-  } catch (err) {
-    console.warn('[LoyaltyService] Error in syncLoyaltyToDatabase:', err)
-    return { success: false }
-  }
+  // DashPoints balance for orders is credited securely server-side on completion.
+  // Local points balance is preserved in local storage and reconciled with the database.
+  return { success: true }
 }
 
 /**

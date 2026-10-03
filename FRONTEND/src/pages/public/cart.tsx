@@ -5,6 +5,8 @@ import { PageContainer, Section } from '@/components/layout/section'
 import { Button } from '@/components/ui/button'
 import { CartItemRow } from '@/components/cart/cart-item-row'
 import { EmptyCartView } from '@/components/cart/empty-cart-view'
+import { CartMilestoneMeter } from '@/components/cart/cart-milestone-meter'
+import { CostBreakdownAccordion } from '@/components/cart/cost-breakdown-accordion'
 import { useCartStore } from '@/stores/cart-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { formatNgn } from '@/utils/formatting'
@@ -104,13 +106,16 @@ export default function CartPage() {
               {/* Items Card */}
               <div className="rounded-2xl border border-border bg-white p-6 shadow-xs divide-y divide-border/60">
                 {items.map((item) => (
-                  <CartItemRow key={item.productId} item={item} />
+                  <CartItemRow key={item.itemKey || item.productId} item={item} />
                 ))}
               </div>
             </div>
 
             {/* Right: Order Financial Summary */}
             <div className="lg:col-span-4 sticky top-28 space-y-4">
+              {/* Gamified Rewards Milestone Meter */}
+              <CartMilestoneMeter subtotal={subtotal} />
+
               <div className="rounded-2xl border border-border bg-white p-6 shadow-sm space-y-4">
                 <h3 className="text-h4 font-bold text-text-primary border-b border-border pb-3">
                   Order Summary
@@ -157,6 +162,9 @@ export default function CartPage() {
                   </p>
                 )}
               </div>
+
+              {/* Transparent Cost & Distance Accordion */}
+              <CostBreakdownAccordion subtotal={subtotal} />
             </div>
           </div>
         )}

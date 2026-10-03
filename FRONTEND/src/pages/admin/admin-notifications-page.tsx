@@ -89,9 +89,13 @@ export const AdminNotificationsPage: React.FC = () => {
     };
 
     const readLocalCache = (): AdminNotificationItem[] => {
-      const cached = localStorage.getItem(STORAGE_KEY);
-      if (!cached) return [];
-      try { return (JSON.parse(cached) as unknown[]).map(normaliseLocal); } catch { return []; }
+      try {
+        const cached = localStorage.getItem(STORAGE_KEY);
+        if (!cached) return [];
+        return (JSON.parse(cached) as unknown[]).map(normaliseLocal);
+      } catch {
+        return [];
+      }
     };
 
     try {

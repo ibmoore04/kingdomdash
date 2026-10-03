@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Minus, Plus, Trash2, Info, ShieldCheck, Loader2, Gift } from 'lucide-react'
+import { Minus, Plus, Trash2, Info, ShieldCheck, Gift } from 'lucide-react'
 import { formatNgn } from '@/utils/formatting'
 import { useCartStore, type CartItem } from '@/stores/cart-store'
 
@@ -302,10 +302,7 @@ export function OrderSummaryCard({
           {isKdPassApplied ? (
             <span className="font-bold text-emerald-600">FREE</span>
           ) : isLoadingPricing ? (
-            <span className="flex items-center gap-1.5 text-xs text-neutral-400">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              <span>Calculating...</span>
-            </span>
+            <span className="h-4 w-20 rounded animate-shimmer bg-neutral-200 inline-block" />
           ) : !isPinned ? (
             <span className="text-xs text-amber-600 font-medium">Pin required</span>
           ) : !isServiceable ? (
@@ -340,7 +337,11 @@ export function OrderSummaryCard({
         <div className="border-t border-neutral-100 pt-3 flex items-center justify-between">
           <span className="text-sm sm:text-base font-extrabold text-neutral-900">Total</span>
           <span className="text-lg sm:text-xl font-extrabold text-primary">
-            {formatNgn(grandTotal)}
+            {isLoadingPricing ? (
+              <span className="inline-block h-6 w-24 rounded animate-shimmer bg-neutral-200 align-middle" />
+            ) : (
+              formatNgn(grandTotal)
+            )}
           </span>
         </div>
       </div>

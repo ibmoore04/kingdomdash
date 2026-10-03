@@ -4,12 +4,14 @@ import { useCartStore } from '@/stores/cart-store'
 import { CartItemRow } from './cart-item-row'
 import { EmptyCartView } from './empty-cart-view'
 import { CartSummary } from './cart-summary'
+import { CartMilestoneMeter } from './cart-milestone-meter'
 
 export function CartDrawer() {
   const isOpen = useCartStore((state) => state.isOpen)
   const setCartOpen = useCartStore((state) => state.setCartOpen)
   const items = useCartStore((state) => state.items)
   const itemCount = useCartStore((state) => state.getItemCount())
+  const subtotal = useCartStore((state) => state.getSubtotal())
   const drawerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -83,10 +85,15 @@ export function CartDrawer() {
           </div>
         ) : (
           <div className="flex flex-1 flex-col overflow-hidden">
+            {/* Loyalty & Milestone Rewards Progress Meter (Phase 3) */}
+            <div className="px-6 pt-3 pb-1">
+              <CartMilestoneMeter subtotal={subtotal} />
+            </div>
+
             {/* Scrollable list of items */}
             <div className="flex-1 overflow-y-auto px-6 divide-y divide-border/40">
               {items.map((item) => (
-                <CartItemRow key={item.productId} item={item} />
+                <CartItemRow key={item.itemKey || item.productId} item={item} />
               ))}
             </div>
 

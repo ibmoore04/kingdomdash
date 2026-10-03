@@ -4,6 +4,7 @@ import { Navbar } from '@/components/layout/navbar'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { Footer } from '@/components/layout/footer'
 import { CartDrawer } from '@/components/cart/cart-drawer'
+import { FloatingCartBar } from '@/components/cart/floating-cart-bar'
 
 export function PublicLayout() {
   return (
@@ -11,6 +12,7 @@ export function PublicLayout() {
       <AnnouncementBar />
       <Navbar />
       <BottomNav />
+      <FloatingCartBar />
       <CartDrawer />
       <main className="flex-1">
         <Outlet />
@@ -19,3 +21,4 @@ export function PublicLayout() {
     </div>
   )
 }
+

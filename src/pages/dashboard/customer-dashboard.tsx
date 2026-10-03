@@ -39,6 +39,7 @@ import { CustomerCorporateTab } from '@/components/customer/customer-corporate-t
 import { OrderReviewModal } from '@/components/customer/order-review-modal'
 import { CustomerOrderCard } from '@/components/customer/customer-order-card'
 import { CancelOrderModal } from '@/components/customer/cancel-order-modal'
+import { OrderCardSkeleton } from '@/components/ui/skeletons'
 import { getOrderReview, fetchCustomerReviews } from '@/services/supabase/reviews'
 
 type CustomerTab = 'orders' | 'corporate' | 'addresses' | 'profile' | 'rewards' | 'notifications' | 'settings' | 'support'
@@ -661,10 +662,8 @@ export default function CustomerDashboardPage() {
 
                 {/* Loading state */}
                 {isLoadingOrders && orders.length === 0 && (
-                  <div className="py-16 text-center text-text-muted bg-white rounded-2xl border border-border">
-                    <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-3" />
-                    <p className="text-body-small font-semibold text-text-primary">Loading your orders...</p>
-                    <p className="text-caption text-text-muted mt-1">Retrieving order history and current deliveries.</p>
+                  <div className="space-y-4" role="status" aria-label="Loading your orders">
+                    <OrderCardSkeleton count={3} />
                   </div>
                 )}
 

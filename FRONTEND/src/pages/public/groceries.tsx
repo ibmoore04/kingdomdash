@@ -3,13 +3,9 @@ import {
   ShoppingCart,
   Apple,
   ArrowRight,
-  Store,
-  MapPin,
   Search,
   Sparkles,
   ShoppingBag,
-  Clock,
-  Star,
   Egg,
   Milk,
   Beef,
@@ -20,7 +16,6 @@ import { Link } from 'react-router-dom'
 import { PageContainer } from '@/components/layout/section'
 import { WhatsAppCta } from '@/components/shared/whatsapp-cta'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -32,9 +27,10 @@ import { appConfig } from '@/config/app.config'
 import { useSeo } from '@/hooks/use-seo'
 import { getLocalBusinessSchema } from '@/components/seo/local-business-schema'
 import { getVendorsByService } from '@/services/supabase/vendors'
-import { getVendorFallbackCover } from '@/utils/vendor-branding'
 import { useCartStore } from '@/stores/cart-store'
 import { formatNgn } from '@/utils/formatting'
+import { VendorCard } from '@/components/shared/vendor-card'
+import { VendorCardSkeleton } from '@/components/ui/skeletons'
 import type { Vendor } from '@/types'
 
 const GROCERY_CATEGORIES = [
@@ -270,104 +266,20 @@ export default function GroceriesPage() {
             </div>
           </div>
 
-          {/* Stores Loading State */}
+          {/* Stores Loading State (Phase 4 Shimmer) */}
           {isLoading ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((n) => (
-                <div
-                  key={n}
-                  className="animate-pulse rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs"
-                >
-                  <div className="h-44 rounded-xl bg-neutral-200 mb-4" />
-                  <div className="h-5 w-3/4 rounded bg-neutral-200 mb-2" />
-                  <div className="h-4 w-1/2 rounded bg-neutral-200" />
-                </div>
-              ))}
+              <VendorCardSkeleton count={6} />
             </div>
           ) : filteredStores.length > 0 ? (
             /* Stores Grid Showcase */
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {filteredStores.map((store) => (
-                <div
+                <VendorCard
                   key={store.id}
-                  className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xs transition-all duration-300 hover:border-primary/40 hover:shadow-lg"
-                >
-                  {/* Card Cover & Badges */}
-                  <div className="relative h-48 w-full overflow-hidden bg-neutral-100">
-                    <img
-                      src={getVendorFallbackCover(store)}
-                      alt={store.business_name}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      onError={(e) => {
-                        e.currentTarget.src = getVendorFallbackCover(store)
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/60 via-transparent to-transparent opacity-60" />
-
-                    {/* Status Badge */}
-                    <div className="absolute right-3 top-3">
-                      <Badge variant={store.is_active ? 'success' : 'dark'} className="shadow-xs">
-                        {store.is_active ? 'Open for orders' : 'Closed'}
-                      </Badge>
-                    </div>
-
-                    {/* Overlay Rating & Delivery Estimate */}
-                    <div className="absolute bottom-3 left-3 flex items-center gap-2 text-xs text-white">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 backdrop-blur-sm">
-                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" aria-hidden="true" />
-                        <span className="font-semibold">{store.rating ?? 4.8}</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 backdrop-blur-sm">
-                        <Clock className="h-3 w-3 text-white/80" aria-hidden="true" />
-                        <span>25–40 min</span>
-                      </span>
-                    </div>
-
-                    {/* Circular Store Icon Overlap */}
-                    <div className="absolute right-3 -bottom-3 flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-neutral-900 text-white shadow-md overflow-hidden">
-                      {store.logo_url ? (
-                        <img
-                          src={store.logo_url}
-                          alt={store.business_name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <Store className="h-5 w-5 text-primary" />
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Store Details */}
-                  <div className="p-5 pt-6 flex-1 flex flex-col justify-between">
-                    <div>
-                      <h3 className="text-base font-bold text-neutral-900 group-hover:text-primary transition-colors">
-                        {store.business_name}
-                      </h3>
-
-                      <p className="mt-2 line-clamp-2 text-xs text-neutral-500 leading-relaxed">
-                        {store.business_description ||
-                          'Fresh farm produce, grains, packaged seasonings, and household essentials.'}
-                      </p>
-                    </div>
-
-                    <div className="mt-5 border-t border-neutral-100 pt-3.5 flex items-center justify-between text-xs">
-                      <span className="flex items-center gap-1 text-neutral-500 truncate max-w-[55%]">
-                        <MapPin className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
-                        <span className="truncate">
-                          {store.service_area || store.business_address || 'Ijebu-Ode'}
-                        </span>
-                      </span>
-
-                      <Link
-                        to={`/groceries/${store.id}`}
-                        className="inline-flex items-center gap-1 font-bold text-primary group-hover:underline transition-colors"
-                      >
-                        <span>Shop Items</span>
-                        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
+                  vendor={store}
+                  serviceType="grocery"
+                />
               ))}
             </div>
           ) : (

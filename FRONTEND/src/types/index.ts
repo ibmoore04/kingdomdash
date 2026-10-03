@@ -112,6 +112,30 @@ export interface MockProduct {
   available: boolean
 }
 
+// ── Phase 1: Product Customization & Modifier Types ─────────────────────────
+export interface ProductModifierOption {
+  id: string
+  name: string
+  price: number // Extra cost in NGN (0 for included items)
+}
+
+export interface ProductModifierGroup {
+  id: string
+  name: string
+  min_selection: number
+  max_selection: number
+  required: boolean
+  options: ProductModifierOption[]
+}
+
+export interface SelectedModifier {
+  groupId: string
+  groupName: string
+  optionId: string
+  optionName: string
+  price: number
+}
+
 // ── Phase 11 Rider Domain Types ──────────────────────────────────────────────
 export * from './rider'
 
