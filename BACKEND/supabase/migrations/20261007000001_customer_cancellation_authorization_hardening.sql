@@ -194,9 +194,14 @@ BEGIN
     END IF;
   END IF;
 
-  -- 2. If customer_phone is still empty, snapshot from profiles if customer_id exists
-  IF (NEW.customer_phone IS NULL OR trim(NEW.customer_phone) = '') AND NEW.customer_id IS NOT NULL THEN
-    SELECT phone INTO NEW.customer_phone FROM public.profiles WHERE id = NEW.customer_id;
+  -- 2. If customer_phone or customer_name is still empty, snapshot from profiles if customer_id exists
+  IF NEW.customer_id IS NOT NULL THEN
+    IF NEW.customer_phone IS NULL OR trim(NEW.customer_phone) = '' THEN
+      SELECT phone INTO NEW.customer_phone FROM public.profiles WHERE id = NEW.customer_id;
+    END IF;
+    IF NEW.customer_name IS NULL OR trim(NEW.customer_name) = '' THEN
+      SELECT full_name INTO NEW.customer_name FROM public.profiles WHERE id = NEW.customer_id;
+    END IF;
   END IF;
 
   -- 3. Fallback: if customer_phone is still empty, copy from delivery_phone
@@ -233,7 +238,8 @@ WHERE o.delivery_address_id = a.id
 
 UPDATE public.orders o
 SET customer_phone = COALESCE(o.customer_phone, p.phone),
-    delivery_phone = COALESCE(o.delivery_phone, p.phone)
+    delivery_phone = COALESCE(o.delivery_phone, p.phone),
+    customer_name = COALESCE(o.customer_name, p.full_name)
 FROM public.profiles p
 WHERE o.customer_id = p.id
-  AND (o.customer_phone IS NULL OR o.delivery_phone IS NULL);
+  AND (o.customer_phone IS NULL OR o.delivery_phone IS NULL OR o.customer_name IS NULL);

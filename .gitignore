@@ -35,3 +35,4 @@ screenshots_critical_qa/
 screenshots/
 screenshots_mobile_dashboards/
 *.tmp
+supabase/.temp/
