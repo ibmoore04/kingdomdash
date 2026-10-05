@@ -6,23 +6,20 @@ import { AdminKpiCard } from '../../components/admin/analytics/admin-kpi-card';
 import { AnalyticsDatePicker } from '../../components/admin/analytics/analytics-date-picker';
 import { OrderVolumeChart } from '../../components/admin/analytics/order-volume-chart';
 import { ServiceDistributionChart } from '../../components/admin/analytics/service-distribution-chart';
-import { OrderStatusChart } from '../../components/admin/analytics/order-status-chart';
-import { DeliveryStatusChart } from '../../components/admin/analytics/delivery-status-chart';
-import { CompletionTrendChart } from '../../components/admin/analytics/completion-trend-chart';
+import { formatNgn } from '@/utils/formatting';
 import {
   ShoppingBag,
   Truck,
   Bike,
   Store,
   Clock,
-  CheckCircle2,
-  XCircle,
   TrendingUp,
   AlertCircle,
-  Radio,
   Send,
-  Sparkles,
-  UserPlus,
+  RefreshCw,
+  ArrowRight,
+  CreditCard,
+  Users,
 } from 'lucide-react';
 import { DirectOnboardVendorModal } from '@/components/admin/onboarding/direct-onboard-vendor-modal';
 import { DirectOnboardRiderModal } from '@/components/admin/onboarding/direct-onboard-rider-modal';
@@ -40,11 +37,12 @@ export const AdminDashboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
   const [isRiderModalOpen, setIsRiderModalOpen] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
   // Derive ISO dates from preset or custom
   const computeDateRange = useCallback(() => {
     const end = new Date();
-    let start = new Date();
+    const start = new Date();
 
     if (datePreset === 'today') {
       start.setHours(0, 0, 0, 0);
@@ -77,6 +75,7 @@ export const AdminDashboardPage: React.FC = () => {
         throw res.error;
       }
       setData(res.data);
+      setLastRefreshed(new Date());
     } catch (err: unknown) {
       console.error('Failed to load admin analytics:', err);
       setError(err instanceof Error ? err.message : 'Failed to query platform analytics');
@@ -99,271 +98,306 @@ export const AdminDashboardPage: React.FC = () => {
   const summary = data?.summary;
   const live = data?.live_metrics;
 
+  const totalPendingApps =
+    (summary?.pending_rider_applications ?? 0) + (summary?.pending_vendor_applications ?? 0);
+
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* Platform Status Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-border shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
-            <Radio className="w-5 h-5 animate-pulse" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold text-text-primary">Live Platform Health</h2>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                ACTIVE
-              </span>
-            </div>
-            <p className="text-xs text-text-secondary">
-              PostgreSQL authoritative metrics • Auto-synchronized across services
-            </p>
-          </div>
+    <div className="space-y-5 sm:space-y-6 animate-fadeIn pb-12 min-w-0 max-w-full overflow-x-hidden">
+      {/* ── COMPACT OPERATIONAL CONTROL BAR ───────────────────────────── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-3.5 sm:p-4 rounded-2xl bg-white border border-border shadow-xs">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
+            Live Dispatch Telemetry
+          </span>
+          <span className="text-xs text-text-muted hidden md:inline">
+            Ijebu-Ode Operational Grid
+          </span>
         </div>
 
-        {/* Date Filter Component */}
-        <AnalyticsDatePicker
-          preset={datePreset}
-          onRangeChange={handleDateChange}
-          startDate={customRange.startDate}
-          endDate={customRange.endDate}
-        />
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          {/* Date Filter */}
+          <AnalyticsDatePicker
+            preset={datePreset}
+            onRangeChange={handleDateChange}
+            startDate={customRange.startDate}
+            endDate={customRange.endDate}
+          />
+
+          {/* Refresh Button */}
+          <button
+            type="button"
+            onClick={loadAnalytics}
+            disabled={loading}
+            title={`Last refreshed at ${lastRefreshed.toLocaleTimeString()}`}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-primary' : ''}`} />
+          </button>
+
+          {/* Quick Onboarding Triggers */}
+          <button
+            type="button"
+            onClick={() => setIsVendorModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold bg-primary text-white hover:bg-primary-hover transition-colors shadow-xs cursor-pointer min-h-[36px]"
+          >
+            <Store className="w-3.5 h-3.5" />
+            <span>+ Vendor</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsRiderModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold bg-neutral-900 text-white hover:bg-neutral-800 transition-colors border border-neutral-800 shadow-xs cursor-pointer min-h-[36px]"
+          >
+            <Bike className="w-3.5 h-3.5" />
+            <span>+ Rider</span>
+          </button>
+        </div>
       </div>
 
-      {/* Error state */}
+      {/* ── ACTIONABLE ATTENTION BANNERS (Only shown when action needed) ── */}
+      {((live?.unassigned_deliveries_live ?? 0) > 0 ||
+        (live?.pending_orders_live ?? 0) > 0 ||
+        totalPendingApps > 0) && (
+        <div className="space-y-2.5">
+          {(live?.unassigned_deliveries_live ?? 0) > 0 && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 shadow-xs">
+              <div className="flex items-center gap-2.5 text-xs sm:text-sm font-semibold">
+                <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+                <span>
+                  <strong>{live?.unassigned_deliveries_live} delivery order(s)</strong> currently require courier dispatch.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/admin/dispatch')}
+                className="self-start sm:self-auto inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors cursor-pointer"
+              >
+                <span>Open Dispatch Console</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
+          {(live?.pending_orders_live ?? 0) > 0 && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 shadow-xs">
+              <div className="flex items-center gap-2.5 text-xs sm:text-sm font-semibold">
+                <Clock className="h-4 w-4 shrink-0 text-amber-600" />
+                <span>
+                  <strong>{live?.pending_orders_live} order(s)</strong> awaiting restaurant/merchant preparation.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/admin/orders?status=pending')}
+                className="self-start sm:self-auto inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-colors cursor-pointer"
+              >
+                <span>View Pending Orders</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
+          {totalPendingApps > 0 && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 shadow-xs">
+              <div className="flex items-center gap-2.5 text-xs sm:text-sm font-semibold">
+                <Users className="h-4 w-4 shrink-0 text-blue-600" />
+                <span>
+                  <strong>{totalPendingApps} partner application(s)</strong> awaiting verification review.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(
+                    summary?.pending_vendor_applications
+                      ? '/admin/vendor-applications'
+                      : '/admin/rider-applications'
+                  )
+                }
+                className="self-start sm:self-auto inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer"
+              >
+                <span>Review Applications</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── ERROR ALERT IF ANY ────────────────────────────────────────── */}
       {error && (
         <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <AlertCircle className="w-5 h-5 shrink-0 text-primary" />
             <div>
-              <p className="text-sm font-medium">Failed to retrieve authoritative analytics</p>
+              <p className="text-sm font-medium">Failed to load platform analytics</p>
               <p className="text-xs text-rose-600">{error}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={loadAnalytics}
-            className="px-3 py-1.5 text-xs font-semibold bg-rose-100 hover:bg-rose-200 text-rose-900 rounded-lg transition-colors"
+            className="px-3 py-1.5 text-xs font-semibold bg-rose-100 hover:bg-rose-200 text-rose-900 rounded-lg transition-colors cursor-pointer"
           >
-            Retry Query
+            Retry
           </button>
         </div>
       )}
 
-      {/* SECTION 1: LIVE OPERATIONAL METRICS */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-bold uppercase tracking-wider text-text-secondary">
-              Live Operational State
-            </h3>
-          </div>
-          <span className="text-[11px] text-text-muted font-mono">Real-time snapshot</span>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <AdminKpiCard
-            title="Pending Orders"
-            value={live?.pending_orders_live ?? 0}
-            subtitle="Awaiting preparation / confirmation"
-            icon={<Clock className="w-4 h-4 text-amber-500" />}
-            badgeVariant="warning"
-            isLive
-            isLoading={loading}
-            onClick={() => navigate('/admin/orders?status=pending')}
-          />
-          <AdminKpiCard
-            title="Active Deliveries"
-            value={live?.active_deliveries_live ?? 0}
-            subtitle="Dispatched, picked up, or in transit"
-            icon={<Truck className="w-4 h-4 text-text-secondary" />}
-            badgeVariant="default"
-            isLive
-            isLoading={loading}
-            onClick={() => navigate('/admin/deliveries')}
-          />
-          <AdminKpiCard
-            title="Unassigned Deliveries"
-            value={live?.unassigned_deliveries_live ?? 0}
-            subtitle="Requires rider assignment"
-            icon={<Send className="w-4 h-4 text-primary" />}
-            badgeVariant="critical"
-            isLive
-            isLoading={loading}
-            onClick={() => navigate('/admin/dispatch')}
-          />
-          <AdminKpiCard
-            title="Available Couriers"
-            value={live?.available_riders_live ?? 0}
-            subtitle="Verified, active, and online"
-            icon={<Bike className="w-4 h-4 text-emerald-600" />}
-            badgeVariant="success"
-            isLive
-            isLoading={loading}
-            onClick={() => navigate('/admin/riders')}
-          />
-        </div>
-      </div>
-
-      {/* SECTION 2: HISTORICAL METRICS OVER SELECTED PERIOD */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-text-secondary">
-            Historical Summary (Selected Range)
-          </h3>
-          <span className="text-[11px] text-text-muted font-mono">Aggregated over period</span>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <AdminKpiCard
-            title="Total Orders"
-            value={summary?.total_orders ?? 0}
-            subtitle="Cumulative customer orders"
-            icon={<ShoppingBag className="w-4 h-4 text-text-secondary" />}
-            badgeVariant="default"
-            isLoading={loading}
-            onClick={() => navigate('/admin/orders')}
-          />
-          <AdminKpiCard
-            title="Fulfilled Orders"
-            value={summary?.completed_orders ?? 0}
-            subtitle="Successfully delivered"
-            icon={<CheckCircle2 className="w-4 h-4 text-emerald-600" />}
-            badgeVariant="success"
-            isLoading={loading}
-            onClick={() => navigate('/admin/orders?status=delivered')}
-          />
-          <AdminKpiCard
-            title="Cancelled Orders"
-            value={summary?.cancelled_orders ?? 0}
-            subtitle="Operational & customer cancels"
-            icon={<XCircle className="w-4 h-4 text-primary" />}
-            badgeVariant="critical"
-            isLoading={loading}
-            onClick={() => navigate('/admin/orders?status=cancelled')}
-          />
-          <AdminKpiCard
-            title="Paid Volume"
-            value={`₦${((summary?.total_revenue ?? 0)).toLocaleString('en-NG', { minimumFractionDigits: 2 })}`}
-            subtitle="Authoritative completed payments"
-            icon={<TrendingUp className="w-4 h-4 text-primary" />}
-            badgeVariant="default"
-            isLoading={loading}
-            onClick={() => navigate('/admin/payments')}
-          />
-        </div>
-      </div>
-
-      {/* SECTION 3: ONBOARDING QUEUE & ACTIONS */}
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <UserPlus className="w-4 h-4 text-primary" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-text-secondary">
-                Partner Onboarding & Applications
-              </h3>
-            </div>
-            <p className="text-xs text-text-muted mt-0.5">
-              Review and onboard new restaurant/grocery merchants and delivery couriers
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setIsVendorModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-primary text-white hover:bg-primary-hover transition-colors shadow-xs cursor-pointer"
-            >
-              <Store className="w-3.5 h-3.5" />
-              <span>Onboard Vendors</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsRiderModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-near-black text-white hover:bg-neutral-800 transition-colors border border-border shadow-xs cursor-pointer"
-            >
-              <Bike className="w-3.5 h-3.5" />
-              <span>Onboard Riders</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* ── CORE REAL-TIME & OPERATIONAL METRICS (Balanced 8-Card Grid) ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4.5">
         <AdminKpiCard
-          title="Active Riders"
+          title="Active Deliveries"
+          value={live?.active_deliveries_live ?? 0}
+          subtitle="Couriers currently in transit"
+          icon={<Truck className="w-4 h-4 text-emerald-600" />}
+          badgeVariant="success"
+          isLive
+          isLoading={loading}
+          onClick={() => navigate('/admin/deliveries')}
+        />
+        <AdminKpiCard
+          title="Pending Orders"
+          value={live?.pending_orders_live ?? 0}
+          subtitle="Awaiting kitchen or store prep"
+          icon={<Clock className="w-4 h-4 text-amber-500" />}
+          badgeVariant={(live?.pending_orders_live ?? 0) > 0 ? 'warning' : 'default'}
+          isLive
+          isLoading={loading}
+          onClick={() => navigate('/admin/orders?status=pending')}
+        />
+        <AdminKpiCard
+          title="Unassigned Deliveries"
+          value={live?.unassigned_deliveries_live ?? 0}
+          subtitle="Awaiting courier dispatch"
+          icon={<Send className="w-4 h-4 text-rose-600" />}
+          badgeVariant={(live?.unassigned_deliveries_live ?? 0) > 0 ? 'critical' : 'default'}
+          isLive={(live?.unassigned_deliveries_live ?? 0) > 0}
+          isLoading={loading}
+          onClick={() => navigate('/admin/dispatch')}
+        />
+        <AdminKpiCard
+          title="Available Couriers"
+          value={live?.available_riders_live ?? 0}
+          subtitle="Couriers online and ready"
+          icon={<Bike className="w-4 h-4 text-emerald-600" />}
+          badgeVariant="success"
+          isLive
+          isLoading={loading}
+          onClick={() => navigate('/admin/riders')}
+        />
+        <AdminKpiCard
+          title="Period Orders"
+          value={summary?.total_orders ?? 0}
+          subtitle={`${summary?.completed_orders ?? 0} delivered • ${summary?.cancelled_orders ?? 0} cancelled`}
+          icon={<ShoppingBag className="w-4 h-4 text-text-secondary" />}
+          badgeVariant="default"
+          isLoading={loading}
+          onClick={() => navigate('/admin/orders')}
+        />
+        <AdminKpiCard
+          title="Gross Revenue"
+          value={formatNgn(summary?.total_revenue ?? 0)}
+          subtitle="Authoritative Paystack ledger"
+          icon={<TrendingUp className="w-4 h-4 text-primary" />}
+          badgeVariant="default"
+          isLoading={loading}
+          onClick={() => navigate('/admin/payments')}
+        />
+        <AdminKpiCard
+          title="Courier Fleet"
           value={summary?.active_riders_count ?? 0}
-          subtitle="Total verified fleet roster"
-          icon={<Bike className="w-4 h-4 text-text-muted" />}
+          subtitle="Total approved courier roster"
+          icon={<Users className="w-4 h-4 text-blue-600" />}
           badgeVariant="default"
           isLoading={loading}
           onClick={() => navigate('/admin/riders')}
         />
         <AdminKpiCard
-          title="Active Vendors"
+          title="Active Storefronts"
           value={summary?.active_vendors_count ?? 0}
-          subtitle="Merchants with live storefronts"
-          icon={<Store className="w-4 h-4 text-text-muted" />}
+          subtitle="Restaurants & grocery partners"
+          icon={<Store className="w-4 h-4 text-primary" />}
           badgeVariant="default"
           isLoading={loading}
           onClick={() => navigate('/admin/vendors')}
         />
-        <AdminKpiCard
-          title="Pending Rider Apps"
-          value={summary?.pending_rider_applications ?? 0}
-          subtitle="Awaiting document vetting"
-          icon={<Bike className="w-4 h-4 text-amber-500" />}
-          badgeVariant="warning"
-          isLoading={loading}
-          onClick={() => navigate('/admin/rider-applications')}
-        />
-        <AdminKpiCard
-          title="Pending Vendor Apps"
-          value={summary?.pending_vendor_applications ?? 0}
-          subtitle="Awaiting merchant review"
-          icon={<Store className="w-4 h-4 text-amber-500" />}
-          badgeVariant="warning"
-          isLoading={loading}
-          onClick={() => navigate('/admin/vendor-applications')}
-        />
-      </div>
       </div>
 
-      {/* SECTION 4: INTERACTIVE VISUAL ANALYTICS */}
-      <div className="space-y-6">
-        {/* Row 1: Order volume over time */}
-        <OrderVolumeChart
-          data={data?.orders_over_time || []}
-          isLoading={loading}
-          activePreset={datePreset}
-          onPresetChange={setDatePreset}
-        />
-
-        {/* Row 2: Service Distribution & Completion Trends */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ── CORE VISUAL ANALYTICS (2 High-Value Real Charts) ───────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8">
+          <OrderVolumeChart
+            data={data?.orders_over_time || []}
+            isLoading={loading}
+            activePreset={datePreset}
+            onPresetChange={setDatePreset}
+          />
+        </div>
+        <div className="lg:col-span-4">
           <ServiceDistributionChart
             data={data?.orders_by_service || []}
             isLoading={loading}
             onSelectService={(service) => navigate(`/admin/orders?service=${service}`)}
           />
-          <CompletionTrendChart
-            data={data?.completion_trends || []}
-            isLoading={loading}
-          />
         </div>
+      </div>
 
-        {/* Row 3: Order State Distribution & Delivery State Distribution */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <OrderStatusChart
-            data={data?.order_status_distribution || []}
-            isLoading={loading}
-            onSelectStatus={(status) => navigate(`/admin/orders?status=${status}`)}
-          />
-          <DeliveryStatusChart
-            data={data?.delivery_status_distribution || []}
-            isLoading={loading}
-            onSelectStatus={(status) => navigate(`/admin/deliveries?status=${status}`)}
-          />
+      {/* ── QUICK OPERATIONAL SHORTCUTS ─────────────────────────────────── */}
+      <div className="rounded-2xl border border-border bg-white p-5 sm:p-6 shadow-xs">
+        <h2 className="text-sm font-bold text-neutral-900 mb-4 uppercase tracking-wider text-[11px] text-neutral-400">
+          Essential Operational Shortcuts
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <button
+            type="button"
+            onClick={() => navigate('/admin/dispatch')}
+            className="flex flex-col items-start p-3.5 sm:p-4 rounded-xl border border-neutral-200 bg-neutral-50/60 hover:bg-neutral-100 hover:border-neutral-300 transition-all text-left cursor-pointer group"
+          >
+            <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+              <Send className="h-4 w-4" />
+            </div>
+            <span className="font-bold text-xs sm:text-sm text-neutral-900">Dispatch Console</span>
+            <span className="text-[11px] text-neutral-500 mt-0.5">Assign & track riders</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate('/admin/orders')}
+            className="flex flex-col items-start p-3.5 sm:p-4 rounded-xl border border-neutral-200 bg-neutral-50/60 hover:bg-neutral-100 hover:border-neutral-300 transition-all text-left cursor-pointer group"
+          >
+            <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+              <ShoppingBag className="h-4 w-4" />
+            </div>
+            <span className="font-bold text-xs sm:text-sm text-neutral-900">All Orders</span>
+            <span className="text-[11px] text-neutral-500 mt-0.5">Search & inspect orders</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate('/admin/payments')}
+            className="flex flex-col items-start p-3.5 sm:p-4 rounded-xl border border-neutral-200 bg-neutral-50/60 hover:bg-neutral-100 hover:border-neutral-300 transition-all text-left cursor-pointer group"
+          >
+            <div className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+              <CreditCard className="h-4 w-4" />
+            </div>
+            <span className="font-bold text-xs sm:text-sm text-neutral-900">Payments & Refunds</span>
+            <span className="text-[11px] text-neutral-500 mt-0.5">Paystack settlements</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate('/admin/vendors')}
+            className="flex flex-col items-start p-3.5 sm:p-4 rounded-xl border border-neutral-200 bg-neutral-50/60 hover:bg-neutral-100 hover:border-neutral-300 transition-all text-left cursor-pointer group"
+          >
+            <div className="h-8 w-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+              <Store className="h-4 w-4" />
+            </div>
+            <span className="font-bold text-xs sm:text-sm text-neutral-900">Vendor Directory</span>
+            <span className="text-[11px] text-neutral-500 mt-0.5">Hours, menus & stores</span>
+          </button>
         </div>
       </div>
 

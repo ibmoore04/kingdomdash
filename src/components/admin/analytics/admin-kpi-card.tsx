@@ -42,26 +42,30 @@ export function AdminKpiCard({
           onClick()
         }
       }}
-      className={`relative overflow-hidden rounded-2xl border border-border bg-white p-3.5 sm:p-5 shadow-xs transition-all ${
+      className={`group relative overflow-hidden rounded-2xl border border-border bg-white p-3.5 sm:p-5 shadow-xs transition-all ${
         onClick
           ? 'cursor-pointer hover:border-primary/50 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20'
           : ''
       }`}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-xs sm:text-body-small font-semibold text-text-secondary truncate">{title}</span>
-          {isLive && (
-            <span
-              className="shrink-0 inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-primary"
-              title="Real-time live metric"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-              LIVE
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs sm:text-sm font-semibold text-text-secondary leading-snug">
+              {title}
             </span>
-          )}
+            {isLive && (
+              <span
+                className="shrink-0 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-700 border border-emerald-200"
+                title="Real-time live metric"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                LIVE
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex h-7 w-7 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+        <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-700">
           {icon}
         </div>
       </div>
@@ -71,7 +75,7 @@ export function AdminKpiCard({
           <div className="h-7 sm:h-8 w-16 sm:w-20 animate-pulse rounded bg-surface-muted" />
         ) : (
           <span
-            className="text-lg sm:text-h3 font-bold text-text-primary tracking-tight truncate"
+            className="text-lg sm:text-2xl font-black text-text-primary tracking-tight truncate"
             title={typeof value === 'string' ? value : undefined}
           >
             {value}
@@ -86,15 +90,15 @@ export function AdminKpiCard({
       </div>
 
       {subtitle && (
-        <p className="mt-1 text-[10px] sm:text-caption text-text-muted truncate">
+        <p className="mt-1 text-[10px] sm:text-xs text-text-muted truncate">
           {isLoading ? 'Updating…' : subtitle}
         </p>
       )}
 
       {onClick && (
-        <div className="hidden sm:flex mt-3 items-center gap-1 text-[11px] font-bold text-primary hover:underline">
+        <div className="flex mt-2.5 sm:mt-3 items-center gap-1 text-[10px] sm:text-[11px] font-bold text-primary group-hover:underline">
           <span>View records</span>
-          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+          <ArrowUpRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
         </div>
       )}
     </div>

@@ -34,7 +34,7 @@ export default function CartPage() {
 
   return (
     <PageContainer>
-      <Section tone="light" className="py-8 sm:py-12">
+      <Section tone="light" className="py-8 sm:py-12 pb-32 lg:pb-12">
         {/* Header Breadcrumb */}
         <div className="mb-6 flex items-center justify-between">
           <Link
@@ -150,7 +150,7 @@ export default function CartPage() {
                   type="button"
                   variant="primary"
                   onClick={handleProceedToCheckout}
-                  className="w-full rounded-xl py-3.5 text-button font-bold flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg transition-all"
+                  className="w-full h-12 rounded-xl text-button font-bold flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
                 >
                   <span>Proceed to Checkout</span>
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />

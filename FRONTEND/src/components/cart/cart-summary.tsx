@@ -79,7 +79,7 @@ export function CartSummary({ onClose, showFullCartLink = true }: CartSummaryPro
           type="button"
           variant="primary"
           onClick={handleCheckout}
-          className="w-full rounded-xl py-3 text-button flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg transition-all"
+          className="w-full h-12 rounded-xl text-button font-bold flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
         >
           <span>Proceed to Checkout</span>
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -90,7 +90,7 @@ export function CartSummary({ onClose, showFullCartLink = true }: CartSummaryPro
             type="button"
             variant="outline"
             onClick={handleViewCart}
-            className="w-full rounded-xl py-2.5 text-body-small text-text-secondary hover:text-text-primary"
+            className="w-full h-11 rounded-xl text-body-small font-medium text-text-secondary hover:text-text-primary cursor-pointer"
           >
             View Full Cart
           </Button>

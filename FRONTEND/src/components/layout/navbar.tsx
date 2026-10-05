@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { ShoppingBag, User, LogOut, LayoutDashboard, LogIn, UserPlus, Gift } from 'lucide-react'
+import { ShoppingBag, User, LogOut, LayoutDashboard, LogIn, UserPlus, Gift, Search } from 'lucide-react'
 import { NavLink, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import {
@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
 import { Logo } from '@/components/layout/logo'
+import { OmniboxSearchModal } from '@/components/shared/omnibox-search-modal'
 import { useCartStore } from '@/stores/cart-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/cn'
@@ -19,9 +20,7 @@ const navLinks = [
   { label: 'Services', to: '/services' },
   { label: 'Food', to: '/food' },
   { label: 'Grocery', to: '/groceries' },
-  { label: 'Personal Shopper', to: '/personal-shopper' },
   { label: 'Courier', to: '/courier' },
-  { label: 'For Business', to: '/business' },
   { label: 'Contact', to: '/contact' },
 ] as const
 
@@ -34,7 +33,20 @@ export function Navbar() {
 
   const [scrolled, setScrolled] = useState(false)
   const [isCartBouncing, setIsCartBouncing] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
   const prevCountRef = useRef(itemCount)
+
+  // Global Ctrl+K / Cmd+K keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setIsSearchOpen((prev) => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   useEffect(() => {
     if (itemCount > prevCountRef.current) {
@@ -79,7 +91,7 @@ export function Navbar() {
         {/* Desktop Navigation Links — Exact 7 items in order */}
         <nav
           aria-label="Main navigation"
-          className="hidden lg:flex items-center gap-1 xl:gap-2 shrink-0"
+          className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 shrink"
         >
           {navLinks.map(({ label, to }) => (
             <NavLink
@@ -88,10 +100,10 @@ export function Navbar() {
               end={to === '/'}
               className={({ isActive }) =>
                 cn(
-                  'relative px-3 py-1.5 text-body-small font-medium transition-colors duration-150 rounded-lg whitespace-nowrap',
+                  'relative px-2 xl:px-2.5 py-1.5 text-xs xl:text-sm font-medium transition-colors duration-150 rounded-lg whitespace-nowrap',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                   isActive
-                    ? 'text-primary font-bold after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full'
+                    ? 'text-primary font-bold after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:bg-primary after:rounded-full'
                     : 'text-text-secondary hover:text-text-primary hover:bg-neutral-50'
                 )
               }
@@ -101,8 +113,23 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Action Controls: Cart & Profile */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* Action Controls: Search, Cart & Profile */}
+        <div className="flex items-center gap-1.5 sm:gap-2 xl:gap-3 shrink-0 ml-auto">
+          {/* Omnibox Search Trigger Button */}
+          <button
+            type="button"
+            onClick={() => setIsSearchOpen(true)}
+            aria-label="Search dishes and restaurants"
+            className="flex h-9 sm:h-10 items-center gap-1.5 sm:gap-2 rounded-xl border border-neutral-200/90 bg-neutral-50 hover:bg-neutral-100 hover:border-primary/40 px-2 sm:px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:text-neutral-900 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs cursor-pointer"
+          >
+            <Search className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
+            <span className="hidden xl:inline text-neutral-600 font-medium">Search dishes, stores...</span>
+            <span className="hidden sm:inline xl:hidden text-neutral-600 font-medium">Search</span>
+            <kbd className="hidden sm:inline-flex items-center rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-[10px] font-mono text-neutral-400">
+              ⌘K
+            </kbd>
+          </button>
+
           {/* Cart Trigger */}
           <button
             type="button"
@@ -220,6 +247,12 @@ export function Navbar() {
           )}
         </div>
       </div>
+
+      {/* Universal Omnibox Search Modal */}
+      <OmniboxSearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
     </header>
   )
 }

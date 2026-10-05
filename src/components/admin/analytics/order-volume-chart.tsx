@@ -286,7 +286,7 @@ export function OrderVolumeChart({
       <div className="relative">
         <svg
           viewBox={`0 0 ${width} ${height}`}
-          className="w-full h-64 sm:h-72 overflow-visible select-none cursor-crosshair"
+          className="w-full h-64 sm:h-72 overflow-hidden select-none cursor-crosshair"
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           role="img"

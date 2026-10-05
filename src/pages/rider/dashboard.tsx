@@ -28,6 +28,8 @@ import {
   Package,
 } from 'lucide-react'
 
+import { supabase } from '@/services/supabase/client'
+
 export default function RiderDashboardPage() {
   const navigate = useNavigate()
   const { rider, refreshRider } = useCurrentRider()
@@ -52,14 +54,29 @@ export default function RiderDashboardPage() {
   useEffect(() => {
     loadData()
 
-    // Polling interval (15 seconds, paused when tab hidden)
+    // Realtime Postgres changes subscription for instantaneous offer dispatch
+    const channel = supabase
+      .channel('rider_dashboard_live_assignments')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'delivery_assignments' },
+        () => {
+          loadData()
+        }
+      )
+      .subscribe()
+
+    // Backup polling interval (15 seconds, paused when tab hidden)
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         loadData()
       }
     }, 15000)
 
-    return () => clearInterval(interval)
+    return () => {
+      supabase.removeChannel(channel)
+      clearInterval(interval)
+    }
   }, [loadData])
 
   const handleAcceptAssignment = async (assignmentId: string) => {

@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { formatNgn } from '@/utils/formatting'
 import { DeliveryPinCard } from '@/components/order/delivery-pin-card'
 import { DeliveryRadar } from '@/components/order/delivery-radar'
+import { DeliveryLiveMap } from '@/components/order/delivery-live-map'
 
 export interface CustomerOrderCardProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -305,13 +306,22 @@ export const CustomerOrderCard: React.FC<CustomerOrderCardProps> = ({
             </div>
 
             {showRadar && (
-              <DeliveryRadar
-                status={order.status}
-                serviceType={order.service_type}
-                cancellationReason={order.cancellation_reason}
-                refundRequired={order.refund_required}
-                className="border border-neutral-200/80 shadow-none bg-neutral-50/60 p-4"
-              />
+              <div className="space-y-3">
+                <DeliveryRadar
+                  status={order.status}
+                  serviceType={order.service_type}
+                  cancellationReason={order.cancellation_reason}
+                  refundRequired={order.refund_required}
+                  className="border border-neutral-200/80 shadow-none bg-neutral-50/60 p-4"
+                />
+                <DeliveryLiveMap
+                  status={order.status}
+                  vendorName={order.vendors?.business_name || 'Restaurant Kitchen'}
+                  deliveryAddress={order.delivery_address || 'Delivery Destination'}
+                  distanceKm={3.2}
+                  showContactActions={false}
+                />
+              </div>
             )}
           </div>
         )}

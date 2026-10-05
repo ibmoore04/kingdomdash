@@ -77,6 +77,20 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
   useEffect(() => {
     if (!containerRef.current || useGoogleMaps) return
 
+    let timer1: ReturnType<typeof setTimeout> | null = null
+    let timer2: ReturnType<typeof setTimeout> | null = null
+
+    const safeInvalidateSize = (m: L.Map | null) => {
+      if (!m) return
+      try {
+        if ((m as any)._mapPane && containerRef.current) {
+          m.invalidateSize()
+        }
+      } catch {
+        // Silently catch unmounted / detached leaflet pane errors
+      }
+    }
+
     try {
       if (!mapInstanceRef.current) {
         const map = L.map(containerRef.current, {
@@ -98,8 +112,8 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
         })
         tileLayer.addTo(map)
 
-        setTimeout(() => map.invalidateSize(), 150)
-        setTimeout(() => map.invalidateSize(), 400)
+        timer1 = setTimeout(() => safeInvalidateSize(mapInstanceRef.current), 150)
+        timer2 = setTimeout(() => safeInvalidateSize(mapInstanceRef.current), 400)
 
         // Click on map to place/move pin
         if (!readOnly) {
@@ -122,6 +136,8 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
 
     const map = mapInstanceRef.current
     if (!map) return
+
+    safeInvalidateSize(map)
 
     // Update marker
     if (markerRef.current) {
@@ -167,6 +183,11 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
           }
         ).addTo(map)
       }
+    }
+
+    return () => {
+      if (timer1) clearTimeout(timer1)
+      if (timer2) clearTimeout(timer2)
     }
   }, [activeCoords, isServiceable, serviceArea, readOnly, onChange, useGoogleMaps])
 

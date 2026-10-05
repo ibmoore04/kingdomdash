@@ -425,9 +425,9 @@ export const AdminOrdersPage: React.FC = () => {
         variant: 'success',
       });
 
-      // Transition out of pending status to assigned / in_transit so the Assign button immediately closes
-      // All orders transition to 'assigned' after dispatch (rider hasn't physically picked up yet)
-      const nextAssignedStatus = 'assigned';
+      // Transition out of pending status to ready_for_pickup (or assigned for custom shopper) so the Assign button immediately closes
+      const nextAssignedStatus =
+        (assigningOrder as any).service_type === 'custom' ? 'assigned' : 'ready_for_pickup';
 
       // Update local orders list
       setOrders((prev) =>

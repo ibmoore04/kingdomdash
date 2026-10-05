@@ -12,6 +12,9 @@ import { getVendorById } from '@/services/supabase/vendors'
 import { getAvailableProducts } from '@/services/supabase/products'
 import { getVendorCategories } from '@/services/supabase/categories'
 import { getVendorFallbackCover } from '@/utils/vendor-branding'
+import { getVendorOperatingStatus } from '@/utils/operating-hours'
+import { TrustBadgeRow } from '@/components/shared/trust-badges'
+import { cn } from '@/lib/cn'
 import type { Category, Product, Vendor } from '@/types'
 import { VendorConflictModal } from '@/components/cart/vendor-conflict-modal'
 import { useCartStore, type CartVendor, type CartItem } from '@/stores/cart-store'
@@ -281,9 +284,31 @@ export default function GroceryDetailPage() {
                 </p>
               </div>
             </div>
-            <Badge variant={store.is_active ? 'success' : 'dark'} className="text-caption font-bold shadow-lg">
-              {store.is_active ? 'Open for Orders' : 'Closed'}
-            </Badge>
+            {(() => {
+              const opStatus = getVendorOperatingStatus(store.operating_hours, store.is_active)
+              return (
+                <Badge
+                  variant={
+                    opStatus.isOpen
+                      ? opStatus.isClosingSoon
+                        ? 'warning'
+                        : 'success'
+                      : 'dark'
+                  }
+                  className="text-caption font-bold shadow-lg flex items-center gap-1.5 shrink-0"
+                >
+                  {opStatus.isOpen && (
+                    <span
+                      className={cn(
+                        'h-1.5 w-1.5 rounded-full',
+                        opStatus.isClosingSoon ? 'bg-amber-400 animate-ping' : 'bg-emerald-400 animate-pulse'
+                      )}
+                    />
+                  )}
+                  {opStatus.statusText}
+                </Badge>
+              )
+            })()}
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3 text-body-small">
@@ -300,6 +325,26 @@ export default function GroceryDetailPage() {
               </span>
             </span>
           </div>
+
+          {/* Enterprise Trust Badges */}
+          <div className="mt-4">
+            <TrustBadgeRow
+              badges={['verified_partner', 'money_back']}
+            />
+          </div>
+
+          {/* Pre-order Notice if currently closed */}
+          {!getVendorOperatingStatus(store.operating_hours, store.is_active).isOpen && (
+            <div className="mt-4 rounded-2xl border border-amber-500/40 bg-neutral-900/85 backdrop-blur-md p-4 text-xs text-amber-200 flex items-start gap-3 shadow-lg max-w-xl">
+              <Clock className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white block font-bold">Store Closed &bull; Pre-orders Open</strong>
+                <p className="mt-0.5 text-neutral-300">
+                  This store is currently not fulfilling live orders. Pre-orders are accepted and will be prepared and delivered as soon as the store opens.
+                </p>
+              </div>
+            </div>
+          )}
         </PageContainer>
       </section>
 

@@ -152,6 +152,7 @@ export default function App() {
           <Route path="/dashboard/notifications" element={<Navigate to="/dashboard?tab=notifications" replace />} />
           <Route path="/dashboard/support" element={<Navigate to="/dashboard?tab=support" replace />} />
           <Route path="/dashboard/settings" element={<Navigate to="/dashboard?tab=settings" replace />} />
+          <Route path="/customer/orders" element={<Navigate to="/dashboard?tab=orders" replace />} />
           {/* Catch-all for any other /dashboard/* paths → default to orders tab */}
           <Route path="/dashboard/*" element={<Navigate to="/dashboard?tab=orders" replace />} />
           <Route path="/onboarding/rider-pending" element={<RiderPendingPage />} />

@@ -20,6 +20,7 @@ import {
   formatCoordinates,
 } from '@/utils/geo'
 import { AlertTriangle, CheckCircle2, MapPin, Search } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
 
 export interface AddressFormModalProps {
   isOpen: boolean
@@ -27,6 +28,34 @@ export interface AddressFormModalProps {
   onClose: () => void
   onSuccess: (savedAddress: Address) => void
 }
+
+const POPULAR_LANDMARKS: Array<{ name: string; address: string; coords: Coordinates }> = [
+  {
+    name: '🏟️ Dipo Dina Stadium',
+    address: 'Otunba Dipo Dina International Stadium Road, Ijebu-Ode',
+    coords: { latitude: 6.8197, longitude: 3.9247 },
+  },
+  {
+    name: '👑 Awujale Palace',
+    address: 'Awujale Palace Complex, Itoro, Ijebu-Ode',
+    coords: { latitude: 6.8215, longitude: 3.9185 },
+  },
+  {
+    name: '🎓 TASUED / Ijagun',
+    address: 'Tai Solarin University of Education Road, Ijagun, Ijebu-Ode',
+    coords: { latitude: 6.8042, longitude: 3.8863 },
+  },
+  {
+    name: '🛣️ Molipa Express',
+    address: 'Molipa Express Junction, Ijebu-Ode',
+    coords: { latitude: 6.8351, longitude: 3.9212 },
+  },
+  {
+    name: '🌳 OGD Heritage Park',
+    address: 'OGD Heritage Park, Itoro, Ijebu-Ode',
+    coords: { latitude: 6.8225, longitude: 3.9192 },
+  },
+]
 
 function isValidNigerianPhone(phone: string): boolean {
   const cleaned = phone.replace(/[\s\-()]/g, '')
@@ -39,6 +68,7 @@ export function AddressFormModal({
   onClose,
   onSuccess,
 }: AddressFormModalProps) {
+  const profile = useAuthStore((s) => s.profile)
   const [label, setLabel] = useState('Home')
   const [recipientName, setRecipientName] = useState('')
   const [phone, setPhone] = useState('')
@@ -108,8 +138,8 @@ export function AddressFormModal({
       }
     } else {
       setLabel('Home')
-      setRecipientName('')
-      setPhone('')
+      setRecipientName(profile?.full_name || '')
+      setPhone(profile?.phone || '')
       setAddressLine1('')
       setAddressLine2('')
       setCity('Ijebu-Ode')
@@ -364,6 +394,34 @@ export function AddressFormModal({
                 ))}
               </div>
             )}
+
+            {/* Popular Landmarks Quick Pills */}
+            <div className="mt-2 space-y-1.5">
+              <span className="text-[11px] font-medium text-neutral-500">Popular Ijebu-Ode Locations:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {POPULAR_LANDMARKS.map((landmark) => (
+                  <button
+                    key={landmark.name}
+                    type="button"
+                    onClick={() => {
+                      setAddressLine1(landmark.address)
+                      setCoords(landmark.coords)
+                      setCity('Ijebu-Ode')
+                      setStateVal('Ogun State')
+                      checkLocationServiceability(landmark.coords)
+                        .then((res) => {
+                          setIsServiceable(res.isServiceable)
+                          if (res.serviceArea?.name) setActiveZoneName(res.serviceArea.name)
+                        })
+                        .catch(() => {})
+                    }}
+                    className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[11px] font-medium text-neutral-700 hover:border-primary hover:bg-primary/5 hover:text-primary transition-colors active:scale-95"
+                  >
+                    {landmark.name}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <FormField id="address-line-2" label="Apartment / Suite / Landmark Note (Optional)">

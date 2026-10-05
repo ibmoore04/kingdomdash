@@ -46,6 +46,45 @@ Object.defineProperty(globalThis, 'ResizeObserver', {
   value: ResizeObserver,
 })
 
+class MockWebSocket {
+  static readonly CONNECTING = 0
+  static readonly OPEN = 1
+  static readonly CLOSING = 2
+  static readonly CLOSED = 3
+  readonly CONNECTING = 0
+  readonly OPEN = 1
+  readonly CLOSING = 2
+  readonly CLOSED = 3
+  readyState = MockWebSocket.OPEN
+  url = ''
+  protocol = ''
+  extensions = ''
+  binaryType = 'blob'
+  bufferedAmount = 0
+  onopen: any = null
+  onclose: any = null
+  onerror: any = null
+  onmessage: any = null
+  send = () => {}
+  close = () => {}
+  addEventListener = () => {}
+  removeEventListener = () => {}
+  dispatchEvent = () => true
+}
+
+Object.defineProperty(globalThis, 'WebSocket', {
+  writable: true,
+  configurable: true,
+  value: MockWebSocket,
+})
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'WebSocket', {
+    writable: true,
+    configurable: true,
+    value: MockWebSocket,
+  })
+}
+
 if (typeof window !== 'undefined') {
   window.HTMLElement.prototype.hasPointerCapture = () => false
   window.HTMLElement.prototype.setPointerCapture = () => {}

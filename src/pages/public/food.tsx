@@ -23,6 +23,8 @@ import { useCartStore } from '@/stores/cart-store'
 import { formatNgn } from '@/utils/formatting'
 import { VendorCard } from '@/components/shared/vendor-card'
 import { VendorCardSkeleton } from '@/components/ui/skeletons'
+import { StickyCategoryRail } from '@/components/shared/sticky-category-rail'
+import { PromoHeroCarousel } from '@/components/shared/promo-hero-carousel'
 import type { Vendor } from '@/types'
 
 const CUISINE_CATEGORIES = [
@@ -91,6 +93,21 @@ export default function FoodPage() {
     })
   }, [vendors, searchQuery, selectedCuisine])
 
+  const cuisineRailItems = useMemo(() => {
+    return CUISINE_CATEGORIES.map(({ id, name }) => ({
+      id,
+      name,
+      count:
+        id === 'all'
+          ? vendors.length
+          : vendors.filter(
+              (v) =>
+                v.business_description &&
+                v.business_description.toLowerCase().includes(id.replace('_', ' '))
+            ).length,
+    }))
+  }, [vendors])
+
   return (
     <div className="bg-white text-neutral-900 overflow-x-hidden">
       {/* ─── PAGE HEADER & SEARCH (NO HERO BANNER) ─────────────────────────── */}
@@ -134,32 +151,15 @@ export default function FoodPage() {
         </PageContainer>
       </section>
 
-      {/* ─── 2. CUISINE CATEGORY PILLS ──────────────────────────────────────── */}
-      <section className="border-b border-neutral-100 bg-neutral-50/70 py-6">
+      {/* ─── 2. STICKY CUISINE CATEGORY RAIL ───────────────────────────────── */}
+      <section className="border-b border-neutral-100 bg-neutral-50/70 py-4">
         <PageContainer>
-          <div className="flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none">
-            {CUISINE_CATEGORIES.map(({ id, name, icon: Icon }) => {
-              const isActive = selectedCuisine === id
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setSelectedCuisine(id)}
-                  className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition-all ${
-                    isActive
-                      ? 'bg-neutral-900 text-white shadow-md'
-                      : 'border border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:bg-neutral-100/70'
-                  }`}
-                >
-                  <Icon
-                    className={`h-3.5 w-3.5 ${isActive ? 'text-primary' : 'text-neutral-500'}`}
-                    aria-hidden="true"
-                  />
-                  <span>{name}</span>
-                </button>
-              )
-            })}
-          </div>
+          <StickyCategoryRail
+            categories={cuisineRailItems}
+            activeId={selectedCuisine}
+            onSelect={(id) => setSelectedCuisine(id)}
+            className="mb-2"
+          />
 
           {/* Personal Shopper Concierge Banner (Visible on Large and Small Screens) */}
           <div className="mt-5 rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/[0.06] via-amber-500/[0.03] to-white p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs">
@@ -196,8 +196,13 @@ export default function FoodPage() {
       </section>
 
       {/* ─── 3. AVAILABLE RESTAURANTS (Core Showcase) ───────────────────────── */}
-      <section id="available-kitchens" className="py-12 sm:py-16 bg-white">
+      <section id="available-kitchens" className="py-10 sm:py-14 bg-white">
         <PageContainer>
+          {/* Featured Deals Carousel */}
+          <div className="mb-10 sm:mb-12">
+            <PromoHeroCarousel />
+          </div>
+
           {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 pb-4 border-b border-neutral-100">
             <div>

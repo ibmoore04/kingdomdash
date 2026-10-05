@@ -15,6 +15,8 @@ import {
   XCircle,
   Copy,
   Check,
+  Printer,
+  Share2,
 } from 'lucide-react'
 import { PageContainer, Section } from '@/components/layout/section'
 import { Badge } from '@/components/ui/badge'
@@ -31,7 +33,12 @@ import type { Order, OrderItem } from '@/types'
 import type { PaymentRow } from '@/services/paystack/types'
 import { OrderStatusTimeline } from '@/components/customer/OrderStatusTimeline'
 import { DeliveryPinCard } from '@/components/order/delivery-pin-card'
+import { DeliveryLiveMap } from '@/components/order/delivery-live-map'
+import { LiveDeliveryStepper } from '@/components/order/live-delivery-stepper'
+import { WhatsappDispatchBridge } from '@/components/order/whatsapp-dispatch-bridge'
+import { SmartDisputeResolutionModal } from '@/components/customer/smart-dispute-resolution-modal'
 import { CancelOrderModal } from '@/components/customer/cancel-order-modal'
+import { OrderReceiptModal } from '@/components/order/order-receipt-modal'
 import { OrderTrackingSkeleton } from '@/components/ui/skeletons'
 
 interface FullOrder extends Order {
@@ -51,7 +58,9 @@ export default function OrderConfirmationPage() {
   const [error, setError] = useState<string | null>(null)
   const [verificationNotice, setVerificationNotice] = useState<string | null>(null)
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+  const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false)
   const [copiedOrderId, setCopiedOrderId] = useState(false)
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false)
 
   useEffect(() => {
     document.title = 'Order Confirmation — KingdomDash'
@@ -289,9 +298,18 @@ export default function OrderConfirmationPage() {
   const isFailedOrCancelled = authoritativeStatus === 'failed'
   const isAwaitingPayment = authoritativeStatus === 'pending'
 
+  const extractedRiderTip = (() => {
+    if (!order?.special_instructions) return 0
+    const match = order.special_instructions.match(/\[RIDER TIP:\s*₦?([\d,]+)\]/)
+    if (match && match[1]) {
+      return parseInt(match[1].replace(/,/g, ''), 10) || 0
+    }
+    return 0
+  })()
+
   return (
     <PageContainer>
-      <Section tone="light" className="py-6 sm:py-10">
+      <Section tone="light" className="py-6 sm:py-10 pb-28 lg:pb-12">
         <div className="mx-auto max-w-6xl">
           {/* Top Header / Breadcrumb Bar */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6 sm:mb-8 pb-4 border-b border-neutral-200/80">
@@ -546,6 +564,14 @@ export default function OrderConfirmationPage() {
                 </div>
               </div>
 
+              {/* Interactive Multi-Stage Live Fulfillment Stepper */}
+              <LiveDeliveryStepper
+                status={order.status}
+                etaMinutes={22}
+                deliveryPin={order.delivery_pin}
+                orderNumber={order.id.slice(0, 8).toUpperCase()}
+              />
+
               {/* Live Fulfillment Timeline Radar */}
               <div className="rounded-3xl border border-neutral-200/80 bg-white p-5 sm:p-6 shadow-xs">
                 <OrderStatusTimeline
@@ -559,6 +585,34 @@ export default function OrderConfirmationPage() {
               {/* Delivery Confirmation PIN (Security Pass) - ONLY shown when confirmed/paid */}
               {isConfirmed && order.delivery_pin && order.status !== 'delivered' && order.status !== 'cancelled' && (
                 <DeliveryPinCard pin={order.delivery_pin} />
+              )}
+
+              {/* Interactive Live Delivery Map */}
+              {isConfirmed && order.status !== 'cancelled' && (
+                <DeliveryLiveMap
+                  status={order.status}
+                  vendorName={
+                    (order as unknown as { vendors?: { business_name?: string } | null })?.vendors?.business_name ||
+                    (order as unknown as { vendor?: { business_name?: string } | null })?.vendor?.business_name ||
+                    'Restaurant Kitchen'
+                  }
+                  deliveryAddress={order.delivery_address || 'Delivery Destination'}
+                  distanceKm={(order as unknown as { distance_km?: number }).distance_km || 3.2}
+                />
+              )}
+
+              {/* Direct WhatsApp Dispatch Bridge */}
+              {isConfirmed && order.status !== 'cancelled' && (
+                <WhatsappDispatchBridge
+                  orderNumber={order.id.slice(0, 8).toUpperCase()}
+                  customerName={(order as unknown as { customer_name?: string }).customer_name || 'Customer'}
+                  deliveryAddress={order.delivery_address || 'Delivery Destination'}
+                  vendorName={
+                    (order as unknown as { vendors?: { business_name?: string } | null })?.vendors?.business_name ||
+                    (order as unknown as { vendor?: { business_name?: string } | null })?.vendor?.business_name ||
+                    'Kitchen Store'
+                  }
+                />
               )}
 
               {/* Destination & Delivery Address Card */}
@@ -589,25 +643,25 @@ export default function OrderConfirmationPage() {
               </div>
 
               {/* Order Actions Bar */}
-              <div className="flex flex-wrap gap-3 pt-2">
-                {['pending', 'payment_pending', 'payment_processing', 'payment_confirmed'].includes(order.status) && (
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                {order.status !== 'delivered' && order.status !== 'cancelled' && (
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setIsCancelModalOpen(true)}
-                    className="flex-1 rounded-xl text-rose-700 border-rose-200 bg-rose-50/50 hover:bg-rose-100 hover:text-rose-800 gap-2 font-bold h-11 text-xs sm:text-sm"
+                    onClick={() => setIsDisputeModalOpen(true)}
+                    className="w-full sm:flex-1 rounded-xl text-rose-700 border-rose-200 bg-rose-50/50 hover:bg-rose-100 hover:text-rose-800 gap-2 font-bold h-12 sm:h-11 text-xs sm:text-sm"
                   >
                     <XCircle className="h-4 w-4" />
-                    <span>Cancel Order</span>
+                    <span>Cancel or Dispute</span>
                   </Button>
                 )}
-                <Button asChild variant="outline" className="flex-1 rounded-xl h-11 text-xs sm:text-sm font-bold">
+                <Button asChild variant="outline" className="w-full sm:flex-1 rounded-xl h-12 sm:h-11 text-xs sm:text-sm font-bold">
                   <Link to="/" className="inline-flex items-center justify-center gap-2">
                     <Home className="h-4 w-4" aria-hidden="true" />
                     <span>Back to Home</span>
                   </Link>
                 </Button>
-                <Button asChild variant="primary" className="flex-1 rounded-xl bg-primary hover:bg-primary-hover text-white h-11 text-xs sm:text-sm font-bold shadow-xs">
+                <Button asChild variant="primary" className="w-full sm:flex-1 rounded-xl bg-primary hover:bg-primary-hover text-white h-12 sm:h-11 text-xs sm:text-sm font-bold shadow-xs">
                   <Link to="/food" className="inline-flex items-center justify-center gap-2">
                     <Utensils className="h-4 w-4" aria-hidden="true" />
                     <span>Explore More Vendors</span>
@@ -635,6 +689,26 @@ export default function OrderConfirmationPage() {
                   <Badge variant="default" className="bg-neutral-100 font-mono text-xs text-neutral-700">
                     #{order.id.slice(0, 8).toUpperCase()}
                   </Badge>
+                </div>
+
+                {/* Official Receipt Action Row */}
+                <div className="flex items-center gap-2 pt-1 pb-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsReceiptModalOpen(true)}
+                    className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 py-2 px-3 text-xs font-bold text-neutral-800 transition-colors shadow-2xs cursor-pointer"
+                  >
+                    <Printer className="h-3.5 w-3.5 text-primary" />
+                    <span>Print / PDF Receipt</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsReceiptModalOpen(true)}
+                    className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 py-2 px-3 text-xs font-bold transition-colors shadow-2xs cursor-pointer"
+                  >
+                    <Share2 className="h-3.5 w-3.5 text-emerald-700" />
+                    <span>WhatsApp</span>
+                  </button>
                 </div>
 
                 {/* Itemized List */}
@@ -679,6 +753,12 @@ export default function OrderConfirmationPage() {
                         : '₦0.00 (Launch Preview)'}
                     </span>
                   </div>
+                  {extractedRiderTip > 0 && (
+                    <div className="flex justify-between text-emerald-700 font-medium">
+                      <span>Rider Appreciation Tip (100% to Rider)</span>
+                      <span className="font-bold">{formatNgn(extractedRiderTip)}</span>
+                    </div>
+                  )}
                   <div className="flex items-baseline justify-between border-t border-neutral-200/80 pt-3 text-base font-bold text-neutral-900">
                     <span>Total Amount</span>
                     <span className="text-xl sm:text-2xl font-black text-primary">
@@ -743,6 +823,27 @@ export default function OrderConfirmationPage() {
         onCancelled={() => {
           fetchOrderAndPayment()
         }}
+      />
+
+      <SmartDisputeResolutionModal
+        isOpen={isDisputeModalOpen}
+        onClose={() => setIsDisputeModalOpen(false)}
+        orderId={order.id}
+        orderNumber={order.id.slice(0, 8).toUpperCase()}
+        status={order.status}
+        totalAmount={order.total}
+        deliveryFee={order.delivery_fee}
+        onResolved={() => {
+          fetchOrderAndPayment()
+        }}
+      />
+
+      <OrderReceiptModal
+        isOpen={isReceiptModalOpen}
+        onClose={() => setIsReceiptModalOpen(false)}
+        order={order}
+        payment={payment}
+        riderTip={extractedRiderTip}
       />
     </PageContainer>
   )

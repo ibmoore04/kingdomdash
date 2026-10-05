@@ -10,6 +10,7 @@ import {
 import { getRiderActiveDelivery } from '@/services/rider/custody-service'
 import type { AssignmentInboxOffer } from '@/types/rider'
 import { AssignmentInboxList } from '@/components/rider/assignments/assignment-inbox-list'
+import { supabase } from '@/services/supabase/client'
 
 export default function RiderAssignmentsPage() {
   const navigate = useNavigate()
@@ -35,13 +36,29 @@ export default function RiderAssignmentsPage() {
   useEffect(() => {
     loadInbox()
 
+    // Realtime Postgres changes subscription for instantaneous offer updates
+    const channel = supabase
+      .channel('rider_assignments_live_inbox')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'delivery_assignments' },
+        () => {
+          loadInbox()
+        }
+      )
+      .subscribe()
+
+    // Backup polling interval (20 seconds, paused when tab hidden)
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         loadInbox()
       }
     }, 20000)
 
-    return () => clearInterval(interval)
+    return () => {
+      supabase.removeChannel(channel)
+      clearInterval(interval)
+    }
   }, [loadInbox])
 
   const handleAccept = async (assignmentId: string) => {

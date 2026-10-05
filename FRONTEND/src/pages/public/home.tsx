@@ -22,6 +22,8 @@ import {
 } from 'lucide-react'
 import { PageContainer } from '@/components/layout/section'
 import { Button } from '@/components/ui/button'
+import { PromoHeroCarousel } from '@/components/shared/promo-hero-carousel'
+import { QuickReorderBar } from '@/components/customer/quick-reorder-bar'
 import { appConfig } from '@/config/app.config'
 import { useSeo } from '@/hooks/use-seo'
 import { getActiveVendors } from '@/services/supabase/vendors'
@@ -356,6 +358,13 @@ export default function HomePage() {
         </PageContainer>
       </section>
 
+      {/* ─── 1b. QUICK REORDER BAR (for authenticated returning customers) ─── */}
+      <div className="bg-neutral-50/70 border-b border-neutral-100 py-6">
+        <PageContainer>
+          <QuickReorderBar />
+        </PageContainer>
+      </div>
+
       {/* ─── 2. SHOP BY CATEGORY SECTION ─────────────────────────────────── */}
       <section className="py-16 sm:py-20 lg:py-24 bg-white border-t border-neutral-100">
         <PageContainer>
@@ -511,80 +520,10 @@ export default function HomePage() {
         </PageContainer>
       </section>
 
-      {/* ─── 4. PROMOTIONAL DARK BANNER ───────────────────────────────────── */}
-      <section className="py-16 sm:py-20 lg:py-24 bg-white border-t border-neutral-100">
+      {/* ─── 4. PROMOTIONAL HERO CAROUSEL ───────────────────────────────────── */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-white border-t border-neutral-100">
         <PageContainer>
-          <div className="relative overflow-hidden rounded-3xl bg-[#101114] text-white p-8 sm:p-12 lg:p-14 shadow-2xl border border-white/10">
-            {/* Ambient Red Glow */}
-            <div className="absolute top-0 right-1/4 h-80 w-80 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
-
-            <div className="grid items-center gap-8 lg:grid-cols-12 relative z-10">
-              {/* Left Column: Headline, Copy, CTA */}
-              <div className="lg:col-span-5 space-y-4 sm:space-y-5">
-                <span className="text-xs font-bold uppercase tracking-[0.16em] text-primary block">
-                  SPECIAL DISPATCH OFFER
-                </span>
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1]">
-                  Your next delivery
-                  <br />
-                  <span className="text-primary">starts here</span>.
-                </h2>
-                <p className="text-sm sm:text-base text-white/70 leading-relaxed max-w-md">
-                  From hot meals to fresh groceries and urgent parcels, KingdomDash brings everyday delivery services together in Ijebu-Ode.
-                </p>
-                <div className="pt-2">
-                  <Button asChild size="lg" variant="primary" className="rounded-xl px-8 font-bold bg-primary hover:bg-primary-hover text-white shadow-lg">
-                    <Link to="/food">Order Now</Link>
-                  </Button>
-                </div>
-              </div>
-
-              {/* Center Column: Rider Visual */}
-              <div className="lg:col-span-4 flex justify-center">
-                <div className="relative h-64 sm:h-72 lg:h-80 w-full max-w-xs overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-black/40">
-                  <img
-                    src="/images/promo-rider.jpg"
-                    alt="KingdomDash delivery rider with backpack"
-                    className="h-full w-full object-cover object-top"
-                    loading="lazy"
-                  />
-                </div>
-              </div>
-
-              {/* Right Column: Key Feature Highlights */}
-              <div className="lg:col-span-3 space-y-5 lg:pl-2">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-md">
-                    <Sparkles className="h-5 w-5" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-white">Great Prices</h4>
-                    <p className="text-xs text-white/60 mt-0.5">Affordable for everyone</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-md">
-                    <Clock className="h-5 w-5" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-white">On-Time Delivery</h4>
-                    <p className="text-xs text-white/60 mt-0.5">Right on schedule</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-md">
-                    <ShieldCheck className="h-5 w-5" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-white">Trusted by Locals</h4>
-                    <p className="text-xs text-white/60 mt-0.5">Your neighborhood partner</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <PromoHeroCarousel />
         </PageContainer>
       </section>
 

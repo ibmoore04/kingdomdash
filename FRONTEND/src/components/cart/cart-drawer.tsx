@@ -98,7 +98,7 @@ export function CartDrawer() {
             </div>
 
             {/* Bottom pinned summary */}
-            <div className="border-t border-border bg-neutral-50/50 px-6 py-4 shadow-inner">
+            <div className="border-t border-border bg-neutral-50/50 px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] shadow-inner">
               <CartSummary onClose={() => setCartOpen(false)} showFullCartLink={true} />
             </div>
           </div>

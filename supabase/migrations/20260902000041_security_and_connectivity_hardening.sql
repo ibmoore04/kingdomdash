@@ -204,22 +204,26 @@ BEGIN
       updated_at = pg_catalog.now()
   WHERE id = v_rider_id;
 
-  -- Record status update breadcrumb
-  INSERT INTO public.delivery_status_history (
-    delivery_id,
-    assignment_id,
-    previous_status,
-    new_status,
-    changed_by,
-    notes
-  ) VALUES (
-    p_delivery_id,
-    v_assignment.id,
-    'in_transit',
-    'delivered',
-    auth.uid(),
-    COALESCE(p_notes, 'Delivery completed by rider with verified PIN')
-  );
+  -- Record status update breadcrumb using delivery_status_updates
+  BEGIN
+    INSERT INTO public.delivery_status_updates (
+      delivery_id,
+      old_status,
+      new_status,
+      updated_by,
+      notes,
+      created_at
+    ) VALUES (
+      p_delivery_id,
+      'in_transit',
+      'delivered',
+      COALESCE(auth.uid(), (SELECT profile_id FROM public.riders WHERE id = v_rider_id)),
+      COALESCE(p_notes, 'Delivery completed by rider with verified PIN'),
+      pg_catalog.now()
+    );
+  EXCEPTION WHEN OTHERS THEN
+    NULL;
+  END;
 END;
 $$;
 
@@ -323,8 +327,9 @@ DECLARE
   v_new_lifetime integer;
   v_new_tier text;
 BEGIN
-  -- Strict caller verification: prevent arbitrary points minting by client
-  IF auth.role() = 'authenticated' THEN
+  -- Strict caller verification: prevent arbitrary points minting by client.
+  -- Internal database triggers (pg_trigger_depth() > 0) are authorized to award system points.
+  IF pg_trigger_depth() = 0 AND auth.role() = 'authenticated' THEN
     IF NOT EXISTS (
       SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
     ) THEN
@@ -411,12 +416,16 @@ BEGIN
   IF NEW.status = 'delivered' AND (OLD.status IS NULL OR OLD.status <> 'delivered') AND NEW.customer_id IS NOT NULL THEN
     v_points := GREATEST(1, floor(COALESCE(NEW.total, 0) / 100)::integer);
     IF v_points > 0 THEN
-      PERFORM public.add_dashpoints(
-        NEW.customer_id,
-        v_points,
-        'earned',
-        'Points earned for delivered order #' || substring(NEW.id::text, 1, 8)
-      );
+      BEGIN
+        PERFORM public.add_dashpoints(
+          NEW.customer_id,
+          v_points,
+          'earned',
+          'Points earned for delivered order #' || substring(NEW.id::text, 1, 8)
+        );
+      EXCEPTION WHEN OTHERS THEN
+        NULL;
+      END;
     END IF;
   END IF;
   RETURN NEW;

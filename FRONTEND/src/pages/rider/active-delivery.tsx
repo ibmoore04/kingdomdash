@@ -8,6 +8,7 @@ import {
   markDeliveryInTransit,
   markDeliveryDelivered,
 } from '@/services/rider/custody-service'
+import { getRiderAssignmentInbox } from '@/services/rider/assignment-service'
 import { reportDeliveryIssue } from '@/services/rider/exception-service'
 import type { ActiveDeliveryDetails, OperationalIssueType } from '@/types/rider'
 import { VendorPrepIndicator } from '@/components/rider/delivery/vendor-prep-indicator'
@@ -36,6 +37,7 @@ export default function RiderActiveDeliveryPage() {
   const { refreshRider } = useCurrentRider()
 
   const [activeDelivery, setActiveDelivery] = useState<ActiveDeliveryDetails | null>(null)
+  const [pendingOffersCount, setPendingOffersCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [isMutating, setIsMutating] = useState(false)
   const [issueModalOpen, setIssueModalOpen] = useState(false)
@@ -43,8 +45,12 @@ export default function RiderActiveDeliveryPage() {
 
   const loadActiveDelivery = useCallback(async () => {
     try {
-      const { data } = await getRiderActiveDelivery()
-      setActiveDelivery(data)
+      const [{ data: activeData }, { data: inboxData }] = await Promise.all([
+        getRiderActiveDelivery(),
+        getRiderAssignmentInbox(),
+      ])
+      setActiveDelivery(activeData)
+      setPendingOffersCount(inboxData?.length || 0)
     } finally {
       setIsLoading(false)
     }
@@ -185,22 +191,50 @@ export default function RiderActiveDeliveryPage() {
 
   if (!activeDelivery) {
     return (
-      <RiderLayout activeTripCount={0}>
+      <RiderLayout activeTripCount={0} inboxCount={pendingOffersCount}>
         <h1 className="sr-only">Active Delivery Trip</h1>
         <div className="flex min-h-[400px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white p-8 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-page-background text-text-muted">
-            <Bike className="h-7 w-7" aria-hidden="true" />
-          </div>
-          <h2 className="mt-4 text-h4 font-bold text-text-primary">No Active Delivery</h2>
-          <p className="mt-1 max-w-sm text-body-small text-text-secondary">
-            You do not currently have an accepted trip in progress. Check your inbox for available job offers.
-          </p>
-          <Button asChild variant="primary" className="mt-5 gap-2 font-bold text-white bg-primary hover:bg-primary-hover">
-            <Link to="/rider/assignments" className="text-white">
-              <Inbox className="h-4 w-4" aria-hidden="true" />
-              View Dispatch Inbox
-            </Link>
-          </Button>
+          {pendingOffersCount > 0 ? (
+            <>
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 mb-2">
+                <Inbox className="h-8 w-8 animate-bounce" aria-hidden="true" />
+                <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-amber-500 text-[10px] font-bold text-white items-center justify-center">
+                    {pendingOffersCount}
+                  </span>
+                </span>
+              </div>
+              <h2 className="mt-2 text-h3 font-extrabold text-text-primary">
+                {pendingOffersCount} New Dispatch Offer{pendingOffersCount > 1 ? 's' : ''} Waiting!
+              </h2>
+              <p className="mt-1.5 max-w-sm text-body-small text-text-secondary leading-relaxed">
+                An order has been allocated to you by dispatch. Tap below to review details and accept the trip to start navigation.
+              </p>
+              <Button asChild variant="primary" size="lg" className="mt-5 gap-2 font-bold text-white bg-primary hover:bg-primary-hover shadow-md rounded-xl">
+                <Link to="/rider/assignments" className="text-white">
+                  <Inbox className="h-5 w-5" aria-hidden="true" />
+                  Review & Accept Offer ({pendingOffersCount})
+                </Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-page-background text-text-muted">
+                <Bike className="h-7 w-7" aria-hidden="true" />
+              </div>
+              <h2 className="mt-4 text-h4 font-bold text-text-primary">No Active Delivery</h2>
+              <p className="mt-1 max-w-sm text-body-small text-text-secondary">
+                You do not currently have an accepted trip in progress. Check your inbox for available job offers.
+              </p>
+              <Button asChild variant="primary" className="mt-5 gap-2 font-bold text-white bg-primary hover:bg-primary-hover">
+                <Link to="/rider/assignments" className="text-white">
+                  <Inbox className="h-4 w-4" aria-hidden="true" />
+                  View Dispatch Inbox
+                </Link>
+              </Button>
+            </>
+          )}
         </div>
       </RiderLayout>
     )

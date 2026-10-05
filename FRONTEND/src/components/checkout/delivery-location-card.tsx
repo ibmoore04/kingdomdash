@@ -184,27 +184,45 @@ export function DeliveryLocationCard({
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
-              className="font-bold text-primary hover:underline"
+              className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 font-bold text-white shadow-xs hover:bg-primary-hover transition-colors"
             >
-              Add address
+              + Add Address
             </button>
           </div>
         ) : !isPinned ? (
           <div
             role="alert"
-            className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800"
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800"
           >
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" aria-hidden="true" />
               <span>Please pin your delivery location on the map to calculate distance and delivery fee.</span>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(true)}
-              className="font-bold text-primary hover:underline shrink-0 ml-3"
-            >
-              Change location
-            </button>
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  if (selectedAddress) {
+                    onSelectAddress({
+                      ...selectedAddress,
+                      latitude: IJEBU_ODE_CENTER.latitude,
+                      longitude: IJEBU_ODE_CENTER.longitude,
+                    })
+                  }
+                }}
+                className="rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold px-2.5 py-1 text-[11px] shadow-2xs transition-colors"
+                title="Use central Ijebu-Ode coordinates to proceed immediately"
+              >
+                📍 Quick-Pin Center
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="font-bold text-primary hover:underline ml-1"
+              >
+                Change location
+              </button>
+            </div>
           </div>
         ) : !isServiceable ? (
           <div

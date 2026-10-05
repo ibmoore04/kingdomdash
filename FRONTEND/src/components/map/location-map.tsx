@@ -65,6 +65,20 @@ export const LocationMap: React.FC<LocationMapProps> = ({
   useEffect(() => {
     if (!containerRef.current || useGoogleMaps) return
 
+    let timer1: ReturnType<typeof setTimeout> | null = null
+    let timer2: ReturnType<typeof setTimeout> | null = null
+
+    const safeInvalidateSize = (m: L.Map | null) => {
+      if (!m) return
+      try {
+        if ((m as any)._mapPane && containerRef.current) {
+          m.invalidateSize()
+        }
+      } catch {
+        // Silently catch unmounted / detached leaflet pane errors
+      }
+    }
+
     // Graceful fallback for Leaflet / Esri
     try {
       if (!mapInstanceRef.current) {
@@ -89,8 +103,8 @@ export const LocationMap: React.FC<LocationMapProps> = ({
 
         mapInstanceRef.current = map
 
-        setTimeout(() => map.invalidateSize(), 150)
-        setTimeout(() => map.invalidateSize(), 400)
+        timer1 = setTimeout(() => safeInvalidateSize(mapInstanceRef.current), 150)
+        timer2 = setTimeout(() => safeInvalidateSize(mapInstanceRef.current), 400)
       }
     } catch (err) {
       console.warn('[LocationMap] Failed to initialize Leaflet map instance, using fallback:', err)
@@ -101,8 +115,12 @@ export const LocationMap: React.FC<LocationMapProps> = ({
     const map = mapInstanceRef.current
     if (!map) return
 
-    map.setView([effectiveCenter.latitude, effectiveCenter.longitude], zoom)
-    map.invalidateSize()
+    try {
+      map.setView([effectiveCenter.latitude, effectiveCenter.longitude], zoom)
+      safeInvalidateSize(map)
+    } catch {
+      // Safe no-op if map is in transient unmount
+    }
 
     // Render / Update Marker
     if (marker && isValidCoordinates(marker.coords)) {
@@ -147,6 +165,11 @@ export const LocationMap: React.FC<LocationMapProps> = ({
     } else if (circleRef.current) {
       circleRef.current.remove()
       circleRef.current = null
+    }
+
+    return () => {
+      if (timer1) clearTimeout(timer1)
+      if (timer2) clearTimeout(timer2)
     }
   }, [effectiveCenter, zoom, marker, serviceArea, useGoogleMaps])
 

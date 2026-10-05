@@ -12,6 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getVendorFallbackCover } from '@/utils/vendor-branding'
+import { getVendorOperatingStatus } from '@/utils/operating-hours'
 import { cn } from '@/lib/cn'
 import type { Vendor, MockVendor } from '@/types'
 
@@ -119,6 +120,9 @@ function getVendorDetails(vendor: Vendor | MockVendor, serviceType: 'food' | 'gr
   const isActive =
     'is_active' in vendor ? Boolean(vendor.is_active) : (vendor as MockVendor).isOpen ?? true
 
+  const operatingHours = 'operating_hours' in vendor ? vendor.operating_hours : null
+  const operatingStatus = getVendorOperatingStatus(operatingHours, isActive)
+
   const logoUrl = 'logo_url' in vendor ? vendor.logo_url : null
 
   return {
@@ -134,6 +138,7 @@ function getVendorDetails(vendor: Vendor | MockVendor, serviceType: 'food' | 'gr
     priceTier,
     promo,
     isActive,
+    operatingStatus,
     logoUrl,
   }
 }
@@ -183,13 +188,26 @@ export function VendorCard({
         {/* Top Right: Status Badge */}
         <div className="absolute right-3 top-3">
           <Badge
-            variant={details.isActive ? 'success' : 'dark'}
+            variant={
+              details.operatingStatus.isOpen
+                ? details.operatingStatus.isClosingSoon
+                  ? 'warning'
+                  : 'success'
+                : 'dark'
+            }
             className="shadow-sm font-bold flex items-center gap-1.5 backdrop-blur-xs px-2.5 py-1"
           >
-            {details.isActive && (
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            {details.operatingStatus.isOpen && (
+              <span
+                className={cn(
+                  'h-1.5 w-1.5 rounded-full',
+                  details.operatingStatus.isClosingSoon
+                    ? 'bg-amber-500 animate-ping'
+                    : 'bg-emerald-400 animate-pulse'
+                )}
+              />
             )}
-            {details.isActive ? 'Open for orders' : 'Closed'}
+            {details.operatingStatus.statusText}
           </Badge>
         </div>
 

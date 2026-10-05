@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Lock,
@@ -22,6 +22,8 @@ import {
   type PaymentMethodType,
 } from '@/components/checkout/payment-methods-card'
 import { OrderSummaryCard } from '@/components/checkout/order-summary-card'
+import { RiderTipSelector } from '@/components/checkout/rider-tip-selector'
+import { EnterpriseTrustBanner } from '@/components/shared/trust-badges'
 import { CheckoutHelpCard } from '@/components/checkout/checkout-help-card'
 import { CostBreakdownAccordion } from '@/components/cart/cost-breakdown-accordion'
 import { useCartStore } from '@/stores/cart-store'
@@ -38,6 +40,7 @@ import {
   type LoyaltyAccount,
 } from '@/services/loyalty/loyalty-service'
 import { useToast } from '@/hooks/use-toast'
+import { formatNgn } from '@/utils/formatting'
 import type { Address } from '@/types'
 
 export default function CheckoutPage() {
@@ -60,6 +63,10 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submissionError, setSubmissionError] = useState<string | null>(null)
   const [acceptRefundPolicy, setAcceptRefundPolicy] = useState(false)
+
+  const addressSectionRef = useRef<HTMLDivElement>(null)
+  const refundPolicyRef = useRef<HTMLDivElement>(null)
+
   const [paymentState, setPaymentState] = useState<
     | 'idle'
     | 'initializing'
@@ -82,6 +89,7 @@ export default function CheckoutPage() {
   // Phase 3 Growth: Loyalty & KD Pass State
   const [loyaltyAccount, setLoyaltyAccount] = useState<LoyaltyAccount | null>(null)
   const [pointsDiscount, setPointsDiscount] = useState<number>(0)
+  const [riderTip, setRiderTip] = useState<number>(0)
 
   useEffect(() => {
     if (profile?.id) {
@@ -328,22 +336,26 @@ export default function CheckoutPage() {
     // 2. Validate address
     if (!selectedAddress) {
       setSubmissionError('Please select or add a delivery address to complete your order.')
+      addressSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
 
     if (!selectedAddress.latitude || !selectedAddress.longitude) {
       setSubmissionError('Please pin your delivery location on the map before placing your order.')
+      addressSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
 
     if (!isAddressServiceable) {
       setSubmissionError('Selected delivery address is outside the active delivery zone.')
+      addressSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
 
     // 3. Validate refund policy acceptance
     if (!acceptRefundPolicy) {
       setSubmissionError('Please accept the Cancellation and Refund Policy before placing your order.')
+      refundPolicyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
 
@@ -369,7 +381,8 @@ export default function CheckoutPage() {
       selectedDeliveryOption === 'scheduled'
         ? `[SCHEDULED DELIVERY: ${scheduledDate || 'Today'} (${scheduledSlot})]`
         : ''
-    const fullSpecialInstructions = [scheduleNote, specialInstructions.trim()]
+    const tipNote = riderTip > 0 ? `[RIDER TIP: ₦${riderTip.toLocaleString()}]` : ''
+    const fullSpecialInstructions = [scheduleNote, tipNote, specialInstructions.trim()]
       .filter(Boolean)
       .join(' | ')
       .slice(0, 500)
@@ -504,8 +517,13 @@ export default function CheckoutPage() {
     paymentState === 'payment awaiting confirmation' ||
     paymentState === 'payment confirmed'
 
+  const finalPayableTotal = Math.max(
+    0,
+    subtotal - promoDiscount - pointsDiscount + (effectiveDeliveryFee || 0) + serviceFee + riderTip
+  )
+
   return (
-    <div className="bg-neutral-50/50 py-8 sm:py-12">
+    <div className="bg-neutral-50/50 py-8 sm:py-12 pb-[calc(7.5rem+env(safe-area-inset-bottom,0px))] lg:pb-12">
       <PageContainer>
         {/* Page Title & Subtitle */}
         <div className="mb-2 text-center">
@@ -530,9 +548,17 @@ export default function CheckoutPage() {
               <strong className="text-neutral-900 font-semibold">{vendor.name}</strong>
             </span>
           </div>
-          <span className="text-[11px] font-medium text-neutral-400 capitalize">
-            {vendor.serviceType} Delivery
-          </span>
+          <div className="flex items-center gap-3">
+            <Link
+              to={vendor.serviceType === 'food' ? `/food/${vendor.id}` : `/grocery/${vendor.id}`}
+              className="text-xs font-semibold text-primary hover:underline"
+            >
+              + Add more items
+            </Link>
+            <span className="text-[11px] font-medium text-neutral-400 capitalize hidden sm:inline">
+              • {vendor.serviceType} Delivery
+            </span>
+          </div>
         </div>
 
         {/* Two-Column Responsive Layout */}
@@ -540,19 +566,21 @@ export default function CheckoutPage() {
           {/* Left Column (~62%): Location, Options, Payment, CTA */}
           <div className="lg:col-span-7 space-y-6">
             {/* 1. Delivery Location */}
-            <DeliveryLocationCard
-              addresses={addresses}
-              selectedAddress={selectedAddress}
-              onSelectAddress={(addr) => setSelectedAddress(addr)}
-              onAddressCreated={handleAddressCreated}
-              isServiceable={isAddressServiceable}
-              isPinned={!!(selectedAddress?.latitude && selectedAddress?.longitude)}
-              serviceAreaName={serviceAreaName}
-              isLoadingAddresses={isLoadingAddresses}
-              estimatedTime={
-                selectedDeliveryOption === 'express' ? '15-25 mins' : '30-45 mins'
-              }
-            />
+            <div ref={addressSectionRef} className="scroll-mt-28">
+              <DeliveryLocationCard
+                addresses={addresses}
+                selectedAddress={selectedAddress}
+                onSelectAddress={(addr) => setSelectedAddress(addr)}
+                onAddressCreated={handleAddressCreated}
+                isServiceable={isAddressServiceable}
+                isPinned={!!(selectedAddress?.latitude && selectedAddress?.longitude)}
+                serviceAreaName={serviceAreaName}
+                isLoadingAddresses={isLoadingAddresses}
+                estimatedTime={
+                  selectedDeliveryOption === 'express' ? '15-25 mins' : '30-45 mins'
+                }
+              />
+            </div>
 
             {/* 2. Delivery Options */}
             <DeliveryOptionsCard
@@ -566,13 +594,20 @@ export default function CheckoutPage() {
               onSelectScheduledSlot={setScheduledSlot}
             />
 
+            {/* 2b. Rider Appreciation Tip */}
+            <RiderTipSelector
+              selectedTip={riderTip}
+              onSelectTip={setRiderTip}
+              disabled={isSubmitting}
+            />
+
             {/* 3. Payment Method */}
             <PaymentMethodsCard
               selectedMethod={selectedPaymentMethod}
               onSelectMethod={setSelectedPaymentMethod}
             />
 
-            {/* Special Instructions (Collapsible/Optional) */}
+            {/* Special Instructions (Collapsible/Optional with Quick Pills) */}
             <div className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 shadow-xs">
               <button
                 type="button"
@@ -580,11 +615,53 @@ export default function CheckoutPage() {
                 className="flex w-full items-center justify-between text-left text-xs sm:text-sm font-bold text-neutral-800"
               >
                 <span>Add delivery instructions or gate code (optional)</span>
-                <span className="text-primary text-xs">{showInstructions ? 'Hide' : '+ Add'}</span>
+                <span className="text-primary text-xs font-semibold">{showInstructions ? 'Hide' : '+ Add'}</span>
               </button>
 
               {showInstructions && (
-                <div className="mt-3 space-y-2">
+                <div className="mt-3 space-y-2.5">
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      '📞 Call upon arrival',
+                      '🚪 Leave at gatehouse',
+                      '🔔 Ring doorbell',
+                      '🥢 Include cutlery',
+                      '💬 WhatsApp / SMS only',
+                    ].map((chip) => {
+                      const cleanText = chip.slice(3)
+                      const isIncluded = specialInstructions.includes(cleanText)
+                      return (
+                        <button
+                          key={chip}
+                          type="button"
+                          onClick={() => {
+                            if (isIncluded) {
+                              setSpecialInstructions((prev) =>
+                                prev
+                                  .replace(cleanText, '')
+                                  .replace(/,\s*,/g, ',')
+                                  .replace(/^,\s*/, '')
+                                  .replace(/,\s*$/, '')
+                                  .trim()
+                              )
+                            } else {
+                              setSpecialInstructions((prev) =>
+                                prev ? `${prev}, ${cleanText}` : cleanText
+                              )
+                            }
+                          }}
+                          className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-all ${
+                            isIncluded
+                              ? 'bg-primary text-white shadow-2xs'
+                              : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                          }`}
+                        >
+                          {chip}
+                        </button>
+                      )
+                    })}
+                  </div>
+
                   <textarea
                     value={specialInstructions}
                     onChange={(e) => setSpecialInstructions(e.target.value.slice(0, 500))}
@@ -614,11 +691,14 @@ export default function CheckoutPage() {
             )}
 
             {/* Cancellation and Refund Policy Consent */}
-            <div className={`rounded-xl border p-3.5 transition-colors ${
-              submissionError && !acceptRefundPolicy
-                ? 'border-error/50 bg-error/5'
-                : 'border-neutral-200 bg-neutral-50/70'
-            }`}>
+            <div
+              ref={refundPolicyRef}
+              className={`rounded-xl border p-3.5 transition-colors scroll-mt-28 ${
+                submissionError && !acceptRefundPolicy
+                  ? 'border-error/50 bg-error/5 ring-2 ring-error/20'
+                  : 'border-neutral-200 bg-neutral-50/70'
+              }`}
+            >
               <label className="flex items-start gap-2.5 cursor-pointer select-none text-left">
                 <input
                   type="checkbox"
@@ -743,6 +823,7 @@ export default function CheckoutPage() {
               baseFee={baseFee}
               distanceRate={distanceRate}
               pricingTier={pricingTier}
+              riderTip={riderTip}
             />
 
             <CheckoutHelpCard />
@@ -755,6 +836,41 @@ export default function CheckoutPage() {
               pricingTier={pricingTier}
               isLaunchPreview={false}
             />
+
+            <EnterpriseTrustBanner />
+          </div>
+        </div>
+
+        {/* Floating Mobile Checkout Action Bar (Chowdeck / Uber Eats style) */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-neutral-200/90 bg-white/95 px-4 pt-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom,0px))] backdrop-blur-md shadow-2xl lg:hidden">
+          <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                Total Payable
+              </p>
+              <p className="font-mono text-lg font-black text-neutral-900">
+                {formatNgn(finalPayableTotal)}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handlePlaceOrder}
+              disabled={isFormDisabled}
+              className="h-11 px-6 rounded-xl font-bold bg-primary hover:bg-primary-hover text-white shadow-md text-xs sm:text-sm flex items-center gap-1.5"
+            >
+              {isSubmitting || paymentState === 'initializing' ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <>
+                  <span>Pay with Paystack</span>
+                  <ArrowRight className="h-4 w-4 stroke-[2.5]" />
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </PageContainer>

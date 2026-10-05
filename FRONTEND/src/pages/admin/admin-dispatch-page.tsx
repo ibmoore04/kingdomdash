@@ -53,7 +53,10 @@ export const AdminDispatchPage: React.FC = () => {
 
     try {
       setAssigning(true);
-      await assignDelivery(selectedDelivery.id, selectedRiderId);
+      const res = await assignDelivery(selectedDelivery.id, selectedRiderId);
+      if (res.error) {
+        throw new Error(res.error.message || 'Server rejected assignment');
+      }
       // Remove from unassigned queue
       setDeliveries((prev) => prev.filter((d) => d.id !== selectedDelivery.id));
       setSelectedDelivery(null);

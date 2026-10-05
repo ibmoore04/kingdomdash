@@ -28,6 +28,7 @@ export interface OrderSummaryCardProps {
   baseFee?: number | null
   distanceRate?: number | null
   pricingTier?: number | null
+  riderTip?: number
 }
 
 export function OrderSummaryCard({
@@ -52,6 +53,7 @@ export function OrderSummaryCard({
   baseFee: _baseFee,
   distanceRate: _distanceRate,
   pricingTier: _pricingTier,
+  riderTip = 0,
 }: OrderSummaryCardProps) {
   const updateQuantity = useCartStore((state) => state.updateQuantity)
   const removeItem = useCartStore((state) => state.removeItem)
@@ -62,7 +64,7 @@ export function OrderSummaryCard({
   const effectiveDeliveryFee = isKdPassApplied ? 0 : baseDeliveryFee
   const grandTotal = Math.max(
     0,
-    subtotal - promoDiscount - pointsDiscount + effectiveDeliveryFee + serviceFee
+    subtotal - promoDiscount - pointsDiscount + effectiveDeliveryFee + serviceFee + riderTip
   )
   const totalItemCount = items.reduce((acc, curr) => acc + curr.quantity, 0)
 
@@ -333,6 +335,15 @@ export function OrderSummaryCard({
           </div>
           <span className="font-semibold text-neutral-900">{formatNgn(serviceFee)}</span>
         </div>
+
+        {riderTip > 0 && (
+          <div className="flex items-center justify-between text-xs text-emerald-700 font-medium">
+            <span className="flex items-center gap-1">
+              <span>Rider Appreciation Tip (100% to Rider)</span>
+            </span>
+            <span className="font-bold">+{formatNgn(riderTip)}</span>
+          </div>
+        )}
 
         <div className="border-t border-neutral-100 pt-3 flex items-center justify-between">
           <span className="text-sm sm:text-base font-extrabold text-neutral-900">Total</span>

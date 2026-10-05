@@ -49,7 +49,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
           <button
             type="button"
             onClick={() => removeItem(itemKey)}
-            className="text-text-muted hover:text-error transition-colors p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="text-text-muted hover:text-error transition-colors p-2 sm:p-1 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation"
             aria-label={`Remove ${item.name} from cart`}
           >
             <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -89,12 +89,12 @@ export function CartItemRow({ item }: CartItemRowProps) {
               type="button"
               onClick={handleDecrement}
               aria-label={item.quantity <= 1 ? `Remove ${item.name}` : `Decrease quantity of ${item.name}`}
-              className="flex h-7 w-7 items-center justify-center text-text-secondary hover:bg-neutral-100 hover:text-text-primary rounded-l-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center text-text-secondary hover:bg-neutral-100 hover:text-text-primary rounded-l-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation"
             >
-              <Minus className="h-3 w-3" aria-hidden="true" />
+              <Minus className="h-4 w-4 sm:h-3 sm:w-3" aria-hidden="true" />
             </button>
             <span
-              className="w-8 text-center text-caption font-semibold text-text-primary select-none"
+              className="w-9 sm:w-8 text-center text-caption font-semibold text-text-primary select-none"
               aria-live="polite"
             >
               {item.quantity}
@@ -104,9 +104,9 @@ export function CartItemRow({ item }: CartItemRowProps) {
               disabled={item.quantity >= 999}
               onClick={handleIncrement}
               aria-label={`Increase quantity of ${item.name}`}
-              className="flex h-7 w-7 items-center justify-center text-text-secondary hover:bg-neutral-100 hover:text-text-primary rounded-r-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center text-text-secondary hover:bg-neutral-100 hover:text-text-primary rounded-r-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation"
             >
-              <Plus className="h-3 w-3" aria-hidden="true" />
+              <Plus className="h-4 w-4 sm:h-3 sm:w-3" aria-hidden="true" />
             </button>
           </div>
 

@@ -916,9 +916,25 @@ export async function getUnassignedDeliveries() {
 }
 
 export async function assignDelivery(deliveryId: string, riderId: string) {
+  let resolvedRiderId = riderId
+  if (isUuid(riderId)) {
+    try {
+      const { data: riderRec } = await db
+        .from('riders')
+        .select('id, profile_id')
+        .or(`id.eq.${riderId},profile_id.eq.${riderId}`)
+        .maybeSingle()
+      if (riderRec?.id) {
+        resolvedRiderId = riderRec.id
+      }
+    } catch {
+      // Fallback to riderId
+    }
+  }
+
   return db.rpc('assign_delivery_to_rider', {
     p_delivery_id: deliveryId,
-    p_rider_id: riderId,
+    p_rider_id: resolvedRiderId,
   })
 }
 
@@ -935,9 +951,39 @@ export async function assignOrderToRider(
       throw new Error('Both Order ID and Rider ID are required for assignment')
     }
 
+    // Resolve rider profile ID & rider table primary key
+    let resolvedRiderId = riderId
+    let resolvedProfileId = riderId
+
+    if (isUuid(riderId)) {
+      try {
+        const { data: byId } = await db
+          .from('riders')
+          .select('id, profile_id')
+          .eq('id', riderId)
+          .maybeSingle()
+
+        if (byId?.id) {
+          resolvedRiderId = byId.id
+          resolvedProfileId = byId.profile_id || byId.id
+        } else {
+          const { data: byProfile } = await db
+            .from('riders')
+            .select('id, profile_id')
+            .eq('profile_id', riderId)
+            .maybeSingle()
+          if (byProfile?.id) {
+            resolvedRiderId = byProfile.id
+            resolvedProfileId = byProfile.profile_id || byProfile.id
+          }
+        }
+      } catch (riderLookupErr) {
+        console.warn('Could not resolve rider directory entry:', riderLookupErr)
+      }
+    }
+
     // 1. Handle Personal Shopper / Custom requests - harmonize with first-class orders & deliveries
     let isShopperOrder = false
-    let shopperProfileId = riderId
     let shopperTargetId: string | null = null
 
     if (serviceType === 'custom' || orderId.startsWith('SHOP-') || orderId.startsWith('shopper_')) {
@@ -946,22 +992,10 @@ export async function assignOrderToRider(
 
       if (!isUuid(orderId) && !isUuid(realId)) {
         // Mock or demo shopper request
-        return { data: { orderId, riderId, serviceType: 'custom', mock: true }, error: null }
+        return { data: { orderId, riderId: resolvedRiderId, serviceType: 'custom', mock: true }, error: null }
       }
 
       shopperTargetId = isUuid(orderId) ? orderId : realId
-
-      // Determine profile_id if riderId is a rider table PK (personal_shopper_requests references profiles.id)
-      if (isUuid(riderId)) {
-        const { data: riderRec } = await db
-          .from('riders')
-          .select('profile_id')
-          .eq('id', riderId)
-          .maybeSingle()
-        if (riderRec?.profile_id) {
-          shopperProfileId = riderRec.profile_id
-        }
-      }
 
       // Fetch the shopper request to check if it already has an order_id
       let { data: shopperReq } = await db
@@ -989,75 +1023,118 @@ export async function assignOrderToRider(
           const total = subtotal + deliveryFee
           const authUser = (await db.auth.getUser()).data.user
 
-        const { data: newOrder } = await db
-          .from('orders')
-          .insert({
-            customer_id: authUser?.id || null,
-            service_type: 'custom',
-            status: 'payment_confirmed',
-            pickup_address: shopperReq.market_name || 'Market Concierge',
-            delivery_address: shopperReq.delivery_address || 'Customer Delivery Address',
-            customer_name: shopperReq.customer_name || 'Valued Customer',
-            customer_phone: shopperReq.customer_phone || '—',
-            delivery_contact: shopperReq.customer_name || 'Valued Customer',
-            delivery_phone: shopperReq.customer_phone || '—',
-            pickup_contact: 'Market Concierge',
-            pickup_phone: shopperReq.customer_phone || '—',
-            subtotal,
-            delivery_fee: deliveryFee,
-            total,
-            special_instructions: shopperReq.notes || null,
-          })
-          .select('id')
-          .maybeSingle()
+          const { data: newOrder } = await db
+            .from('orders')
+            .insert({
+              customer_id: authUser?.id || null,
+              service_type: 'custom',
+              status: 'payment_confirmed',
+              pickup_address: shopperReq.market_name || 'Market Concierge',
+              delivery_address: shopperReq.delivery_address || 'Customer Delivery Address',
+              customer_name: shopperReq.customer_name || 'Valued Customer',
+              customer_phone: shopperReq.customer_phone || '—',
+              delivery_contact: shopperReq.customer_name || 'Valued Customer',
+              delivery_phone: shopperReq.customer_phone || '—',
+              pickup_contact: 'Market Concierge',
+              pickup_phone: shopperReq.customer_phone || '—',
+              subtotal,
+              delivery_fee: deliveryFee,
+              total,
+              special_instructions: shopperReq.notes || null,
+            })
+            .select('id')
+            .maybeSingle()
 
-        if (newOrder?.id) {
-          orderId = newOrder.id
-          await db
-            .from('personal_shopper_requests')
-            .update({ order_id: orderId })
-            .eq('id', shopperTargetId)
+          if (newOrder?.id) {
+            orderId = newOrder.id
+            await db
+              .from('personal_shopper_requests')
+              .update({ order_id: orderId })
+              .eq('id', shopperTargetId)
 
-          // Insert cargo items into order_items so the rider can inspect them
-          if (Array.isArray(shopperReq.items) && shopperReq.items.length > 0) {
-            for (const item of shopperReq.items) {
-              const itemName = item.name || 'Shopping Item'
-              const itemCost = Number(item.estimatedCost || 0)
-              const rawQty = item.quantity ? String(item.quantity) : '1'
-              const numQty = parseInt(rawQty.replace(/[^0-9]/g, ''), 10) || 1
-              await db.from('order_items').insert({
-                order_id: orderId,
-                product_name: itemName + (rawQty && rawQty !== String(numQty) ? ` (${rawQty})` : ''),
-                quantity: numQty,
-                unit_price: itemCost,
-                line_total: itemCost * numQty,
-              })
+            // Insert cargo items into order_items so the rider can inspect them
+            if (Array.isArray(shopperReq.items) && shopperReq.items.length > 0) {
+              for (const item of shopperReq.items) {
+                const itemName = item.name || 'Shopping Item'
+                const itemCost = Number(item.estimatedCost || 0)
+                const rawQty = item.quantity ? String(item.quantity) : '1'
+                const numQty = parseInt(rawQty.replace(/[^0-9]/g, ''), 10) || 1
+                await db.from('order_items').insert({
+                  order_id: orderId,
+                  product_name: itemName + (rawQty && rawQty !== String(numQty) ? ` (${rawQty})` : ''),
+                  quantity: numQty,
+                  unit_price: itemCost,
+                  line_total: itemCost * numQty,
+                })
+              }
             }
           }
         }
       }
     }
-  }
 
     // 2. Non-UUID standard orders (e.g. dev mock data like 'ord-food-1')
     if (!isUuid(orderId)) {
       console.info(`assignOrderToRider: Order ID "${orderId}" is not a UUID, treating as demo/mock assignment`)
-      return { data: { orderId, riderId, status: 'in_transit', mock: true }, error: null }
+      return { data: { orderId, riderId: resolvedRiderId, status: 'in_transit', mock: true }, error: null }
     }
 
-    // 3. Ensure rider is active, verified, and available before assignment
-    if (isUuid(riderId)) {
-      try {
-        await db
-          .from('riders')
-          .update({ is_available: true, is_active: true, is_verified: true })
-          .eq('id', riderId)
-      } catch (riderUpdateErr) {
-        console.warn('Could not update rider availability:', riderUpdateErr)
+    // 3. Primary Path: Authoritative dispatch RPC (assign_order_or_delivery_to_rider)
+    const primaryRpcRes = await db.rpc('assign_order_or_delivery_to_rider', {
+      p_order_id: orderId,
+      p_rider_id: resolvedRiderId,
+    })
+
+    if (!primaryRpcRes.error && primaryRpcRes.data?.success) {
+      if (isShopperOrder && shopperTargetId) {
+        try {
+          await db
+            .from('personal_shopper_requests')
+            .update({
+              assigned_shopper_id: resolvedProfileId,
+              status: 'assigned',
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', shopperTargetId)
+        } catch (shopperSyncErr) {
+          console.warn('Could not sync shopper target:', shopperSyncErr)
+        }
+      }
+
+      return {
+        data: {
+          orderId,
+          deliveryId: primaryRpcRes.data.delivery_id,
+          assignmentId: primaryRpcRes.data.assignment_id,
+          riderId: resolvedRiderId,
+          serviceType: isShopperOrder ? 'custom' : serviceType,
+          status: 'in_transit',
+        },
+        error: null,
       }
     }
 
-    // 4. Fetch or create Delivery record
+    // If primary RPC rejected with a business validation error (e.g. active trip, KD409, KD403), surface it directly
+    const isRpcMissing =
+      primaryRpcRes.error?.code === '42883' ||
+      primaryRpcRes.error?.message?.toLowerCase().includes('function') ||
+      primaryRpcRes.error?.message?.toLowerCase().includes('not found')
+
+    if (primaryRpcRes.error && !isRpcMissing) {
+      console.error('[assignOrderToRider] primaryRpcRes failed:', {
+        message: primaryRpcRes.error.message,
+        details: primaryRpcRes.error.details,
+        hint: primaryRpcRes.error.hint,
+        code: primaryRpcRes.error.code,
+      })
+      return {
+        data: null,
+        error: new Error(primaryRpcRes.error.message || 'Server rejected rider assignment'),
+      }
+    }
+
+    // 4. Secondary Path (Backward compatibility for legacy migrations):
+    // Fetch or verify existing Delivery record
     let deliveryId: string | null = null
 
     const { data: existingDeliv } = await db
@@ -1068,153 +1145,76 @@ export async function assignOrderToRider(
 
     if (existingDeliv?.id) {
       deliveryId = existingDeliv.id
-      // Ensure existing delivery is pending or assigned so RPC allows dispatch
-      if (existingDeliv.status !== 'pending' && existingDeliv.status !== 'assigned') {
-        await db.from('deliveries').update({ status: 'pending' }).eq('id', deliveryId)
-      }
-    } else {
-      // Query order with profile relationship
-      const { data: ord, error: ordErr } = await db
-        .from('orders')
-        .select(`
-          id,
-          service_type,
-          customer_id,
-          pickup_address,
-          delivery_address,
-          customer_name,
-          customer_phone,
-          status,
-          profiles:customer_id ( full_name, phone )
-        `)
-        .eq('id', orderId)
-        .maybeSingle()
-
-      if (ordErr) {
-        console.warn('Could not fetch order profile relation, querying base order:', ordErr)
-      }
-
-      // If order is still 'placed' or 'pending', advance to 'payment_confirmed' so RPC allows dispatch
-      if (ord && (ord.status === 'placed' || ord.status === 'pending')) {
-        await db.from('orders').update({ status: 'payment_confirmed' }).eq('id', orderId)
-      }
-
-      const prof = (ord?.profiles as any) || {}
-      const customerName = ord?.customer_name || prof.full_name || 'Customer'
-      const customerPhone = ord?.customer_phone || prof.phone || '—'
-      const serviceTypeVal = ord?.service_type || serviceType || (isShopperOrder ? 'custom' : 'food')
-      const pickupAddress = ord?.pickup_address || 'Merchant Storefront'
-      const deliveryAddress = ord?.delivery_address || 'Customer Delivery Address'
-
-      const authUser = (await db.auth.getUser()).data.user
-      const createdBy = ord?.customer_id || authUser?.id
-
-      const { data: newDeliv, error: insertErr } = await db
-        .from('deliveries')
-        .insert({
-          order_id: orderId,
-          customer_name: customerName,
-          customer_phone: customerPhone,
-          service_type: serviceTypeVal,
-          pickup_address: pickupAddress,
-          pickup_contact: isShopperOrder ? 'Market Concierge' : 'Store Dispatch',
-          delivery_address: deliveryAddress,
-          delivery_contact: customerPhone,
-          status: 'pending',
-          created_by: createdBy && isUuid(createdBy) ? createdBy : null,
-        })
-        .select('id')
-        .maybeSingle()
-
-      if (insertErr) {
-        console.warn('Could not insert delivery record:', insertErr)
-      } else if (newDeliv?.id) {
-        deliveryId = newDeliv.id
-      }
     }
 
-    // 5. Attempt authoritative assignment via assign_delivery_to_rider RPC
-    let rpcSuccess = false
-    if (deliveryId && isUuid(deliveryId) && isUuid(riderId)) {
+    // Attempt assignment via assign_delivery_to_rider RPC if delivery row exists
+    if (deliveryId && isUuid(deliveryId)) {
       const rpcRes = await db.rpc('assign_delivery_to_rider', {
         p_delivery_id: deliveryId,
-        p_rider_id: riderId,
+        p_rider_id: resolvedRiderId,
       })
 
       if (!rpcRes.error) {
-        rpcSuccess = true
-      } else {
-        console.warn('assign_delivery_to_rider RPC rejected assignment, running authoritative fallback:', rpcRes.error)
-      }
-    }
-
-    // 6. Authoritative Fallback / State Synchronization
-    if (!rpcSuccess) {
-      if (deliveryId) {
-        await db.from('deliveries').update({ status: 'assigned' }).eq('id', deliveryId)
-
-        const authUser = (await db.auth.getUser()).data.user
-        const dispatcherId = authUser?.id || shopperProfileId
-
-        if (dispatcherId && isUuid(dispatcherId)) {
+        if (isShopperOrder && shopperTargetId) {
           try {
-            // Close any existing open assignment
             await db
-              .from('delivery_assignments')
-              .update({ status: 'rejected', notes: 'Reassigned by dispatch console' })
-              .eq('delivery_id', deliveryId)
-              .eq('status', 'assigned')
-
-            // Insert new assignment
-            await db.from('delivery_assignments').insert({
-              delivery_id: deliveryId,
-              rider_id: riderId,
-              assigned_by: dispatcherId,
-              status: 'assigned',
-              assigned_at: new Date().toISOString(),
-            })
-          } catch (assignErr) {
-            console.warn('Non-fatal: could not log delivery_assignments row:', assignErr)
+              .from('personal_shopper_requests')
+              .update({
+                assigned_shopper_id: resolvedProfileId,
+                status: 'assigned',
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', shopperTargetId)
+          } catch (shopperSyncErr) {
+            console.warn('Could not sync shopper target:', shopperSyncErr)
           }
         }
+
+        if (isUuid(resolvedProfileId)) {
+          try {
+            await db.from('notifications').insert({
+              profile_id: resolvedProfileId,
+              title: '🛒 New Delivery Assignment Available',
+              message: `Order #${orderId.slice(0, 8)} allocated to you. Tap to review pickup and items.`,
+              type: 'order',
+              action_url: '/rider/assignments',
+              is_read: false,
+            })
+          } catch (notifErr) {
+            console.warn('Could not notify rider profile:', notifErr)
+          }
+        }
+
+        return {
+          data: {
+            orderId,
+            deliveryId,
+            riderId: resolvedRiderId,
+            serviceType: isShopperOrder ? 'custom' : serviceType,
+            status: 'in_transit',
+          },
+          error: null,
+        }
+      }
+
+      return {
+        data: null,
+        error: new Error(rpcRes.error.message || 'Dispatch rejected by server'),
       }
     }
 
-    // 7. Synchronize linked tables & emit rider notification
-    // Both shopper and standard orders transition to 'assigned' — the rider
-    // has been dispatched but has not yet physically picked up the goods.
-    // Status advances to 'picked_up' / 'in_transit' via mark_delivery_* RPCs.
-    const nextOrderStatus = 'assigned'
-    await db.from('orders').update({ status: nextOrderStatus }).eq('id', orderId)
-
-    if (isShopperOrder && shopperTargetId) {
-      await db
-        .from('personal_shopper_requests')
-        .update({
-          assigned_shopper_id: shopperProfileId,
-          status: 'assigned',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', shopperTargetId)
-    }
-
-    // Send real-time notification to the rider's profile
-    if (isUuid(shopperProfileId)) {
-      try {
-        await db.from('notifications').insert({
-          profile_id: shopperProfileId,
-          title: '🛒 New Delivery Assignment Available',
-          message: `Order #${orderId.slice(0, 8)} allocated to you. Tap to review pickup and items.`,
-          type: 'order',
-          action_url: '/rider/assignments',
-          is_read: false,
-        })
-      } catch (notifErr) {
-        console.warn('Could not notify rider profile:', notifErr)
+    // If we reached here and have an error from the primary RPC, return it
+    if (primaryRpcRes.error) {
+      return {
+        data: null,
+        error: new Error(primaryRpcRes.error.message || 'Failed to dispatch order to rider'),
       }
     }
 
-    return { data: { orderId, deliveryId, riderId, serviceType: isShopperOrder ? 'custom' : serviceType, status: 'in_transit' }, error: null }
+    return {
+      data: null,
+      error: new Error('Order does not have a linked delivery record and could not be dispatched.'),
+    }
   } catch (err) {
     console.error('Error assigning rider to order:', err)
     return {

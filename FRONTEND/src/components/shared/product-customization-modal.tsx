@@ -232,8 +232,11 @@ export function ProductCustomizationModal({
           'animate-in fade-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200'
         )}
       >
+        {/* Drag Indicator Handle on Mobile */}
+        <div className="mx-auto mt-2.5 -mb-1 h-1.5 w-12 rounded-full bg-neutral-200 sm:hidden shrink-0" />
+
         {/* Header Bar */}
-        <div className="relative border-b border-neutral-100 bg-white px-5 py-4 flex items-center justify-between z-10 shrink-0">
+        <div className="relative border-b border-neutral-100 bg-white px-5 py-3.5 sm:py-4 flex items-center justify-between z-10 shrink-0">
           <div>
             <h2
               id="customization-title"
@@ -397,7 +400,7 @@ export function ProductCustomizationModal({
         </div>
 
         {/* Footer: Stepper & Add to Cart Button */}
-        <div className="border-t border-neutral-100 bg-white p-4 sm:p-5 flex flex-col gap-3 shrink-0">
+        <div className="border-t border-neutral-100 bg-white p-4 sm:p-5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-5 flex flex-col gap-3 shrink-0">
           {missingRequiredGroup && (
             <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
               <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />

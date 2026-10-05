@@ -19,6 +19,7 @@ import {
   updateOrderStatusVendor,
   vendorRejectOrder,
 } from '@/services/supabase/orders'
+import { KitchenDisplayScreen } from './kitchen-display-screen'
 
 interface OrderItemRow {
   id: string
@@ -60,6 +61,7 @@ export const VendorOrdersList: React.FC<VendorOrdersListProps> = ({ vendorId }) 
   const [rejectingOrder, setRejectingOrder] = useState<VendorOrderRow | null>(null)
   const [rejectReason, setRejectReason] = useState('')
   const [isRejecting, setIsRejecting] = useState(false)
+  const [isKdsOpen, setIsKdsOpen] = useState(false)
 
   const loadOrders = useCallback(async () => {
     setIsLoading(true)
@@ -140,17 +142,29 @@ export const VendorOrdersList: React.FC<VendorOrdersListProps> = ({ vendorId }) 
             Acknowledge paid customer orders, prepare items, and mark ready for rider dispatch.
           </p>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={loadOrders}
-          disabled={isLoading}
-          className="gap-2 self-start sm:self-auto"
-        >
-          <RotateCcw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh Orders
-        </Button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={() => setIsKdsOpen(true)}
+            className="gap-2 bg-amber-500 hover:bg-amber-600 text-neutral-950 font-bold shadow-xs cursor-pointer"
+          >
+            <ChefHat className="h-4 w-4" />
+            Kitchen Display Mode (KDS)
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={loadOrders}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            <RotateCcw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh Orders
+          </Button>
+        </div>
       </div>
 
       {/* Filter Tabs */}
@@ -415,6 +429,23 @@ export const VendorOrdersList: React.FC<VendorOrdersListProps> = ({ vendorId }) 
         </div>,
         document.body
       )}
+
+      {/* Fullscreen Kitchen Display System Modal */}
+      {isKdsOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
+            <div className="w-full max-w-6xl max-h-[92vh] flex flex-col">
+              <KitchenDisplayScreen
+                isOpenModal
+                onClose={() => setIsKdsOpen(false)}
+                onUpdateStatus={async (ticketId, nextStatus) => {
+                  await handleUpdateStatus(ticketId, nextStatus);
+                }}
+              />
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   )
 }
