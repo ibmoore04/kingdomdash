@@ -1,5 +1,6 @@
 import { supabase } from './client'
 import type { Database } from '@/types/database.types'
+import { playNotificationChime } from '@/utils/audio-chime'
 
 export type NotificationType = Database['public']['Enums']['notification_type']
 export type NotificationCategory = Database['public']['Enums']['notification_category']
@@ -245,6 +246,9 @@ export function subscribeToMyNotifications(
         filter: `profile_id=eq.${userId}`,
       },
       (payload: any) => {
+        if (payload?.eventType === 'INSERT') {
+          playNotificationChime('info')
+        }
         onEvent({
           eventType: payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE',
           new: payload.new as NotificationItem | undefined,

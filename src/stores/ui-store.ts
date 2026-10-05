@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { playNotificationChime } from '@/utils/audio-chime'
 
 export type ToastVariant = 'info' | 'success' | 'warning' | 'error'
 
@@ -20,13 +21,16 @@ interface UiState {
 export const useUiStore = create<UiState>((set) => ({
   toasts: [],
   mobileNavOpen: false,
-  pushToast: (toast) =>
-    set((state) => ({
+  pushToast: (toast) => {
+    // Play synthesized chime within user gesture callstack
+    playNotificationChime(toast.variant).catch(() => {})
+    return set((state) => ({
       toasts: [
         ...state.toasts,
         { ...toast, id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}` },
       ],
-    })),
+    }))
+  },
   dismissToast: (id) =>
     set((state) => ({
       toasts: state.toasts.filter((toast) => toast.id !== id),

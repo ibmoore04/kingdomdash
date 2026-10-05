@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { VendorCard } from '../vendor-card'
@@ -27,6 +27,15 @@ const mockFoodVendor: Vendor = {
 }
 
 describe('VendorCard component', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-05T14:00:00'))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('renders rich details including name, tags, rating, delivery fee, and verified badge', () => {
     render(
       <MemoryRouter>

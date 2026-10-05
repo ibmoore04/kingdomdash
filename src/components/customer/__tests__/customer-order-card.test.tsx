@@ -34,9 +34,14 @@ describe('CustomerOrderCard Phase 2 Integration (Radar & PIN)', () => {
   it('renders DeliveryPinCard and DeliveryRadar for an active in-transit order', () => {
     renderWithRouter(<CustomerOrderCard order={activeOrder} />)
 
-    // Verify PIN Security Pass is rendered
+    // Verify PIN Security Pass is rendered (masked by default for shoulder surfing protection)
     expect(screen.getByTestId('delivery-pin-card')).toBeInTheDocument()
     expect(screen.getByText('Security Pass')).toBeInTheDocument()
+    expect(screen.getByTestId('delivery-pin-display').textContent).toBe('•  •  •  •  •  •')
+
+    // Reveal PIN on click
+    const toggleBtn = screen.getByRole('button', { name: /Reveal PIN|Show PIN/i })
+    fireEvent.click(toggleBtn)
     expect(screen.getByTestId('delivery-pin-display').textContent).toBe('9  8  7  6  5  4')
 
     // Verify DeliveryRadar is rendered by default for active order

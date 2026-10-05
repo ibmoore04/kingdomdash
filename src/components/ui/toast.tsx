@@ -1,6 +1,7 @@
 import { CircleAlert, CircleCheck, Info, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { useUiStore } from '@/stores/ui-store'
+import { AudioUnlockBanner } from '@/components/common/audio-unlock-banner'
 
 const iconMap = {
   success: CircleCheck,
@@ -14,25 +15,28 @@ export function ToastViewport() {
   const dismissToast = useUiStore((state) => state.dismissToast)
 
   return (
-    <div
-      className="pointer-events-none fixed bottom-4 right-4 z-[60] flex w-[calc(100%-2rem)] max-w-sm flex-col gap-2"
-      aria-live="polite"
-    >
-      {toasts.map((toast) => {
-        const Icon = iconMap[toast.variant]
-        return (
-          <ToastCard
-            key={toast.id}
-            id={toast.id}
-            title={toast.title}
-            message={toast.message}
-            variant={toast.variant}
-            onDismiss={() => dismissToast(toast.id)}
-            icon={Icon}
-          />
-        )
-      })}
-    </div>
+    <>
+      <AudioUnlockBanner label="Tap to enable sound alerts" className="bottom-20 right-4" />
+      <div
+        className="pointer-events-none fixed bottom-4 right-4 z-[60] flex w-[calc(100%-2rem)] max-w-sm flex-col gap-2"
+        aria-live="polite"
+      >
+        {toasts.map((toast) => {
+          const Icon = iconMap[toast.variant]
+          return (
+            <ToastCard
+              key={toast.id}
+              id={toast.id}
+              title={toast.title}
+              message={toast.message}
+              variant={toast.variant}
+              onDismiss={() => dismissToast(toast.id)}
+              icon={Icon}
+            />
+          )
+        })}
+      </div>
+    </>
   )
 }
 

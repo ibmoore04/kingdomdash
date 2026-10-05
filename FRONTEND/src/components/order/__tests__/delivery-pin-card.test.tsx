@@ -12,10 +12,14 @@ describe('DeliveryPinCard Component (Phase 2)', () => {
 
     const display = screen.getByTestId('delivery-pin-display')
     expect(display).toBeInTheDocument()
+    expect(display.textContent).toBe('•  •  •  •  •  •')
+
+    const toggleBtn = screen.getByRole('button', { name: /Reveal PIN|Show PIN/i })
+    fireEvent.click(toggleBtn)
     expect(display.textContent).toBe('8  4  2  9  1  0')
 
     expect(screen.getByText(/Handover Protection/i)).toBeInTheDocument()
-    expect(screen.getByText(/Never disclose this PIN over phone calls or WhatsApp/i)).toBeInTheDocument()
+    expect(screen.getByText(/Never share it over phone calls or WhatsApp/i)).toBeInTheDocument()
   })
 
   it('copies PIN to clipboard when Copy PIN button is clicked', async () => {
