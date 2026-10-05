@@ -1,0 +1,24 @@
+{
+  "name": "KingdomDash — Swift in Motion",
+  "short_name": "KingdomDash",
+  "description": "On-demand food, grocery, and courier delivery across Nigeria.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F1218",
+  "theme_color": "#E50914",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/KingdomDash-emblem.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/KingdomDash-full-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

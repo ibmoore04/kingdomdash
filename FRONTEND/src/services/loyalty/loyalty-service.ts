@@ -124,23 +124,39 @@ export function saveLoyaltyAccount(account: LoyaltyAccount): void {
  * Rule: 1 DashPoint per ₦100 spent * tier multiplier
 /**
  * Background synchronization to Supabase loyalty tables/RPCs.
- * Note: Under migration 041, direct balance accrual via add_dashpoints is restricted to
- * service_role and triggers to prevent client-side financial manipulation.
- * Order points are awarded authoritative-side upon order status progression.
+ * Securely calls redeem_dashpoints when redeeming points.
  */
 export async function syncLoyaltyToDatabase(
   userId: string,
-  _points: number,
-  _type: 'earned' | 'redeemed' | 'bonus',
-  _description: string
+  points: number,
+  type: 'earned' | 'redeemed' | 'bonus',
+  description: string
 ): Promise<{ success: boolean; data?: unknown }> {
   if (!userId || !isUuid(userId)) {
     return { success: false }
   }
 
-  // DashPoints balance for orders is credited securely server-side on completion.
-  // Local points balance is preserved in local storage and reconciled with the database.
-  return { success: true }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any
+
+    if (type === 'redeemed' && points < 0) {
+      const { data, error } = await db.rpc('redeem_dashpoints', {
+        p_points: Math.abs(points),
+        p_description: description,
+      })
+      if (error) {
+        console.warn('[LoyaltyService] redeem_dashpoints RPC error:', error.message)
+        return { success: false, data: error }
+      }
+      return { success: true, data }
+    }
+
+    return { success: true }
+  } catch (err) {
+    console.warn('[LoyaltyService] syncLoyaltyToDatabase exception:', err)
+    return { success: false, data: err }
+  }
 }
 
 /**
@@ -155,23 +171,40 @@ export async function fetchLoyaltyAccountFromBackend(userId: string): Promise<Lo
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = supabase as any
-    const { data: dbAccount, error: accError } = await db
-      .from('loyalty_accounts')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle()
 
-    if (!accError && dbAccount) {
-      localAccount.pointsBalance = dbAccount.points_balance ?? localAccount.pointsBalance
-      localAccount.lifetimePoints = dbAccount.lifetime_points ?? localAccount.lifetimePoints
-      localAccount.tier = (dbAccount.tier as LoyaltyTier) || getTierForPoints(localAccount.lifetimePoints)
-      localAccount.referralCreditsNgn = Number(dbAccount.referral_credits_ngn) || localAccount.referralCreditsNgn
-      localAccount.referredCount = dbAccount.referred_count ?? localAccount.referredCount
-      localAccount.hasActiveKdPass = Boolean(dbAccount.has_active_kd_pass)
-      localAccount.kdPassExpiry = dbAccount.kd_pass_expiry || null
+    // 1. Try get_or_create_loyalty_account RPC for authoritative auto-provisioning
+    const { data: rpcAccount, error: rpcErr } = await db.rpc('get_or_create_loyalty_account', {
+      p_user_id: userId,
+    })
+
+    if (!rpcErr && rpcAccount) {
+      localAccount.pointsBalance = rpcAccount.points_balance ?? localAccount.pointsBalance
+      localAccount.lifetimePoints = rpcAccount.lifetime_points ?? localAccount.lifetimePoints
+      localAccount.tier = (rpcAccount.tier as LoyaltyTier) || getTierForPoints(localAccount.lifetimePoints)
+      localAccount.referralCreditsNgn = Number(rpcAccount.referral_credits_ngn) || localAccount.referralCreditsNgn
+      localAccount.referredCount = rpcAccount.referred_count ?? localAccount.referredCount
+      localAccount.hasActiveKdPass = Boolean(rpcAccount.has_active_kd_pass)
+      localAccount.kdPassExpiry = rpcAccount.kd_pass_expiry || null
+    } else {
+      // Direct table query fallback
+      const { data: dbAccount, error: accError } = await db
+        .from('loyalty_accounts')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      if (!accError && dbAccount) {
+        localAccount.pointsBalance = dbAccount.points_balance ?? localAccount.pointsBalance
+        localAccount.lifetimePoints = dbAccount.lifetime_points ?? localAccount.lifetimePoints
+        localAccount.tier = (dbAccount.tier as LoyaltyTier) || getTierForPoints(localAccount.lifetimePoints)
+        localAccount.referralCreditsNgn = Number(dbAccount.referral_credits_ngn) || localAccount.referralCreditsNgn
+        localAccount.referredCount = dbAccount.referred_count ?? localAccount.referredCount
+        localAccount.hasActiveKdPass = Boolean(dbAccount.has_active_kd_pass)
+        localAccount.kdPassExpiry = dbAccount.kd_pass_expiry || null
+      }
     }
 
-    // Also fetch transactions if available
+    // 2. Fetch immutable ledger transactions
     const { data: dbTxs } = await db
       .from('loyalty_transactions')
       .select('*')

@@ -43,7 +43,7 @@ export function RiderBottomNav({ activeTripCount = 0, inboxCount = 0 }: RiderBot
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t border-border bg-white/95 backdrop-blur-lg lg:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-2"
+      className="fixed bottom-0 left-0 right-0 z-40 flex h-[calc(4rem+env(safe-area-inset-bottom,0px))] pb-[env(safe-area-inset-bottom,0px)] items-center justify-around border-t border-border bg-white/95 backdrop-blur-lg lg:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-2"
       aria-label="Rider mobile navigation"
     >
       {items.map(({ to, icon: Icon, label, badge, badgeVariant, hasPulse }) => (

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ShieldCheck, Copy, Check, Lock, AlertTriangle } from 'lucide-react'
+import { ShieldCheck, Copy, Check, Lock, AlertTriangle, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
 export interface DeliveryPinCardProps {
@@ -9,8 +9,11 @@ export interface DeliveryPinCardProps {
 
 export function DeliveryPinCard({ pin, className }: DeliveryPinCardProps) {
   const [copied, setCopied] = useState(false)
+  const [isMasked, setIsMasked] = useState(true)
 
   const formattedPin = pin.split('').join('  ')
+  const maskedPin = pin.split('').map(() => '•').join('  ')
+  const displayPin = isMasked ? maskedPin : formattedPin
 
   const handleCopy = async () => {
     try {
@@ -38,7 +41,7 @@ export function DeliveryPinCard({ pin, className }: DeliveryPinCardProps) {
     <div
       data-testid="delivery-pin-card"
       className={cn(
-        'relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-6 text-white shadow-xl',
+        'relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-5 sm:p-6 text-white shadow-xl',
         className
       )}
     >
@@ -73,19 +76,31 @@ export function DeliveryPinCard({ pin, className }: DeliveryPinCardProps) {
       </div>
 
       {/* Main PIN Area */}
-      <div className="relative z-10 my-6 flex flex-col items-center justify-center text-center">
+      <div className="relative z-10 my-5 sm:my-6 flex flex-col items-center justify-center text-center">
         <p className="text-xs font-medium text-neutral-400">
           Give this code to your dispatch rider upon physical arrival
         </p>
 
-        {/* PIN Code Box */}
-        <div className="mt-3 flex items-center justify-center rounded-2xl border border-neutral-700/80 bg-neutral-900/90 px-6 py-4 shadow-inner">
+        {/* PIN Code Box with Eye Toggle */}
+        <div className="mt-3 flex items-center justify-center gap-3 rounded-2xl border border-neutral-700/80 bg-neutral-900/90 px-5 sm:px-6 py-3.5 sm:py-4 shadow-inner">
           <span
             data-testid="delivery-pin-display"
-            className="font-mono text-3xl sm:text-4xl font-black tracking-[0.3em] text-white select-all drop-shadow-[0_2px_10px_rgba(229,9,20,0.3)]"
+            className="font-mono text-2xl sm:text-4xl font-black tracking-[0.3em] text-white select-all drop-shadow-[0_2px_10px_rgba(229,9,20,0.3)]"
           >
-            {formattedPin}
+            {displayPin}
           </span>
+          <button
+            type="button"
+            onClick={() => setIsMasked((prev) => !prev)}
+            aria-label={isMasked ? 'Reveal PIN digits' : 'Hide PIN digits'}
+            className="ml-2 flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-800 text-neutral-300 hover:bg-neutral-700 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            {isMasked ? (
+              <Eye className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <EyeOff className="h-4 w-4" aria-hidden="true" />
+            )}
+          </button>
         </div>
 
         {/* One-tap Copy Button */}
@@ -94,7 +109,7 @@ export function DeliveryPinCard({ pin, className }: DeliveryPinCardProps) {
           onClick={handleCopy}
           aria-label={copied ? 'PIN copied to clipboard' : 'Copy delivery verification PIN'}
           className={cn(
-            'mt-3 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 active:scale-95',
+            'mt-3.5 inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 active:scale-95',
             copied
               ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
               : 'bg-neutral-800 text-neutral-200 hover:bg-neutral-700 hover:text-white border border-neutral-700'
@@ -118,7 +133,7 @@ export function DeliveryPinCard({ pin, className }: DeliveryPinCardProps) {
       <div className="relative z-10 flex items-start gap-2.5 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3 text-left">
         <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" aria-hidden="true" />
         <p className="text-[11px] leading-relaxed text-amber-200/90">
-          <strong>Security Protocol:</strong> Never disclose this PIN over phone calls or WhatsApp. Hand it over in person only after inspecting your package.
+          <strong>Security Protocol:</strong> Only share this PIN with your rider in person after verifying all items in your parcel. Never share it over phone calls or WhatsApp.
         </p>
       </div>
     </div>

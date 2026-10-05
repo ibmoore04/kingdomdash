@@ -13,7 +13,8 @@ import {
   FileText,
   Check,
 } from 'lucide-react';
-import { playKitchenOrderChime } from '@/utils/audio-chime';
+import { playKitchenOrderChime, unlockAudioContext } from '@/utils/audio-chime';
+import { AudioUnlockBanner } from '@/components/common/audio-unlock-banner';
 import { formatNgn } from '@/utils/formatting';
 
 export interface KitchenTicketItem {
@@ -96,14 +97,17 @@ export const KitchenDisplayScreen: React.FC<KitchenDisplayScreenProps> = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
 
-  const handleToggleSound = () => {
-    setSoundEnabled(!soundEnabled);
-    if (!soundEnabled) {
+  const handleToggleSound = async () => {
+    const nextVal = !soundEnabled;
+    setSoundEnabled(nextVal);
+    if (nextVal) {
+      await unlockAudioContext();
       playKitchenOrderChime();
     }
   };
 
-  const handleTestChime = () => {
+  const handleTestChime = async () => {
+    await unlockAudioContext();
     playKitchenOrderChime();
   };
 
@@ -363,6 +367,10 @@ export const KitchenDisplayScreen: React.FC<KitchenDisplayScreenProps> = ({
           })
         )}
       </div>
+
+      {soundEnabled && (
+        <AudioUnlockBanner label="Tap to activate kitchen order alerts" />
+      )}
     </div>
   );
 };

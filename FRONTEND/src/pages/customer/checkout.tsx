@@ -35,6 +35,7 @@ import { validatePromoCode } from '@/services/promo/promo-service'
 import { useAuthStore } from '@/stores/auth-store'
 import {
   getLoyaltyAccount,
+  fetchLoyaltyAccountFromBackend,
   redeemPoints,
   creditOrderPoints,
   type LoyaltyAccount,
@@ -92,9 +93,25 @@ export default function CheckoutPage() {
   const [riderTip, setRiderTip] = useState<number>(0)
 
   useEffect(() => {
+    let isMounted = true
     if (profile?.id) {
-      const account = getLoyaltyAccount(profile.id)
-      setLoyaltyAccount(account)
+      // 1. Initial local state for immediate render
+      const local = getLoyaltyAccount(profile.id)
+      setLoyaltyAccount(local)
+
+      // 2. Authoritative backend sync from public.loyalty_accounts
+      fetchLoyaltyAccountFromBackend(profile.id)
+        .then((serverAccount) => {
+          if (isMounted && serverAccount) {
+            setLoyaltyAccount(serverAccount)
+          }
+        })
+        .catch(() => {
+          // Keep local fallback on network failure
+        })
+    }
+    return () => {
+      isMounted = false
     }
   }, [profile?.id])
 

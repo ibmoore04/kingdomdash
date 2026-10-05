@@ -11,6 +11,7 @@ import {
 import { getRiderAssignmentInbox } from '@/services/rider/assignment-service'
 import { reportDeliveryIssue } from '@/services/rider/exception-service'
 import type { ActiveDeliveryDetails, OperationalIssueType } from '@/types/rider'
+import { cacheOrderGateDetails, registerAutoQueueSync, type QueuedDeliveryAction } from '@/services/rider/offline-delivery-queue'
 import { VendorPrepIndicator } from '@/components/rider/delivery/vendor-prep-indicator'
 import { CustodyActionBar } from '@/components/rider/delivery/custody-action-bar'
 import { ExternalNavLauncher } from '@/components/rider/delivery/external-nav-launcher'
@@ -49,7 +50,17 @@ export default function RiderActiveDeliveryPage() {
         getRiderActiveDelivery(),
         getRiderAssignmentInbox(),
       ])
-      setActiveDelivery(activeData)
+      if (activeData) {
+        setActiveDelivery(activeData)
+        cacheOrderGateDetails(activeData.order_id, {
+          customerName: activeData.customer_name,
+          customerPhone: activeData.customer_phone,
+          deliveryAddress: activeData.delivery_address,
+          pickupAddress: activeData.pickup_address,
+        })
+      } else {
+        setActiveDelivery(null)
+      }
       setPendingOffersCount(inboxData?.length || 0)
     } finally {
       setIsLoading(false)
@@ -58,6 +69,29 @@ export default function RiderActiveDeliveryPage() {
 
   useEffect(() => {
     loadActiveDelivery()
+
+    // Register auto queue sync on reconnect
+    const unregisterSync = registerAutoQueueSync(async (queuedAction: QueuedDeliveryAction) => {
+      try {
+        if (!activeDelivery || activeDelivery.order_id !== queuedAction.orderId) return true
+        if (queuedAction.actionType === 'pickup') {
+          const res = await markDeliveryPickedUp(activeDelivery.delivery_id)
+          if (res.success) await loadActiveDelivery()
+          return res.success
+        } else if (queuedAction.actionType === 'transit') {
+          const res = await markDeliveryInTransit(activeDelivery.delivery_id)
+          if (res.success) await loadActiveDelivery()
+          return res.success
+        } else if (queuedAction.actionType === 'delivered') {
+          const res = await markDeliveryDelivered(activeDelivery.delivery_id, undefined, queuedAction.pin)
+          if (res.success) await loadActiveDelivery()
+          return res.success
+        }
+        return false
+      } catch {
+        return false
+      }
+    })
 
     // Real-time Supabase subscription for active delivery status updates with guaranteed teardown
     let channel: ReturnType<typeof supabase.channel> | null = null
@@ -87,12 +121,13 @@ export default function RiderActiveDeliveryPage() {
     }, 10000)
 
     return () => {
+      unregisterSync()
       if (channel) {
         supabase.removeChannel(channel)
       }
       clearInterval(interval)
     }
-  }, [loadActiveDelivery, activeDelivery?.order_id])
+  }, [loadActiveDelivery, activeDelivery?.order_id, activeDelivery?.delivery_id])
 
   const handlePickup = async (notes?: string) => {
     if (!activeDelivery) return
@@ -399,6 +434,7 @@ export default function RiderActiveDeliveryPage() {
 
         {/* Sticky Custody Action Bar */}
         <CustodyActionBar
+          orderId={activeDelivery.order_id}
           deliveryStatus={activeDelivery.delivery_status}
           orderStatus={activeDelivery.order_status}
           serviceType={activeDelivery.service_type}
