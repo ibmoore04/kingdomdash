@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   ChefHat,
   Volume2,
@@ -10,12 +10,10 @@ import {
   Flame,
   Package,
   AlertCircle,
-  FileText,
   Check,
 } from 'lucide-react';
 import { playKitchenOrderChime, unlockAudioContext } from '@/utils/audio-chime';
 import { AudioUnlockBanner } from '@/components/common/audio-unlock-banner';
-import { formatNgn } from '@/utils/formatting';
 
 export interface KitchenTicketItem {
   id: string;
@@ -88,7 +86,7 @@ interface KitchenDisplayScreenProps {
 export const KitchenDisplayScreen: React.FC<KitchenDisplayScreenProps> = ({
   initialTickets,
   onUpdateStatus,
-  isOpenModal = false,
+  isOpenModal: _isOpenModal = false,
   onClose,
 }) => {
   const [tickets, setTickets] = useState<KitchenTicket[]>(initialTickets || DEFAULT_TICKETS);
