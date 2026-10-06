@@ -144,7 +144,8 @@ export async function playKitchenOrderChime(): Promise<void> {
     osc2.frequency.setValueAtTime(880, now);
     osc2.frequency.setValueAtTime(1174.66, now + 0.14);
 
-    gain.gain.setValueAtTime(0.5, now);
+    const mult = getAudioVolumeMultiplier();
+    gain.gain.setValueAtTime(0.5 * mult, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
 
     osc1.connect(gain);
@@ -186,7 +187,8 @@ export async function playDispatchAlertChime(): Promise<void> {
     osc.frequency.setValueAtTime(783.99, now);
     osc.frequency.setValueAtTime(1046.5, now + 0.1);
 
-    gain.gain.setValueAtTime(0.55, now);
+    const mult = getAudioVolumeMultiplier();
+    gain.gain.setValueAtTime(0.55 * mult, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
 
     osc.connect(gain);
@@ -218,6 +220,7 @@ export async function playLockoutAlertBeep(): Promise<void> {
     }
 
     const now = ctx.currentTime;
+    const mult = getAudioVolumeMultiplier();
     for (let i = 0; i < 3; i++) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -225,7 +228,7 @@ export async function playLockoutAlertBeep(): Promise<void> {
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(220, now + i * 0.15);
 
-      gain.gain.setValueAtTime(0.4, now + i * 0.15);
+      gain.gain.setValueAtTime(0.4 * mult, now + i * 0.15);
       gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.1);
 
       osc.connect(gain);
@@ -240,6 +243,10 @@ export async function playLockoutAlertBeep(): Promise<void> {
 }
 
 const SOUND_ENABLED_STORAGE_KEY = 'kd_sound_alerts_enabled';
+const SOUND_VOLUME_STORAGE_KEY = 'kd_sound_volume_level';
+const HAPTICS_ENABLED_STORAGE_KEY = 'kd_haptics_enabled';
+
+export type AudioVolumeLevel = 'low' | 'medium' | 'high';
 
 /**
  * Checks if sound notifications are globally enabled by the user (default: true).
@@ -256,14 +263,110 @@ export function isGlobalSoundEnabled(): boolean {
 export function setGlobalSoundEnabled(enabled: boolean): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(SOUND_ENABLED_STORAGE_KEY, enabled ? 'true' : 'false');
+  window.dispatchEvent(new CustomEvent('kd:sound-preference-changed', { detail: { enabled } }));
+}
+
+/**
+ * Returns the current alert volume level: 'low', 'medium', or 'high'.
+ */
+export function getAudioVolume(): AudioVolumeLevel {
+  if (typeof window === 'undefined') return 'medium';
+  const stored = localStorage.getItem(SOUND_VOLUME_STORAGE_KEY);
+  if (stored === 'low' || stored === 'medium' || stored === 'high') {
+    return stored;
+  }
+  return 'medium';
+}
+
+/**
+ * Updates the alert volume level preference.
+ */
+export function setAudioVolume(level: AudioVolumeLevel): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(SOUND_VOLUME_STORAGE_KEY, level);
+  window.dispatchEvent(new CustomEvent('kd:sound-volume-changed', { detail: { level } }));
+}
+
+/**
+ * Returns the linear gain multiplier based on current volume setting.
+ */
+export function getAudioVolumeMultiplier(): number {
+  const vol = getAudioVolume();
+  switch (vol) {
+    case 'low':
+      return 0.35;
+    case 'high':
+      return 1.0;
+    case 'medium':
+    default:
+      return 0.7;
+  }
+}
+
+/**
+ * Checks if haptic vibration feedback is enabled (default: true).
+ */
+export function isHapticsEnabled(): boolean {
+  if (typeof window === 'undefined') return true;
+  const stored = localStorage.getItem(HAPTICS_ENABLED_STORAGE_KEY);
+  return stored !== 'false';
+}
+
+/**
+ * Updates the mobile haptic vibration preference.
+ */
+export function setHapticsEnabled(enabled: boolean): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(HAPTICS_ENABLED_STORAGE_KEY, enabled ? 'true' : 'false');
+  window.dispatchEvent(new CustomEvent('kd:haptics-preference-changed', { detail: { enabled } }));
+}
+
+/**
+ * Triggers hardware vibration on supported mobile devices using the Web Vibration API.
+ */
+export function triggerHapticFeedback(
+  pattern: 'info' | 'success' | 'warning' | 'error' | number[] = 'info'
+): boolean {
+  if (typeof window === 'undefined' || !isHapticsEnabled()) return false;
+  if (!('vibrate' in navigator) || typeof navigator.vibrate !== 'function') return false;
+
+  try {
+    let vibPattern: number[];
+    if (Array.isArray(pattern)) {
+      vibPattern = pattern;
+    } else {
+      switch (pattern) {
+        case 'error':
+          vibPattern = [250, 80, 250];
+          break;
+        case 'success':
+          vibPattern = [120, 60, 150];
+          break;
+        case 'warning':
+          vibPattern = [150, 70, 150];
+          break;
+        case 'info':
+        default:
+          vibPattern = [80, 50, 80];
+          break;
+      }
+    }
+    return navigator.vibrate(vibPattern);
+  } catch {
+    return false;
+  }
 }
 
 /**
  * Plays the appropriate synthesized chime for any global notification or toast.
+ * Also triggers mobile haptic feedback if enabled.
  */
 export async function playNotificationChime(
   variant: 'info' | 'success' | 'warning' | 'error' = 'info'
 ): Promise<void> {
+  // Trigger physical sensory feedback on mobile devices
+  triggerHapticFeedback(variant);
+
   if (!isGlobalSoundEnabled()) return;
 
   if (variant === 'error') {

@@ -9,7 +9,11 @@ import App from './App.tsx'
 import '@/styles/index.css'
 
 import { playNotificationChime, unlockAudioContext } from '@/utils/audio-chime'
+import { registerServiceWorker } from '@/utils/pwa-service-worker'
 import { useUiStore } from '@/stores/ui-store'
+
+// Initialize PWA service worker shell
+registerServiceWorker().catch(() => {})
 
 if (import.meta.env.DEV && typeof window !== 'undefined') {
   const win = window as unknown as Record<string, unknown>

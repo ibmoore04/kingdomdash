@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import type { Vendor, VendorUpdate } from '@/types'
 import { generateWhatsAppLink } from '@/utils/whatsapp'
+import { SoundHapticsSettingsCard } from '@/components/common/sound-haptics-settings-card'
 
 interface VendorSettingsTabProps {
   vendor: Vendor
@@ -308,81 +309,47 @@ export function VendorSettingsTab({
         </div>
       </section>
 
-      {/* 3. Dispatch & Audio Alerts */}
+      {/* 3. Kitchen & Dispatch Sound Preferences */}
+      <SoundHapticsSettingsCard
+        title="Kitchen & Dispatch Sound Alerts"
+        description="Fine-tune audio loudness, tone frequencies, and phone vibration so kitchen staff never miss an incoming order."
+      />
+
+      {/* 4. WhatsApp Order Dispatch Alerts */}
       <section className="rounded-2xl border border-border bg-white p-6 shadow-xs">
         <div className="flex items-center gap-3 border-b border-border/70 pb-4 mb-5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
             <Bell className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
-            <h3 className="text-body-large font-bold text-text-primary">Order Alerts & Sound Notifications</h3>
-            <p className="text-caption text-text-secondary">Configure high-priority alerts so no order is missed.</p>
+            <h3 className="text-body-large font-bold text-text-primary">WhatsApp Order Dispatch Line</h3>
+            <p className="text-caption text-text-secondary">Instant order summaries delivered straight to your staff WhatsApp line.</p>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <span className="text-body font-semibold text-text-primary block">Loud Audio Chime on New Orders</span>
-              <span className="text-caption text-text-secondary">
-                Plays an audible notification chime whenever a customer places an order.
-              </span>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={settings.soundAlerts}
-              aria-label="Toggle loud audio chime"
-              onClick={() => handleToggle('soundAlerts')}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                settings.soundAlerts ? 'bg-primary' : 'bg-gray-200'
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <span className="text-body font-semibold text-text-primary block">Instant WhatsApp Alert Ping</span>
+            <span className="text-caption text-text-secondary">
+              Receive new order notifications and customer dispatch links on WhatsApp.
+            </span>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={settings.whatsAppAlerts}
+            aria-label="Toggle WhatsApp alerts"
+            onClick={() => handleToggle('whatsAppAlerts')}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+              settings.whatsAppAlerts ? 'bg-primary' : 'bg-gray-200'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                settings.whatsAppAlerts ? 'translate-x-5' : 'translate-x-0'
               }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                  settings.soundAlerts ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between gap-4 border-t border-border/60 pt-4">
-            <div>
-              <span className="text-body font-semibold text-text-primary block">WhatsApp Order Alerts</span>
-              <span className="text-caption text-text-secondary">
-                Receive instant order summaries directly on your merchant WhatsApp line.
-              </span>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={settings.whatsAppAlerts}
-              aria-label="Toggle WhatsApp alerts"
-              onClick={() => handleToggle('whatsAppAlerts')}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                settings.whatsAppAlerts ? 'bg-primary' : 'bg-gray-200'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                  settings.whatsAppAlerts ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-
-          <div className="pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleTestChime}
-              className="gap-2"
-            >
-              <Volume2 className="h-4 w-4" aria-hidden="true" />
-              Test Order Chime
-            </Button>
-          </div>
+            />
+          </button>
         </div>
       </section>
 

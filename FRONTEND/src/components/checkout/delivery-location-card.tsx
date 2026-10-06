@@ -4,6 +4,7 @@ import { LocationMap } from '@/components/map'
 import { AddressFormModal } from './address-form-modal'
 import type { Address } from '@/types'
 import { IJEBU_ODE_CENTER } from '@/utils/geo'
+import { CAMPUS_LANDMARKS } from '@/constants/campus-landmarks'
 
 export interface DeliveryLocationCardProps {
   addresses: Address[]
@@ -151,6 +152,52 @@ export function DeliveryLocationCard({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Campus & Landmark Delivery Shortcuts */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+            🎓 Campus &amp; Landmark Shortcuts
+          </span>
+          <span className="text-[10px] text-neutral-400">1-Tap Pinpoint</span>
+        </div>
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          {CAMPUS_LANDMARKS.slice(0, 5).map((landmark) => {
+            const isSelected = selectedAddress?.address_line_1 === landmark.address
+            return (
+              <button
+                key={landmark.id}
+                type="button"
+                onClick={() => {
+                  const landmarkAddress: Address = {
+                    id: `landmark-${landmark.id}`,
+                    user_id: '',
+                    label: landmark.shortName,
+                    address_line_1: landmark.address,
+                    city: 'Ijebu-Ode',
+                    state: 'Ogun State',
+                    postal_code: '120101',
+                    latitude: landmark.coords.latitude,
+                    longitude: landmark.coords.longitude,
+                    is_default: false,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                  }
+                  onSelectAddress(landmarkAddress)
+                }}
+                className={`shrink-0 rounded-full border px-3 py-1 text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1 ${
+                  isSelected
+                    ? 'border-primary bg-primary text-white shadow-xs'
+                    : 'border-neutral-200 bg-neutral-50 text-neutral-700 hover:border-primary/40 hover:bg-neutral-100'
+                }`}
+              >
+                <span>{landmark.icon}</span>
+                <span>{landmark.shortName}</span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {/* Map Preview */}

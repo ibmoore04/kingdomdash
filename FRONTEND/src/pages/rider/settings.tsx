@@ -26,6 +26,7 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { generateWhatsAppLink } from '@/utils/whatsapp'
+import { SoundHapticsSettingsCard } from '@/components/common/sound-haptics-settings-card'
 
 export interface RiderSettingsState {
   defaultNavApp: 'google_maps' | 'apple_maps' | 'in_app'
@@ -333,6 +334,12 @@ export default function RiderSettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Sound & Sensory Control Center */}
+        <SoundHapticsSettingsCard
+          title="Dispatch Sound & Haptic Alerts"
+          description="Synthesized chime volume, vibration alerts, and library quiet mode during active deliveries."
+        />
 
         {/* 2. Dispatch Alerts & Sound Notifications */}
         <Card>

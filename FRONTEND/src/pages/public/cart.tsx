@@ -7,6 +7,7 @@ import { CartItemRow } from '@/components/cart/cart-item-row'
 import { EmptyCartView } from '@/components/cart/empty-cart-view'
 import { CartMilestoneMeter } from '@/components/cart/cart-milestone-meter'
 import { CostBreakdownAccordion } from '@/components/cart/cost-breakdown-accordion'
+import { MealPairingUpsell } from '@/components/cart/meal-pairing-upsell'
 import { useCartStore } from '@/stores/cart-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { formatNgn } from '@/utils/formatting'
@@ -109,6 +110,9 @@ export default function CartPage() {
                   <CartItemRow key={item.itemKey || item.productId} item={item} />
                 ))}
               </div>
+
+              {/* 1-Tap Meal Pairing & Student Upsells */}
+              <MealPairingUpsell />
             </div>
 
             {/* Right: Order Financial Summary */}

@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useAuthStore } from '@/stores/auth-store'
 import { supabase } from '@/services/supabase/client'
 import { getNotificationPreferences, updateNotificationPreferences } from '@/services/supabase/notifications'
+import { SoundHapticsSettingsCard } from '@/components/common/sound-haptics-settings-card'
 
 export interface CustomerSettingsState {
   orderSmsAlerts: boolean
@@ -495,7 +496,10 @@ export function CustomerSettingsTab() {
         </div>
       </section>
 
-      {/* 4. Security */}
+      {/* 4. Sound & Haptic Alerts */}
+      <SoundHapticsSettingsCard />
+
+      {/* 5. Security */}
       <section className="rounded-2xl border border-border bg-white p-4 sm:p-6 shadow-xs">
         <div className="flex items-center gap-3 border-b border-border/70 pb-4 mb-5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">

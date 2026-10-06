@@ -11,7 +11,14 @@ import {
   Heart,
   Globe,
   ShoppingBag,
+  Coins,
+  Moon,
 } from 'lucide-react'
+import {
+  isLateNightHours,
+  filterVendorsByBudget,
+  filterVendorsByLateNight,
+} from '@/utils/campus-discovery'
 import { Link } from 'react-router-dom'
 import { PageContainer } from '@/components/layout/section'
 import { Button } from '@/components/ui/button'
@@ -49,6 +56,9 @@ export default function FoodPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCuisine, setSelectedCuisine] = useState('all')
+  const [isPocketFriendlyOnly, setIsPocketFriendlyOnly] = useState(false)
+  const [isLateNightOnly, setIsLateNightOnly] = useState(false)
+  const isLateNightNow = useMemo(() => isLateNightHours(), [])
 
   const cartItems = useCartStore((state) => state.items)
   const subtotal = useCartStore((state) => state.getSubtotal())
@@ -74,9 +84,9 @@ export default function FoodPage() {
     }
   }, [])
 
-  // Filter vendors by search query and cuisine category
+  // Filter vendors by search query, cuisine category, student budget, and late night
   const filteredVendors = useMemo(() => {
-    return vendors.filter((v) => {
+    let result = vendors.filter((v) => {
       const matchesSearch =
         searchQuery.trim() === '' ||
         v.business_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -91,7 +101,17 @@ export default function FoodPage() {
 
       return matchesSearch && matchesCategory
     })
-  }, [vendors, searchQuery, selectedCuisine])
+
+    if (isPocketFriendlyOnly) {
+      result = filterVendorsByBudget(result, 2500)
+    }
+
+    if (isLateNightOnly) {
+      result = filterVendorsByLateNight(result)
+    }
+
+    return result
+  }, [vendors, searchQuery, selectedCuisine, isPocketFriendlyOnly, isLateNightOnly])
 
   const cuisineRailItems = useMemo(() => {
     return CUISINE_CATEGORIES.map(({ id, name }) => ({
@@ -160,6 +180,35 @@ export default function FoodPage() {
             onSelect={(id) => setSelectedCuisine(id)}
             className="mb-2"
           />
+
+          {/* Quick Smart Filters: Student Budget & Late-Night */}
+          <div className="flex flex-wrap items-center gap-2 mt-2 mb-1">
+            <button
+              type="button"
+              onClick={() => setIsPocketFriendlyOnly((prev) => !prev)}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all cursor-pointer border ${
+                isPocketFriendlyOnly
+                  ? 'border-emerald-500 bg-emerald-50 text-emerald-800 shadow-xs'
+                  : 'border-neutral-200 bg-white text-neutral-600 hover:border-emerald-300 hover:bg-neutral-50'
+              }`}
+            >
+              <Coins className="h-3.5 w-3.5 text-emerald-600" />
+              <span>Under ₦2,500 (Pocket-Friendly)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsLateNightOnly((prev) => !prev)}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all cursor-pointer border ${
+                isLateNightOnly
+                  ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-xs'
+                  : 'border-neutral-200 bg-white text-neutral-600 hover:border-amber-300 hover:bg-neutral-50'
+              }`}
+            >
+              <Moon className="h-3.5 w-3.5 text-amber-500" />
+              <span>Late-Night Cravings {isLateNightNow ? '• Active Now' : ''}</span>
+            </button>
+          </div>
 
           {/* Personal Shopper Concierge Banner (Visible on Large and Small Screens) */}
           <div className="mt-5 rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/[0.06] via-amber-500/[0.03] to-white p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs">

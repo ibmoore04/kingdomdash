@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { ShoppingBag, User, LogOut, LayoutDashboard, LogIn, UserPlus, Gift, Search } from 'lucide-react'
+import { ShoppingBag, User, LogOut, LayoutDashboard, LogIn, UserPlus, Gift, Search, Volume2, VolumeX } from 'lucide-react'
 import { NavLink, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,6 +12,8 @@ import { Logo } from '@/components/layout/logo'
 import { OmniboxSearchModal } from '@/components/shared/omnibox-search-modal'
 import { useCartStore } from '@/stores/cart-store'
 import { useAuthStore } from '@/stores/auth-store'
+import { useUiStore } from '@/stores/ui-store'
+import { isGlobalSoundEnabled, setGlobalSoundEnabled } from '@/utils/audio-chime'
 import { cn } from '@/lib/cn'
 
 const navLinks = [
@@ -34,7 +36,32 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [isCartBouncing, setIsCartBouncing] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isSoundMuted, setIsSoundMuted] = useState(false)
   const prevCountRef = useRef(itemCount)
+
+  // Listen for global sound preference changes
+  useEffect(() => {
+    setIsSoundMuted(!isGlobalSoundEnabled())
+    const handleSoundToggle = (e: Event) => {
+      const custom = e as CustomEvent<{ enabled: boolean }>
+      setIsSoundMuted(!custom.detail?.enabled)
+    }
+    window.addEventListener('kd:sound-preference-changed', handleSoundToggle)
+    return () => window.removeEventListener('kd:sound-preference-changed', handleSoundToggle)
+  }, [])
+
+  const handleToggleSound = () => {
+    const nextEnabled = isSoundMuted
+    setGlobalSoundEnabled(nextEnabled)
+    setIsSoundMuted(!nextEnabled)
+    useUiStore.getState().pushToast({
+      title: nextEnabled ? 'Audio Alerts Enabled' : 'Library Mode Activated',
+      message: nextEnabled
+        ? 'Synthesized order and dispatch chimes are now audible.'
+        : 'All synthesized alerts are muted. Vibration cues remain active.',
+      variant: nextEnabled ? 'success' : 'info',
+    })
+  }
 
   // Global Ctrl+K / Cmd+K keyboard shortcut
   useEffect(() => {
@@ -128,6 +155,27 @@ export function Navbar() {
             <kbd className="hidden sm:inline-flex items-center rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-[10px] font-mono text-neutral-400">
               ⌘K
             </kbd>
+          </button>
+
+          {/* Quick Sound / Library Mode Toggle */}
+          <button
+            type="button"
+            onClick={handleToggleSound}
+            className={cn(
+              'relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-full border border-neutral-200/80 bg-neutral-50 hover:bg-neutral-100 text-neutral-600 hover:text-neutral-900 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer',
+              isSoundMuted && 'border-amber-300 bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700'
+            )}
+            title={isSoundMuted ? 'Library Mode Active (Tap to unmute alerts)' : 'Mute Sound Alerts (Library Mode)'}
+            aria-label={isSoundMuted ? 'Unmute sounds' : 'Mute sounds'}
+          >
+            {isSoundMuted ? (
+              <VolumeX className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600" aria-hidden="true" />
+            ) : (
+              <Volume2 className="h-4 w-4 sm:h-5 sm:w-5 text-neutral-600 hover:text-neutral-900" aria-hidden="true" />
+            )}
+            {isSoundMuted && (
+              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+            )}
           </button>
 
           {/* Cart Trigger */}

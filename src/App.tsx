@@ -106,6 +106,7 @@ const VendorPendingPage = lazy(() => import('@/pages/customer/vendor-pending-pag
 // ── Loading fallback ──────────────────────────────────────────────────────────
 import { OfflineBanner } from '@/components/shared/offline-banner'
 import { ImpersonationBanner } from '@/components/shared/impersonation-banner'
+import { PwaInstallBanner } from '@/components/common/pwa-install-banner'
 import { Preloader } from '@/components/shared/preloader'
 import { RouteProgressBar } from '@/components/shared/route-progress'
 
@@ -120,6 +121,7 @@ export default function App() {
       <ScrollToTop />
       <OfflineBanner />
       <ImpersonationBanner />
+      <PwaInstallBanner />
       <Suspense fallback={<PageLoader />}>
         <Routes>
         {/* ── Direct auth aliases (preserving query parameters) ─────────────── */}

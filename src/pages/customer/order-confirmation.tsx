@@ -551,15 +551,25 @@ export default function OrderConfirmationPage() {
                   )}
 
                   {/* Order ID Reference Pill */}
-                  <div className="mt-4 pt-3 border-t border-neutral-200/60 flex items-center justify-between text-xs text-neutral-500">
+                  <div className="mt-4 pt-3 border-t border-neutral-200/60 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
                     <span className="font-mono">Order ID: <strong className="text-neutral-800 font-bold">{order.id}</strong></span>
-                    <button
-                      type="button"
-                      onClick={handleCopyOrderId}
-                      className="text-primary hover:underline font-semibold text-xs flex items-center gap-1"
-                    >
-                      {copiedOrderId ? 'Copied ID' : 'Copy Full ID'}
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setIsReceiptModalOpen(true)}
+                        className="text-primary hover:underline font-bold text-xs flex items-center gap-1 cursor-pointer"
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        <span>Official Receipt</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCopyOrderId}
+                        className="text-neutral-600 hover:text-neutral-900 font-semibold text-xs flex items-center gap-1 cursor-pointer"
+                      >
+                        {copiedOrderId ? 'Copied ID' : 'Copy Full ID'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -802,6 +812,17 @@ export default function OrderConfirmationPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Official Invoice / Receipt Action Button */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsReceiptModalOpen(true)}
+                  className="w-full h-11 rounded-2xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 shadow-2xs"
+                >
+                  <FileText className="h-4 w-4 text-primary" />
+                  <span>View Official Receipt &amp; Invoice</span>
+                </Button>
 
                 {/* Guaranteed Ledger Badge */}
                 <div className="flex items-center justify-center gap-1.5 text-caption text-neutral-400 pt-1">
