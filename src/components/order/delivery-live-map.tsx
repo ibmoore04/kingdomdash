@@ -10,9 +10,7 @@ import {
   MessageCircle,
   ShieldCheck,
   Compass,
-  Layers,
   Map as MapIcon,
-  Navigation,
 } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import type { Coordinates } from '@/types'

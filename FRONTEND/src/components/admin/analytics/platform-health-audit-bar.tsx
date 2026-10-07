@@ -10,7 +10,6 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
-  ExternalLink,
 } from 'lucide-react';
 
 export interface AuditStreamItem {
@@ -70,7 +69,7 @@ export const PlatformHealthAuditBar: React.FC<PlatformHealthAuditBarProps> = ({
 }) => {
   const [isStreamOpen, setIsStreamOpen] = useState(false);
   const [auditFilter, setAuditFilter] = useState<string>('ALL');
-  const [stream, setStream] = useState<AuditStreamItem[]>(DEFAULT_AUDIT_STREAM);
+  const [stream] = useState<AuditStreamItem[]>(DEFAULT_AUDIT_STREAM);
 
   const filteredStream = stream.filter((item) =>
     auditFilter === 'ALL' ? true : item.category === auditFilter

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import React from 'react';
 import { KitchenDisplayScreen } from '../../vendor/kitchen-display-screen';
 import { LiveDeliveryStepper } from '../live-delivery-stepper';
 import { WhatsappDispatchBridge } from '../whatsapp-dispatch-bridge';

@@ -6,7 +6,6 @@ import {
   Bike,
   Home,
   ShieldCheck,
-  AlertCircle,
   Navigation,
 } from 'lucide-react';
 
@@ -115,7 +114,7 @@ export const LiveDeliveryStepper: React.FC<LiveDeliveryStepperProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm sm:text-lg font-extrabold text-neutral-900 tracking-tight">
-              Live Order Fulfillment Stepper
+              Live Order Fulfillment Stepper {orderNumber ? <span className="text-xs font-mono font-normal text-neutral-400">#{orderNumber}</span> : null}
             </h3>
             {isCancelled ? (
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">

@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import React from 'react'
 import {
   CAMPUS_LANDMARKS,
   isLateNightHours,
@@ -10,7 +9,7 @@ import {
 } from '@/utils/campus-discovery'
 import { MealPairingUpsell } from '@/components/cart/meal-pairing-upsell'
 import { useCartStore, type CartVendor } from '@/stores/cart-store'
-import type { Vendor } from '@/types/database'
+import type { Vendor } from '@/types'
 
 describe('Phase 4: Campus Discovery & Budget Optimization', () => {
   beforeEach(() => {
@@ -50,7 +49,7 @@ describe('Phase 4: Campus Discovery & Budget Optimization', () => {
   })
 
   describe('filterVendorsByBudget', () => {
-    const mockVendors: Vendor[] = [
+    const mockVendors = [
       {
         id: 'v1',
         business_name: 'Student Buka Delight',
@@ -77,7 +76,7 @@ describe('Phase 4: Campus Discovery & Budget Optimization', () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
-    ]
+    ] as unknown as Vendor[]
 
     it('filters out luxury restaurants when student budget filter is applied', () => {
       const pocketFriendly = filterVendorsByBudget(mockVendors, 2500)
@@ -87,7 +86,7 @@ describe('Phase 4: Campus Discovery & Budget Optimization', () => {
   })
 
   describe('filterVendorsByLateNight', () => {
-    const mockVendors: Vendor[] = [
+    const mockVendors = [
       {
         id: 'v1',
         business_name: 'Campus Suya & Grills Spot',
@@ -112,7 +111,7 @@ describe('Phase 4: Campus Discovery & Budget Optimization', () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
-    ]
+    ] as unknown as Vendor[]
 
     it('identifies late-night cuisine vendors matching keywords', () => {
       const lateNightOptions = filterVendorsByLateNight(mockVendors)

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import React from 'react'
 import {
   extractReceiptData,
   generateReceiptWhatsAppText,
@@ -63,14 +62,19 @@ describe('Phase 5: Branded PDF Receipts & WhatsApp Invoice Dispatcher', () => {
   const mockPayment: PaymentRow = {
     id: 'pay-1',
     order_id: mockOrder.id,
+    customer_id: 'cust-1',
     paystack_reference: 'KD-PAY-987654321',
+    paystack_transaction_id: 'txn-98765',
     amount: 6050,
-    status: 'success',
+    currency: 'NGN',
+    status: 'successful',
     channel: 'card',
+    gateway_response: 'Successful',
     paid_at: '2026-10-06T12:05:00Z',
+    verified_at: '2026-10-06T12:05:00Z',
     created_at: '2026-10-06T12:00:00Z',
     updated_at: '2026-10-06T12:05:00Z',
-  }
+  } as unknown as PaymentRow
 
   describe('Receipt Formatting Utilities', () => {
     it('generates canonical order verification URL', () => {

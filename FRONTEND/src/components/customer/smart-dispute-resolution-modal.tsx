@@ -4,10 +4,6 @@ import {
   X,
   CheckCircle2,
   DollarSign,
-  HelpCircle,
-  MessageCircle,
-  FileText,
-  ShieldAlert,
   Send,
   Loader2,
 } from 'lucide-react';

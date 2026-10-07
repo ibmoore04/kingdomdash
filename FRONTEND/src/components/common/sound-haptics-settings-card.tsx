@@ -4,9 +4,7 @@ import {
   VolumeX,
   Volume1,
   Vibrate,
-  Bell,
   Play,
-  ShieldCheck,
   CheckCircle2,
   Sparkles,
 } from 'lucide-react'

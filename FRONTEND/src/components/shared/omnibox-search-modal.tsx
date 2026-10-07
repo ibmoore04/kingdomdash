@@ -172,7 +172,7 @@ export function OmniboxSearchModal({ isOpen, onClose }: OmniboxSearchModalProps)
   const handleSelectVendor = (vendor: Vendor) => {
     onClose()
     const path =
-      vendor.business_type === 'grocery'
+      vendor.business_type === 'grocery_store'
         ? `/groceries/${vendor.id}`
         : `/food/${vendor.id}`
     navigate(path)

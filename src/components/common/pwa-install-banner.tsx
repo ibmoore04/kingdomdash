@@ -8,7 +8,6 @@ import {
   Laptop,
   MoreVertical,
   CheckCircle2,
-  ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -27,7 +26,6 @@ const SNOOZE_DURATION_DAYS = 5
 
 export function PwaInstallBanner() {
   const [showBanner, setShowBanner] = useState(false)
-  const [isIos, setIsIos] = useState(false)
   const [isAndroid, setIsAndroid] = useState(false)
   const [isLaptop, setIsLaptop] = useState(true)
   const [showInstructions, setShowInstructions] = useState(false)
@@ -48,7 +46,6 @@ export function PwaInstallBanner() {
     const android = isAndroidDevice()
     const laptop = isDesktopOrLaptop()
 
-    setIsIos(ios)
     setIsAndroid(android)
     setIsLaptop(laptop)
 

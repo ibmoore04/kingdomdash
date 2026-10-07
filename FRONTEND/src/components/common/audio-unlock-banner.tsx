@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Volume2, VolumeX, Check, X } from 'lucide-react'
+import { Volume2, Check, X } from 'lucide-react'
 import { isAudioUnlocked, unlockAudioContext, playKitchenOrderChime } from '@/utils/audio-chime'
 
 export interface AudioUnlockBannerProps {

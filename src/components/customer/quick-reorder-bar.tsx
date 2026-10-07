@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { RotateCcw, Clock, ArrowRight, ShoppingBag, Store, ChevronRight } from 'lucide-react'
+import { RotateCcw, Clock, ArrowRight, Store, ChevronRight } from 'lucide-react'
 import { getOrdersByCustomer } from '@/services/supabase/orders'
 import { useAuthStore } from '@/stores/auth-store'
 import { useCartStore, type CartItem, type CartVendor } from '@/stores/cart-store'
@@ -33,7 +33,7 @@ interface PastOrder {
 }
 
 export function QuickReorderBar() {
-  const { user, profile } = useAuthStore()
+  const { session, profile } = useAuthStore()
   const navigate = useNavigate()
   const { pushToast } = useToast()
   const [pastOrders, setPastOrders] = useState<PastOrder[]>([])
@@ -42,17 +42,19 @@ export function QuickReorderBar() {
 
   useEffect(() => {
     let isMounted = true
-    const currentUserId = user?.id || profile?.id
+    const currentUserId = session?.user?.id || profile?.id
 
     if (!currentUserId) {
       setPastOrders([])
       return
     }
 
+    const customerId: string = currentUserId
+
     async function loadPastOrders() {
       setIsLoading(true)
       try {
-        const { data, error } = await getOrdersByCustomer(currentUserId)
+        const { data, error } = await getOrdersByCustomer(customerId)
         if (isMounted && !error && Array.isArray(data)) {
           // Take top 4 most recent orders that have items
           const valid = (data as PastOrder[])
@@ -72,9 +74,9 @@ export function QuickReorderBar() {
     return () => {
       isMounted = false
     }
-  }, [user?.id, profile?.id])
+  }, [session?.user?.id, profile?.id])
 
-  if (!user && !profile) return null
+  if (!session?.user && !profile) return null
   if (!isLoading && pastOrders.length === 0) return null
 
   const handle1ClickReorder = async (order: PastOrder) => {
@@ -114,7 +116,7 @@ export function QuickReorderBar() {
       })
 
       // Sync to local storage
-      const activeUser = cartStore.activeUserId || user?.id || null
+      const activeUser = cartStore.activeUserId || session?.user?.id || profile?.id || null
       const { saveCartToStorage, syncCartToDatabase } = await import('@/stores/cart-store')
       saveCartToStorage(activeUser, cartItems, cartVendor)
       void syncCartToDatabase(activeUser, cartItems, cartVendor)

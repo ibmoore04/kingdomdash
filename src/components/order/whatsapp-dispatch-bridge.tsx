@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageCircle, Phone, HelpCircle, Shield, ExternalLink } from 'lucide-react';
+import { MessageCircle, Phone, HelpCircle, Shield } from 'lucide-react';
 
 export interface WhatsappDispatchBridgeProps {
   orderNumber: string;
@@ -35,7 +35,7 @@ export const WhatsappDispatchBridge: React.FC<WhatsappDispatchBridgeProps> = ({
   const supportWaNumber = sanitizePhoneForWa(supportPhone);
 
   const riderMessage = encodeURIComponent(
-    `Hello ${riderName}! I am tracking my KingdomDash Order #${orderNumber}.\nDestination: ${deliveryAddress}.\nPlease ping me as soon as you arrive at the gate.`
+    `Hello ${riderName}! I am tracking my KingdomDash Order #${orderNumber} from ${vendorName}.\nDestination: ${deliveryAddress}.\nPlease ping me as soon as you arrive at the gate.`
   );
 
   const supportMessage = encodeURIComponent(

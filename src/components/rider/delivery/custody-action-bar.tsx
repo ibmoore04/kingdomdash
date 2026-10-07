@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { PackageCheck, Bike, CheckCircle, AlertTriangle, Loader2, WifiOff, Check } from 'lucide-react'
+import { PackageCheck, Bike, CheckCircle, AlertTriangle, Loader2, WifiOff } from 'lucide-react'
 import { enqueueOfflineDeliveryAction } from '@/services/rider/offline-delivery-queue'
 import { playDispatchAlertChime, playLockoutAlertBeep } from '@/utils/audio-chime'
 

@@ -62,7 +62,7 @@ export function isLateNightHours(now = new Date()): boolean {
  */
 export function filterVendorsByBudget(
   vendors: Vendor[],
-  maxBudgetNgn = 2500
+  _maxBudgetNgn = 2500
 ): Vendor[] {
   return vendors.filter((v) => {
     const desc = (v.business_description || '').toLowerCase()

@@ -52,6 +52,7 @@ describe('Phase 6: Mobile PWA Safe Area Polish & Touch Density (Zero Overflow)',
     expect(css).toContain('--safe-area-bottom: env(safe-area-inset-bottom, 0px);')
     expect(css).toContain('.pb-safe')
     expect(css).toContain('.bottom-safe')
+    expect(css).toBe(fs.readFileSync(frontendCssPath, 'utf8'))
 
     const bottomNav = fs.readFileSync(srcBottomNavPath, 'utf8')
     expect(bottomNav).toContain('env(safe-area-inset-bottom')

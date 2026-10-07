@@ -578,7 +578,7 @@ export default function OrderConfirmationPage() {
               <LiveDeliveryStepper
                 status={order.status}
                 etaMinutes={22}
-                deliveryPin={order.delivery_pin}
+                deliveryPin={order.delivery_pin ?? undefined}
                 orderNumber={order.id.slice(0, 8).toUpperCase()}
               />
 

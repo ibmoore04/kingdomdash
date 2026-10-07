@@ -39,6 +39,7 @@ describe('Offline Connectivity Status Banner (FLAW-05)', () => {
   })
 
   it('OfflineBanner renders sticky notification banner when browser goes offline', () => {
+    vi.useFakeTimers()
     render(<OfflineBanner />)
 
     act(() => {
@@ -52,6 +53,13 @@ describe('Offline Connectivity Status Banner (FLAW-05)', () => {
       window.dispatchEvent(new Event('online'))
     })
 
+    expect(screen.getByText(/Connection restored/i)).toBeInTheDocument()
+
+    act(() => {
+      vi.advanceTimersByTime(4000)
+    })
+
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    vi.useRealTimers()
   })
 })

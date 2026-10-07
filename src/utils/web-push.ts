@@ -48,7 +48,7 @@ export async function displayNotification(
     return false
   }
 
-  const enhancedOptions: NotificationOptions = {
+  const enhancedOptions: NotificationOptions & { vibrate?: number[] } = {
     icon: '/KingdomDash-emblem.png',
     badge: '/favicon.svg',
     vibrate: [120, 60, 150],

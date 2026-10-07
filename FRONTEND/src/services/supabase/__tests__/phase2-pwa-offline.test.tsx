@@ -4,8 +4,6 @@ import {
   isOnline,
   isStandalonePwa,
   isIosDevice,
-  canInstallPwa,
-  triggerPwaInstall,
 } from '@/utils/pwa-service-worker'
 import {
   isPushNotificationSupported,

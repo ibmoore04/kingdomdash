@@ -146,7 +146,7 @@ describe('Phase 2: Trust, Conversion & Reordering Suite', () => {
     it('renders returning customer past order and populates cart on 1-click reorder', async () => {
       // Authenticate mock user
       useAuthStore.setState({
-        user: { id: 'cust-uuid-1', email: 'test@kingdomdash.com' } as any,
+        session: { user: { id: 'cust-uuid-1', email: 'test@kingdomdash.com' } } as any,
         profile: { id: 'cust-uuid-1', role: 'customer' } as any,
       })
 

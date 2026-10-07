@@ -9,7 +9,6 @@ import {
   Award,
   Headphones,
   ShoppingBag,
-  Sparkles,
   UtensilsCrossed,
   Package,
   Store,
