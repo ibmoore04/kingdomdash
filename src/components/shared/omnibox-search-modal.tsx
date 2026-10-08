@@ -14,6 +14,7 @@ import {
   CornerDownLeft,
 } from 'lucide-react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { supabase } from '@/services/supabase/client'
 import { getActiveVendors } from '@/services/supabase/vendors'
 import { formatNgn } from '@/utils/formatting'
 import { getVendorFallbackCover } from '@/utils/vendor-branding'
@@ -30,8 +31,20 @@ const POPULAR_SEARCH_PILLS = [
   { label: 'Fresh Groceries', icon: ShoppingBag, query: 'grocery' },
 ]
 
-// Catalog of standout dishes available on KingdomDash for instant discovery
-const CURATED_DISH_CATALOG = [
+export interface StandoutDish {
+  id: string
+  name: string
+  category: string
+  vendorName: string
+  vendorId: string
+  serviceType: 'food' | 'grocery'
+  price: number
+  imageUrl: string
+  tags: string[]
+}
+
+// Curated dishes available on KingdomDash with distinct, authentic images
+const CURATED_DISH_CATALOG: StandoutDish[] = [
   {
     id: 'dish-jollof-combo',
     name: 'Party Jollof Rice & Crispy Chicken Combo',
@@ -51,7 +64,7 @@ const CURATED_DISH_CATALOG = [
     vendorId: 'crispy-crunch',
     serviceType: 'food',
     price: 2800,
-    imageUrl: '/images/hero-jollof.jpg',
+    imageUrl: '/images/covers/grilled-feast.jpg',
     tags: ['chicken', 'crispy', 'fast food', 'grill'],
   },
   {
@@ -62,7 +75,7 @@ const CURATED_DISH_CATALOG = [
     vendorId: 'reigneth-bakery',
     serviceType: 'food',
     price: 900,
-    imageUrl: '/images/hero-jollof.jpg',
+    imageUrl: '/images/covers/bakery-pastries.jpg',
     tags: ['pie', 'meat pie', 'pastry', 'bakery', 'reigneth', 'bread'],
   },
   {
@@ -73,7 +86,7 @@ const CURATED_DISH_CATALOG = [
     vendorId: 'sizzle-shawarma',
     serviceType: 'food',
     price: 2500,
-    imageUrl: '/images/hero-jollof.jpg',
+    imageUrl: '/images/covers/grilled-feast.jpg',
     tags: ['shawarma', 'beef', 'wrap', 'snack', 'fast food'],
   },
   {
@@ -84,7 +97,7 @@ const CURATED_DISH_CATALOG = [
     vendorId: 'oke-aje-market',
     serviceType: 'grocery',
     price: 4200,
-    imageUrl: '/images/service-grocery.jpg',
+    imageUrl: '/images/covers/fresh-supermarket.jpg',
     tags: ['eggs', 'crate', 'grocery', 'farm', 'cooking'],
   },
   {
@@ -109,10 +122,11 @@ export function OmniboxSearchModal({ isOpen, onClose }: OmniboxSearchModalProps)
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [vendors, setVendors] = useState<Vendor[]>([])
+  const [dbDishes, setDbDishes] = useState<StandoutDish[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Fetch vendors once for fast client-side indexing
+  // Fetch vendors & real products for fast client-side indexing
   useEffect(() => {
     let isMounted = true
     async function loadData() {
@@ -123,6 +137,70 @@ export function OmniboxSearchModal({ isOpen, onClose }: OmniboxSearchModalProps)
         }
       } catch {
         // Fallback gracefully
+      }
+
+      try {
+        const { data: prodData, error: prodError } = await supabase
+          .from('products')
+          .select('id, name, price, image_url, category_id, vendor_id, vendors(id, business_name, business_type)')
+          .eq('is_available', true)
+          .limit(10)
+
+        if (isMounted && !prodError && prodData && prodData.length > 0) {
+          const mapped: StandoutDish[] = prodData.map((p: any) => {
+            const vObj = Array.isArray(p.vendors) ? p.vendors[0] : p.vendors
+            const vName = vObj?.business_name || 'Partner Store'
+            const vType = vObj?.business_type === 'grocery_store' ? 'grocery' : 'food'
+
+            let fallbackImg = '/images/hero-jollof.jpg'
+            const lower = (p.name || '').toLowerCase()
+            if (
+              lower.includes('chicken') ||
+              lower.includes('grill') ||
+              lower.includes('suya') ||
+              lower.includes('shawarma') ||
+              lower.includes('meat') ||
+              lower.includes('burger')
+            ) {
+              fallbackImg = '/images/covers/grilled-feast.jpg'
+            } else if (
+              lower.includes('pie') ||
+              lower.includes('bread') ||
+              lower.includes('pastr') ||
+              lower.includes('cake') ||
+              lower.includes('bake')
+            ) {
+              fallbackImg = '/images/covers/bakery-pastries.jpg'
+            } else if (
+              lower.includes('soup') ||
+              lower.includes('egusi') ||
+              lower.includes('swallow') ||
+              lower.includes('amala')
+            ) {
+              fallbackImg = '/images/covers/traditional-soup.jpg'
+            } else if (vType === 'grocery' || lower.includes('egg') || lower.includes('yam') || lower.includes('oil')) {
+              fallbackImg = '/images/covers/fresh-supermarket.jpg'
+            }
+
+            return {
+              id: p.id,
+              name: p.name,
+              category: vType === 'grocery' ? 'Groceries' : 'Food',
+              vendorName: vName,
+              vendorId: p.vendor_id || '',
+              serviceType: vType as 'food' | 'grocery',
+              price: Number(p.price) || 0,
+              imageUrl: p.image_url || fallbackImg,
+              tags: [p.name.toLowerCase(), vName.toLowerCase()],
+            }
+          })
+
+          if (mapped.length > 0) {
+            setDbDishes(mapped)
+          }
+        }
+      } catch {
+        // Keep fallback
       }
     }
     loadData()
@@ -154,17 +232,18 @@ export function OmniboxSearchModal({ isOpen, onClose }: OmniboxSearchModalProps)
     })
   }, [vendors, query])
 
-  // Filter curated dishes based on query
+  // Filter curated/database dishes based on query
+  const availableDishes = dbDishes.length > 0 ? dbDishes : CURATED_DISH_CATALOG
   const matchedDishes = useMemo(() => {
-    if (!query.trim()) return CURATED_DISH_CATALOG.slice(0, 4)
+    if (!query.trim()) return availableDishes.slice(0, 4)
     const q = query.toLowerCase().trim()
-    return CURATED_DISH_CATALOG.filter((item) => {
+    return availableDishes.filter((item) => {
       const name = item.name.toLowerCase()
       const vendor = item.vendorName.toLowerCase()
       const tagMatch = item.tags.some((t) => t.includes(q))
       return name.includes(q) || vendor.includes(q) || tagMatch
     })
-  }, [query])
+  }, [availableDishes, query])
 
   // Flat list for keyboard arrow navigation
   const totalItems = matchedVendors.length + matchedDishes.length
@@ -178,13 +257,17 @@ export function OmniboxSearchModal({ isOpen, onClose }: OmniboxSearchModalProps)
     navigate(path)
   }
 
-  const handleSelectDish = (dish: (typeof CURATED_DISH_CATALOG)[0]) => {
+  const handleSelectDish = (dish: StandoutDish) => {
     onClose()
-    navigate(
-      dish.serviceType === 'grocery'
-        ? `/groceries`
-        : `/food`
-    )
+    if (dish.vendorId) {
+      const path =
+        dish.serviceType === 'grocery'
+          ? `/groceries/${dish.vendorId}`
+          : `/food/${dish.vendorId}`
+      navigate(path)
+    } else {
+      navigate(dish.serviceType === 'grocery' ? `/groceries` : `/food`)
+    }
   }
 
   // Handle keyboard events (Up, Down, Enter, Esc)

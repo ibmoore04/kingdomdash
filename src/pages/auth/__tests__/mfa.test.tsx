@@ -8,6 +8,7 @@ import type { Session } from '@supabase/supabase-js'
 const mockListFactors = vi.fn()
 const mockChallengeAndVerify = vi.fn()
 const mockEnroll = vi.fn()
+const mockUnenroll = vi.fn().mockResolvedValue({ data: { id: 'mock' }, error: null })
 
 vi.mock('@/services/supabase/client', () => ({
   supabase: {
@@ -16,6 +17,7 @@ vi.mock('@/services/supabase/client', () => ({
         listFactors: (...args: unknown[]) => mockListFactors(...args),
         challengeAndVerify: (...args: unknown[]) => mockChallengeAndVerify(...args),
         enroll: (...args: unknown[]) => mockEnroll(...args),
+        unenroll: (...args: unknown[]) => mockUnenroll(...args),
       },
       onAuthStateChange: vi.fn(() => ({
         data: { subscription: { unsubscribe: vi.fn() } },

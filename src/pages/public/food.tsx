@@ -210,36 +210,21 @@ export default function FoodPage() {
             </button>
           </div>
 
-          {/* Personal Shopper Concierge Banner (Visible on Large and Small Screens) */}
-          <div className="mt-5 rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/[0.06] via-amber-500/[0.03] to-white p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs">
-            <div className="flex items-start gap-3.5 text-left">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-xs">
-                <ShoppingBag className="h-5 w-5" />
-              </div>
-              <div className="space-y-1">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
-                  <Sparkles className="h-3 w-3 text-primary" />
-                  <span>Personal Market Shopper</span>
-                </div>
-                <h3 className="text-sm sm:text-base font-bold text-neutral-900 leading-tight">
-                  Prefer custom raw ingredients or direct open-air market foodstuffs?
-                </h3>
-                <p className="text-xs text-neutral-600 leading-relaxed max-w-2xl">
-                  Can&apos;t find what you&apos;re looking for in restaurant menus? Send a verified personal shopper to Oke-Aje or Ita Osu market for fresh live catfish, tubers, peppers, or bulk groceries.
-                </p>
-              </div>
+          {/* Personal Shopper Concierge Strip */}
+          <div className="mt-3.5 rounded-xl border border-primary/20 bg-primary/5 p-3 sm:px-4 sm:py-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2.5 text-left min-w-0">
+              <ShoppingBag className="h-4 w-4 text-primary shrink-0" />
+              <p className="text-xs text-neutral-700 truncate">
+                <strong className="text-neutral-900 font-semibold">Need raw market foodstuffs from Oke-Aje or Ita Osu?</strong> We send a personal shopper.
+              </p>
             </div>
-            <Button
-              asChild
-              variant="primary"
-              size="sm"
-              className="w-full md:w-auto rounded-xl text-xs font-bold bg-primary hover:bg-primary-hover text-white shrink-0 shadow-xs h-10 px-5"
+            <Link
+              to="/personal-shopper"
+              className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline shrink-0"
             >
-              <Link to="/personal-shopper" className="text-white inline-flex items-center justify-center gap-2">
-                <span>Book Personal Shopper</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+              <span>Book Personal Shopper</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
         </PageContainer>
       </section>

@@ -51,17 +51,45 @@ export function getVendorOperatingStatus(
 
   let rawDisplay = ''
   if (typeof operatingHours === 'string') {
-    rawDisplay = operatingHours
+    rawDisplay = operatingHours.trim()
   } else if (
     operatingHours &&
     typeof operatingHours === 'object' &&
     'display' in (operatingHours as Record<string, unknown>)
   ) {
-    rawDisplay = String((operatingHours as Record<string, unknown>).display || '')
+    rawDisplay = String((operatingHours as Record<string, unknown>).display || '').trim()
   }
 
+  // If vendor has not explicitly configured operating hours, assume open for orders by default
   if (!rawDisplay) {
-    rawDisplay = '8:00 AM - 9:00 PM'
+    return {
+      isOpen: true,
+      isClosingSoon: false,
+      statusText: 'Open for orders',
+      detailText: 'Standard Delivery Available',
+      badgeVariant: 'success',
+      canPreOrder: true,
+      formattedHours: 'Open for orders',
+    }
+  }
+
+  const cleanedLower = rawDisplay.toLowerCase()
+  if (
+    cleanedLower.includes('8:00 am - 9:00 pm (mon - sat)') ||
+    cleanedLower.includes('24/7') ||
+    cleanedLower.includes('24 hours') ||
+    cleanedLower.includes('always open') ||
+    cleanedLower.includes('all day')
+  ) {
+    return {
+      isOpen: true,
+      isClosingSoon: false,
+      statusText: 'Open for orders',
+      detailText: 'Open for orders',
+      badgeVariant: 'success',
+      canPreOrder: true,
+      formattedHours: rawDisplay,
+    }
   }
 
   // Check if string contains a range e.g. "8:00 AM - 9:00 PM"

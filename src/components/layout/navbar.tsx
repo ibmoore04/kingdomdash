@@ -147,12 +147,12 @@ export function Navbar() {
             type="button"
             onClick={() => setIsSearchOpen(true)}
             aria-label="Search dishes and restaurants"
-            className="flex h-9 sm:h-10 items-center gap-1.5 sm:gap-2 rounded-xl border border-neutral-200/90 bg-neutral-50 hover:bg-neutral-100 hover:border-primary/40 px-2 sm:px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:text-neutral-900 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs cursor-pointer"
+            className="flex h-9 w-9 sm:h-10 sm:w-auto items-center justify-center sm:justify-start gap-1.5 sm:gap-2 rounded-xl border border-neutral-200/90 bg-neutral-50 hover:bg-neutral-100 hover:border-neutral-300 px-0 sm:px-3 text-xs font-medium text-neutral-600 hover:text-neutral-900 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs cursor-pointer"
           >
-            <Search className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
+            <Search className="h-4 w-4 text-neutral-500 shrink-0" aria-hidden="true" />
             <span className="hidden xl:inline text-neutral-600 font-medium">Search dishes, stores...</span>
             <span className="hidden sm:inline xl:hidden text-neutral-600 font-medium">Search</span>
-            <kbd className="hidden sm:inline-flex items-center rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-[10px] font-mono text-neutral-400">
+            <kbd className="hidden sm:inline-flex items-center rounded border border-neutral-200 bg-white px-1.5 py-0.5 text-[10px] font-mono text-neutral-400">
               ⌘K
             </kbd>
           </button>
@@ -162,7 +162,7 @@ export function Navbar() {
             type="button"
             onClick={handleToggleSound}
             className={cn(
-              'relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-full border border-neutral-200/80 bg-neutral-50 hover:bg-neutral-100 text-neutral-600 hover:text-neutral-900 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer',
+              'relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-neutral-200/80 bg-neutral-50 hover:bg-neutral-100 text-neutral-600 hover:text-neutral-900 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer',
               isSoundMuted && 'border-amber-300 bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700'
             )}
             title={isSoundMuted ? 'Library Mode Active (Tap to unmute alerts)' : 'Mute Sound Alerts (Library Mode)'}
@@ -183,7 +183,7 @@ export function Navbar() {
             type="button"
             onClick={() => setCartOpen(true)}
             className={cn(
-              'relative flex h-10 w-10 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+              'relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
               isCartBouncing && 'animate-cart-spring text-primary'
             )}
             aria-label={`Open shopping cart with ${itemCount} items`}

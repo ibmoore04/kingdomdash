@@ -71,6 +71,32 @@ describe('Phase 1: Operating Hours & Omnibox Suite', () => {
       expect(status.canPreOrder).toBe(true)
       expect(status.statusText).toBe('Closed for Today')
     })
+
+    it('defaults to open for orders when vendor has not configured operating hours', () => {
+      // Midnight
+      const midnightDate = new Date(2026, 9, 5, 23, 30, 0)
+      const status = getVendorOperatingStatus(null, true, midnightDate)
+      expect(status.isOpen).toBe(true)
+      expect(status.statusText).toBe('Open for orders')
+      expect(status.badgeVariant).toBe('success')
+    })
+
+    it('returns open for orders when vendor configured 24/7 hours', () => {
+      const lateDate = new Date(2026, 9, 5, 23, 45, 0)
+      const status = getVendorOperatingStatus('Open 24/7', true, lateDate)
+      expect(status.isOpen).toBe(true)
+      expect(status.statusText).toBe('Open for orders')
+      expect(status.badgeVariant).toBe('success')
+    })
+
+    it('returns open for orders for active vendor with default platform template schedule', () => {
+      // 11:30 PM (after 9:00 PM)
+      const lateDate = new Date(2026, 9, 5, 23, 30, 0)
+      const status = getVendorOperatingStatus('8:00 AM - 9:00 PM (Mon - Sat)', true, lateDate)
+      expect(status.isOpen).toBe(true)
+      expect(status.statusText).toBe('Open for orders')
+      expect(status.badgeVariant).toBe('success')
+    })
   })
 
   describe('OmniboxSearchModal Component', () => {

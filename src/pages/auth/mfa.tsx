@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ShieldCheck, ArrowLeft, Loader2, AlertCircle, QrCode, KeyRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -66,75 +66,104 @@ export default function MfaPage() {
   }, [session, profile, mfaLevel, redirectParam, navigate])
 
   // 2. Discover factors and determine whether to Challenge or Enroll
-  useEffect(() => {
-    let cancelled = false
+  const loadFactors = useCallback(async () => {
+    if (!session || (profile && profile.role !== 'admin' && profile.role !== 'super_admin')) {
+      return
+    }
 
-    async function loadFactors() {
-      if (!session || (profile && profile.role !== 'admin' && profile.role !== 'super_admin')) {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      if (!supabase.auth?.mfa?.listFactors) {
+        // In test/mock environments where MFA API is not available, proceed safely
+        setIsLoading(false)
         return
       }
 
-      try {
-        setIsLoading(true)
-        setError(null)
+      const { data: factorData, error: factorError } = await supabase.auth.mfa.listFactors()
 
-        if (!supabase.auth?.mfa?.listFactors) {
-          // In test/mock environments where MFA API is not available, proceed safely
-          setIsLoading(false)
-          return
-        }
-
-        const { data: factorData, error: factorError } = await supabase.auth.mfa.listFactors()
-        if (cancelled) return
-
-        if (factorError) {
-          setError(factorError.message || 'Failed to inspect authentication factors')
-          setIsLoading(false)
-          return
-        }
-
-        const factors = (factorData?.totp || factorData?.all || []) as TotpFactor[]
-        const verifiedFactor = factors.find((f) => f.status === 'verified')
-
-        if (verifiedFactor) {
-          // Factor exists: prompt for verification code
-          setActiveFactorId(verifiedFactor.id)
-          setIsEnrolling(false)
-          setIsLoading(false)
-        } else {
-          // No verified factor exists: start enrollment for mandatory Admin MFA
-          setIsEnrolling(true)
-          const { data: enrollData, error: enrollError } = await supabase.auth.mfa.enroll({
-            factorType: 'totp',
-            issuer: 'KingdomDash',
-          })
-
-          if (cancelled) return
-          if (enrollError || !enrollData) {
-            setError(enrollError?.message || 'Failed to initialize two-factor enrollment')
-            setIsLoading(false)
-            return
-          }
-
-          setEnrolledFactorId(enrollData.id)
-          setQrCodeUri(enrollData.totp?.qr_code || null)
-          setSecretKey(enrollData.totp?.secret || null)
-          setIsLoading(false)
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Authentication setup error')
-          setIsLoading(false)
-        }
+      if (factorError) {
+        setError(factorError.message || 'Failed to inspect authentication factors')
+        setIsLoading(false)
+        return
       }
-    }
 
-    void loadFactors()
+      const factors = (factorData?.totp || factorData?.all || []) as TotpFactor[]
+      const verifiedFactor = factors.find((f) => f.status === 'verified')
 
-    return () => {
-      cancelled = true
+      if (verifiedFactor) {
+        // Factor exists: prompt for verification code
+        setActiveFactorId(verifiedFactor.id)
+        setIsEnrolling(false)
+        setIsLoading(false)
+      } else {
+        // No verified factor exists: start enrollment for mandatory Admin MFA
+        setIsEnrolling(true)
+
+        // Clean up any stale unverified factors from previous incomplete sessions
+        // to prevent Supabase error: "A factor with the friendly name '' for this user already exists"
+        const unverifiedFactors = factors.filter((f) => f.status === 'unverified')
+        for (const uf of unverifiedFactors) {
+          try {
+            if (typeof supabase.auth?.mfa?.unenroll === 'function') {
+              await supabase.auth.mfa.unenroll({ factorId: uf.id })
+            }
+          } catch {
+            // Ignore unenroll errors and proceed
+          }
+        }
+
+        let { data: enrollData, error: enrollError } = await supabase.auth.mfa.enroll({
+          factorType: 'totp',
+          issuer: 'KingdomDash',
+          friendlyName: 'KingdomDash Admin Authenticator',
+        })
+
+        // Retry fallback if stale unverified factor was cached in Supabase
+        if (enrollError && enrollError.message?.toLowerCase().includes('already exists')) {
+          try {
+            const { data: refetched } = await supabase.auth.mfa.listFactors()
+            const stale = ((refetched?.totp || refetched?.all || []) as TotpFactor[]).filter(
+              (f) => f.status === 'unverified'
+            )
+            for (const sf of stale) {
+              if (typeof supabase.auth?.mfa?.unenroll === 'function') {
+                await supabase.auth.mfa.unenroll({ factorId: sf.id })
+              }
+            }
+            const retryResult = await supabase.auth.mfa.enroll({
+              factorType: 'totp',
+              issuer: 'KingdomDash',
+              friendlyName: 'KingdomDash Admin Authenticator',
+            })
+            enrollData = retryResult.data
+            enrollError = retryResult.error
+          } catch {
+            // Retain original error
+          }
+        }
+
+        if (enrollError || !enrollData) {
+          setError(enrollError?.message || 'Failed to initialize two-factor enrollment')
+          setIsLoading(false)
+          return
+        }
+
+        setEnrolledFactorId(enrollData.id)
+        setQrCodeUri(enrollData.totp?.qr_code || null)
+        setSecretKey(enrollData.totp?.secret || null)
+        setIsLoading(false)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authentication setup error')
+      setIsLoading(false)
     }
   }, [session, profile])
+
+  useEffect(() => {
+    void loadFactors()
+  }, [loadFactors])
 
   // Focus input when loaded
   useEffect(() => {
@@ -214,10 +243,21 @@ export default function MfaPage() {
         {error && (
           <div
             role="alert"
-            className="flex items-start gap-2.5 rounded-lg border border-primary/30 bg-primary/10 p-3 text-body-small text-primary"
+            className="flex flex-col gap-2 rounded-lg border border-primary/30 bg-primary/10 p-3 text-body-small text-primary"
           >
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
-            <span>{error}</span>
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
+              <span>{error}</span>
+            </div>
+            {isEnrolling && (
+              <button
+                type="button"
+                onClick={() => void loadFactors()}
+                className="self-start text-xs font-semibold text-primary underline hover:text-primary-hover cursor-pointer"
+              >
+                Reset and generate new authenticator key
+              </button>
+            )}
           </div>
         )}
 

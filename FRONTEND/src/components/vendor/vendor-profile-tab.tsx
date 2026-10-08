@@ -54,7 +54,7 @@ export function VendorProfileTab({
   const logoInputRef = useRef<HTMLInputElement>(null)
 
   const [operatingHours, setOperatingHours] = useState(() => {
-    if (!vendor.operating_hours) return '8:00 AM - 9:00 PM (Mon - Sat)'
+    if (!vendor.operating_hours) return 'Open 24/7 (Always Open)'
     if (typeof vendor.operating_hours === 'string') {
       try {
         const parsed = JSON.parse(vendor.operating_hours)
@@ -594,7 +594,7 @@ export function VendorProfileTab({
                 id="vendor-hours"
                 value={operatingHours}
                 onChange={(e) => setOperatingHours(e.target.value)}
-                placeholder="e.g. 8:00 AM - 9:00 PM (Daily)"
+                placeholder="e.g. Open 24/7 or 8:00 AM - 10:00 PM"
                 className="pl-9"
               />
             </div>

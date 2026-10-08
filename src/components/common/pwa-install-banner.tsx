@@ -153,21 +153,21 @@ export function PwaInstallBanner() {
 
   return (
     <>
-      {/* Floating Bottom Installation Bar */}
+      {/* Sleek, Non-Intrusive Installation Banner (Top on mobile, bottom-right on desktop) */}
       <aside
         aria-label="Install KingdomDash application"
-        className="fixed bottom-16 sm:bottom-4 left-3 right-3 sm:left-auto sm:right-4 z-50 sm:max-w-md rounded-2xl border border-primary/20 bg-neutral-900/95 text-white p-4 shadow-2xl backdrop-blur-md transition-all animate-in fade-in slide-in-from-bottom-4 duration-300"
+        className="fixed top-14 sm:top-auto sm:bottom-6 left-3 right-3 sm:left-auto sm:right-6 z-40 sm:max-w-sm rounded-2xl border border-neutral-800 bg-neutral-900/95 text-white p-3.5 sm:p-4 shadow-xl backdrop-blur-md transition-all animate-in fade-in slide-in-from-top-2 sm:slide-in-from-bottom-4 duration-300"
       >
         <div className="flex items-start gap-3">
           <img
             src="/KingdomDash-emblem.png"
             alt="KingdomDash Emblem"
-            className="h-11 w-11 shrink-0 rounded-xl bg-black border border-white/10 p-1 object-contain shadow-xs"
+            className="h-10 w-10 shrink-0 rounded-xl bg-black border border-white/10 p-1 object-contain shadow-xs"
           />
 
           <div className="flex-1 min-w-0 pr-6">
             <div className="flex items-center gap-1.5 mb-0.5">
-              <span className="text-body-small font-bold text-white tracking-tight">
+              <span className="text-xs sm:text-sm font-bold text-white tracking-tight">
                 {isLaptop ? 'Install KingdomDash on PC / Laptop' : 'Install KingdomDash App'}
               </span>
               <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/20 border border-primary/30 px-1.5 py-0.2 text-[9px] font-bold text-primary-soft">
@@ -176,10 +176,10 @@ export function PwaInstallBanner() {
               </span>
             </div>
 
-            <p className="text-caption text-neutral-300 leading-snug line-clamp-2">
+            <p className="text-[11px] sm:text-xs text-neutral-300 leading-snug line-clamp-1 sm:line-clamp-2">
               {isLaptop
                 ? 'Install as a standalone desktop app or download instant 1-click launcher.'
-                : 'Add to Home Screen for 1-tap ordering, lock-screen updates & campus offline sync.'}
+                : 'Add to Home Screen for 1-tap ordering and campus offline sync.'}
             </p>
 
             <div className="mt-3 flex items-center gap-2">
