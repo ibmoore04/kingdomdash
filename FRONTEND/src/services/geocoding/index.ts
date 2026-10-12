@@ -1,16 +1,21 @@
 import { MockGeocodingProvider } from './mock-adapter'
 import { NominatimGeocodingProvider } from './nominatim-adapter'
+import { BigDataCloudGeocodingProvider } from './bigdatacloud-adapter'
+import { GoogleGeocodingProvider } from './google-adapter'
 import type { GeocodingProvider } from './types'
 
 export * from './types'
 export * from './mock-adapter'
 export * from './nominatim-adapter'
+export * from './bigdatacloud-adapter'
+export * from './google-adapter'
 
 let activeProvider: GeocodingProvider | null = null
 
 /**
  * Returns the currently active GeocodingProvider.
- * Defaults to Nominatim in production/development, or Mock in test environment.
+ * Defaults to GoogleGeocodingProvider (Google Maps API with BigDataCloud and Nominatim fallback),
+ * or MockGeocodingProvider in test environment.
  */
 export function getGeocodingProvider(): GeocodingProvider {
   if (activeProvider) {
@@ -23,7 +28,9 @@ export function getGeocodingProvider(): GeocodingProvider {
     return activeProvider
   }
 
-  activeProvider = new NominatimGeocodingProvider()
+  activeProvider = new GoogleGeocodingProvider(
+    new BigDataCloudGeocodingProvider(new NominatimGeocodingProvider())
+  )
   return activeProvider
 }
 

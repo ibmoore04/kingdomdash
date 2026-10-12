@@ -1,11 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+import React, { useState } from 'react'
 import type { Coordinates } from '@/types'
 import { IJEBU_ODE_CENTER, isValidCoordinates } from '@/utils/geo'
-import { MapFallback } from './map-fallback'
 import { appConfig } from '@/config/app.config'
 import { GoogleMapView } from './google-map-view'
+import { ExternalLink } from 'lucide-react'
 
 export interface LocationMapProps {
   center?: Coordinates | null
@@ -24,36 +22,16 @@ export interface LocationMapProps {
   readOnly?: boolean
 }
 
-// Custom SVG Pin Icon for Leaflet
-const createPinIcon = (color = '#10b981') =>
-  L.divIcon({
-    className: 'kingdomdash-custom-pin',
-    html: `
-      <div style="position: relative; transform: translate(-50%, -100%); display: flex; flex-direction: column; items-center; justify-content: center;">
-        <svg width="34" height="42" viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 0C5.37258 0 0 5.37258 0 12C0 20.25 12 30 12 30C12 30 24 20.25 24 12C24 5.37258 18.6274 0 12 0Z" fill="${color}"/>
-          <circle cx="12" cy="11" r="5" fill="#FFFFFF"/>
-        </svg>
-      </div>
-    `,
-    iconSize: [34, 42],
-    iconAnchor: [17, 42],
-  })
-
 export const LocationMap: React.FC<LocationMapProps> = ({
   center,
-  zoom = 14,
+  zoom = 15,
   marker,
   serviceArea,
   height = 240,
   className = '',
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const mapInstanceRef = useRef<L.Map | null>(null)
-  const markerRef = useRef<L.Marker | null>(null)
-  const circleRef = useRef<L.Circle | null>(null)
-  const [initFailed, setInitFailed] = useState(false)
-  const [useGoogleMaps, setUseGoogleMaps] = useState(Boolean(appConfig.maps.googleMapsApiKey))
+  const [googleJsApiError, setGoogleJsApiError] = useState(false)
+  const apiKey = appConfig.maps.googleMapsApiKey
 
   const effectiveCenter: Coordinates =
     center && isValidCoordinates(center)
@@ -62,128 +40,14 @@ export const LocationMap: React.FC<LocationMapProps> = ({
       ? marker.coords
       : IJEBU_ODE_CENTER
 
-  useEffect(() => {
-    if (!containerRef.current || useGoogleMaps) return
+  const targetCoords = marker && isValidCoordinates(marker.coords)
+    ? marker.coords
+    : effectiveCenter
 
-    let timer1: ReturnType<typeof setTimeout> | null = null
-    let timer2: ReturnType<typeof setTimeout> | null = null
+  const styleHeight = typeof height === 'number' ? `${height}px` : height
 
-    const safeInvalidateSize = (m: L.Map | null) => {
-      if (!m) return
-      try {
-        if ((m as any)._mapPane && containerRef.current) {
-          m.invalidateSize()
-        }
-      } catch {
-        // Silently catch unmounted / detached leaflet pane errors
-      }
-    }
-
-    // Graceful fallback for Leaflet / Esri
-    try {
-      if (!mapInstanceRef.current) {
-        const map = L.map(containerRef.current, {
-          center: [effectiveCenter.latitude, effectiveCenter.longitude],
-          zoom,
-          zoomControl: true,
-          attributionControl: false,
-        })
-
-        const tileLayer = L.tileLayer(
-          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
-          {
-            maxZoom: 19,
-            attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
-          }
-        )
-        tileLayer.on('tileerror', () => {
-          // Silently handle tile errors
-        })
-        tileLayer.addTo(map)
-
-        mapInstanceRef.current = map
-
-        timer1 = setTimeout(() => safeInvalidateSize(mapInstanceRef.current), 150)
-        timer2 = setTimeout(() => safeInvalidateSize(mapInstanceRef.current), 400)
-      }
-    } catch (err) {
-      console.warn('[LocationMap] Failed to initialize Leaflet map instance, using fallback:', err)
-      setInitFailed(true)
-      return
-    }
-
-    const map = mapInstanceRef.current
-    if (!map) return
-
-    try {
-      map.setView([effectiveCenter.latitude, effectiveCenter.longitude], zoom)
-      safeInvalidateSize(map)
-    } catch {
-      // Safe no-op if map is in transient unmount
-    }
-
-    // Render / Update Marker
-    if (marker && isValidCoordinates(marker.coords)) {
-      if (markerRef.current) {
-        markerRef.current.setLatLng([marker.coords.latitude, marker.coords.longitude])
-      } else {
-        const newMarker = L.marker([marker.coords.latitude, marker.coords.longitude], {
-          icon: createPinIcon(),
-        }).addTo(map)
-
-        if (marker.label) {
-          newMarker.bindPopup(marker.label)
-        }
-        markerRef.current = newMarker
-      }
-    } else if (markerRef.current) {
-      markerRef.current.remove()
-      markerRef.current = null
-    }
-
-    // Render / Update Service Area Circle
-    if (serviceArea && isValidCoordinates(serviceArea.center) && serviceArea.radiusKm > 0) {
-      const radiusMeters = serviceArea.radiusKm * 1000
-      if (circleRef.current) {
-        circleRef.current.setLatLng([
-          serviceArea.center.latitude,
-          serviceArea.center.longitude,
-        ])
-        circleRef.current.setRadius(radiusMeters)
-      } else {
-        circleRef.current = L.circle(
-          [serviceArea.center.latitude, serviceArea.center.longitude],
-          {
-            radius: radiusMeters,
-            color: '#10b981',
-            fillColor: '#10b981',
-            fillOpacity: 0.12,
-            weight: 2,
-          }
-        ).addTo(map)
-      }
-    } else if (circleRef.current) {
-      circleRef.current.remove()
-      circleRef.current = null
-    }
-
-    return () => {
-      if (timer1) clearTimeout(timer1)
-      if (timer2) clearTimeout(timer2)
-    }
-  }, [effectiveCenter, zoom, marker, serviceArea, useGoogleMaps])
-
-  useEffect(() => {
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove()
-        mapInstanceRef.current = null
-      }
-    }
-  }, [])
-
-  // Attempt Google Maps if key exists
-  if (useGoogleMaps && appConfig.maps.googleMapsApiKey) {
+  // 1. If Google Maps API key is configured and hasn't errored, use interactive Google Maps JS API
+  if (apiKey && !googleJsApiError) {
     return (
       <GoogleMapView
         center={effectiveCenter}
@@ -192,28 +56,54 @@ export const LocationMap: React.FC<LocationMapProps> = ({
         serviceArea={serviceArea}
         height={height}
         className={className}
-        onError={() => setUseGoogleMaps(false)}
+        onError={() => setGoogleJsApiError(true)}
       />
     )
   }
 
-  if (initFailed) {
-    return (
-      <MapFallback
-        center={effectiveCenter}
-        marker={marker}
-        className={className}
-      />
-    )
-  }
-
-  const styleHeight = typeof height === 'number' ? `${height}px` : height
+  // 2. Official Google Maps Embed with interactive overlay (Zero non-Google maps)
+  const embedUrl = `https://maps.google.com/maps?q=${targetCoords.latitude},${targetCoords.longitude}&z=${zoom}&output=embed`
+  const externalMapsUrl = `https://www.google.com/maps/search/?api=1&query=${targetCoords.latitude},${targetCoords.longitude}`
 
   return (
     <div
-      ref={containerRef}
       style={{ height: styleHeight, width: '100%' }}
-      className={`relative rounded-xl overflow-hidden shadow-xs border border-neutral-200 ${className}`}
-    />
+      className={`relative rounded-xl overflow-hidden shadow-xs border border-neutral-200 bg-neutral-100 dark:bg-slate-900 ${className}`}
+      data-testid="google-location-map"
+    >
+      <iframe
+        title="Google Maps Location Preview"
+        src={embedUrl}
+        width="100%"
+        height="100%"
+        style={{ border: 0 }}
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        className="w-full h-full pointer-events-auto"
+      />
+
+      {/* Google Maps Brand Badge */}
+      <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 rounded-lg bg-white/95 dark:bg-slate-900/90 px-2.5 py-1 text-[11px] font-bold text-neutral-800 dark:text-neutral-100 shadow-md backdrop-blur-xs border border-neutral-200/80 dark:border-slate-700/80 pointer-events-none">
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335" />
+          <circle cx="12" cy="9" r="2.5" fill="#FFFFFF" />
+        </svg>
+        <span>Google Maps</span>
+      </div>
+
+      {/* Floating Coordinates & External Link Button */}
+      <div className="absolute bottom-2.5 right-2.5 z-10 flex items-center gap-1.5">
+        <a
+          href={externalMapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 rounded-lg bg-white/95 dark:bg-slate-900/90 px-2.5 py-1 text-[11px] font-semibold text-primary shadow-md hover:bg-white transition-colors border border-neutral-200/80 dark:border-slate-700/80"
+          title="Open exact pin in Google Maps"
+        >
+          <span>Open in Google Maps</span>
+          <ExternalLink className="h-3 w-3" />
+        </a>
+      </div>
+    </div>
   )
 }

@@ -508,8 +508,12 @@ export interface Database {
           id: string
           order_id: string
           customer_id: string | null
+          gateway: string
           paystack_reference: string | null
           paystack_transaction_id: string | null
+          flutterwave_ref: string | null
+          flutterwave_transaction_id: string | null
+          flw_ref: string | null
           amount: number
           currency: string
           status: Database['public']['Enums']['payment_status']
@@ -524,8 +528,12 @@ export interface Database {
           id?: string
           order_id: string
           customer_id?: string | null
+          gateway?: string
           paystack_reference?: string | null
           paystack_transaction_id?: string | null
+          flutterwave_ref?: string | null
+          flutterwave_transaction_id?: string | null
+          flw_ref?: string | null
           amount: number
           currency?: string
           status?: Database['public']['Enums']['payment_status']
@@ -540,8 +548,12 @@ export interface Database {
           id?: string
           order_id?: string
           customer_id?: string | null
+          gateway?: string
           paystack_reference?: string | null
           paystack_transaction_id?: string | null
+          flutterwave_ref?: string | null
+          flutterwave_transaction_id?: string | null
+          flw_ref?: string | null
           amount?: number
           currency?: string
           status?: Database['public']['Enums']['payment_status']
@@ -771,6 +783,12 @@ export interface Database {
         }
         Returns: Json
       }
+      create_flutterwave_payment_attempt: {
+        Args: {
+          p_order_id: string
+        }
+        Returns: Json
+      }
       reconcile_paystack_payment: {
         Args: {
           p_reference: string
@@ -778,6 +796,20 @@ export interface Database {
           p_kobo_amount: number
           p_currency: string
           p_channel: string | null
+          p_gateway_response: string | null
+          p_paid_at: string | null
+          p_raw_payload: Json
+        }
+        Returns: Json
+      }
+      reconcile_flutterwave_payment: {
+        Args: {
+          p_tx_ref: string
+          p_flutterwave_transaction_id: string | null
+          p_flw_ref: string | null
+          p_amount: number
+          p_currency: string
+          p_payment_type: string | null
           p_gateway_response: string | null
           p_paid_at: string | null
           p_raw_payload: Json

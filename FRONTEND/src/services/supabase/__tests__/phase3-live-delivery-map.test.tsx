@@ -54,7 +54,7 @@ describe('Phase 3: Live Interactive Courier Route Map & Dynamic ETA', () => {
   })
 
   describe('View Mode Switching (Radar vs Streets)', () => {
-    it('starts in radar mode and allows toggling to OpenStreetMap streets mode', () => {
+    it('starts in radar mode and allows toggling to Google Maps streets mode', () => {
       render(
         <DeliveryLiveMap
           status="in_transit"

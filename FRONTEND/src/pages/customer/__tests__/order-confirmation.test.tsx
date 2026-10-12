@@ -11,6 +11,12 @@ vi.mock('@/services/paystack/paystack', () => ({
   getLatestPaymentForOrder: vi.fn().mockResolvedValue(null),
 }))
 
+vi.mock('@/services/flutterwave/flutterwave', () => ({
+  verifyFlutterwavePayment: vi.fn().mockResolvedValue({ success: true, status: 'payment_confirmed' }),
+  initializeFlutterwavePayment: vi.fn().mockResolvedValue({ link: 'https://flw.mock', tx_ref: 'kd_flw_123' }),
+  openFlutterwaveCheckout: vi.fn(),
+}))
+
 const mockFullOrder = {
   id: 'order-1234-abcd',
   order_reference: 'KD-20260905-001',
@@ -80,6 +86,10 @@ describe('OrderConfirmationPage', () => {
       id: 'pay-1',
       order_id: 'order-1234-abcd',
       customer_id: 'cust-1',
+      gateway: 'paystack',
+      flutterwave_ref: null,
+      flutterwave_transaction_id: null,
+      flw_ref: null,
       amount: 4500,
       currency: 'NGN',
       paystack_reference: 'KD-20260905-REF1',
@@ -118,6 +128,10 @@ describe('OrderConfirmationPage', () => {
       id: 'pay-2',
       order_id: 'order-1234-abcd',
       customer_id: 'cust-1',
+      gateway: 'paystack',
+      flutterwave_ref: null,
+      flutterwave_transaction_id: null,
+      flw_ref: null,
       amount: 4500,
       currency: 'NGN',
       paystack_reference: 'KD-20260905-FAIL',
@@ -210,6 +224,31 @@ describe('OrderConfirmationPage', () => {
       expect(screen.getByText('Order Not Found')).toBeDefined()
       expect(screen.getByText('Order does not exist')).toBeDefined()
       expect(screen.getByRole('link', { name: /Return to Home/i })).toBeDefined()
+    })
+  })
+
+  it('triggers Flutterwave server verification when returning with gateway=flutterwave', async () => {
+    vi.spyOn(orderService, 'getOrderById').mockResolvedValue({
+      data: mockFullOrder,
+      error: null,
+    })
+
+    const { verifyFlutterwavePayment } = await import('@/services/flutterwave/flutterwave')
+
+    render(
+      <MemoryRouter initialEntries={['/order/order-1234-abcd/confirmation?gateway=flutterwave&reference=KD-FLW-123&transaction_id=98765']}>
+        <Routes>
+          <Route path="/order/:orderId/confirmation" element={<OrderConfirmationPage />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(verifyFlutterwavePayment).toHaveBeenCalledWith({
+        tx_ref: 'KD-FLW-123',
+        transaction_id: '98765',
+      })
+      expect(screen.getByText('Payment verified successfully via Flutterwave.')).toBeDefined()
     })
   })
 })

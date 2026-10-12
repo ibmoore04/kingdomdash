@@ -6,6 +6,9 @@ import { useCartStore, type CartVendor } from '@/stores/cart-store'
 import * as addressService from '@/services/supabase/addresses'
 import * as orderService from '@/services/supabase/orders'
 import { getDeliveryFeePreview } from '@/services/supabase/pricing'
+import * as flutterwaveService from '@/services/flutterwave/flutterwave'
+import * as geoUtils from '@/utils/geo'
+import * as locationService from '@/services/supabase/locations'
 
 const mockNavigate = vi.fn()
 
@@ -23,6 +26,17 @@ vi.mock('@/services/supabase/pricing', () => ({
 
 vi.mock('@/services/paystack/paystack', () => ({
   initializePaystackPayment: vi.fn().mockRejectedValue(new Error('Gateway redirect mock')),
+}))
+
+vi.mock('@/services/flutterwave/flutterwave', () => ({
+  openFlutterwaveCheckout: vi.fn(),
+  initializeFlutterwavePayment: vi.fn().mockResolvedValue({
+    link: 'https://checkout.flutterwave.com/pay/mock',
+    tx_ref: 'kd_flw_mock_123',
+    order_id: 'order-123',
+  }),
+  loadFlutterwaveScript: vi.fn().mockResolvedValue(true),
+  getFlutterwavePublicKey: vi.fn().mockReturnValue('FLWPUBK_TEST-MOCK'),
 }))
 
 vi.mock('@/services/supabase/addresses', () => ({
@@ -428,6 +442,154 @@ describe('CheckoutPage', () => {
 
     // Resolve order creation
     resolveOrder!({ data: 'order-uuid-double-click', error: null })
+  })
+
+  it('allows selecting Cash on Delivery and redirects with payment_channel=cash', async () => {
+    useCartStore.getState().addItem(
+      {
+        productId: 'prod-item-1',
+        vendorId: mockVendor.id,
+        serviceType: 'food',
+        name: 'Egusi with Pounded Yam',
+        price: 2800,
+        imageUrl: null,
+      },
+      mockVendor
+    )
+
+    vi.spyOn(orderService, 'createOrderSecure').mockResolvedValue({
+      data: 'order-uuid-cash-1',
+      error: null,
+    })
+
+    render(
+      <MemoryRouter>
+        <CheckoutPage />
+      </MemoryRouter>
+    )
+
+    // Wait until pricing resolves and submit button becomes enabled
+    await waitFor(() => {
+      const btn = screen.getByRole('button', { name: /Continue to Payment Place Order/i })
+      expect(btn.hasAttribute('disabled')).toBe(false)
+    })
+
+    // Click Cash on Delivery option
+    const cashOption = screen.getByRole('button', { name: /Pay by Cash/i })
+    fireEvent.click(cashOption)
+
+    const policyCheckbox = screen.getByLabelText(/Accept Cancellation and Refund Policy/i)
+    fireEvent.click(policyCheckbox)
+
+    const placeOrderBtn = screen.getByRole('button', { name: /Place Order/i })
+    fireEvent.click(placeOrderBtn)
+
+    await waitFor(
+      () => {
+        expect(mockNavigate).toHaveBeenCalledWith(
+          '/order/order-uuid-cash-1/confirmation?payment_channel=cash'
+        )
+      },
+      { timeout: 4000 }
+    )
+  })
+
+  it('allows selecting Flutterwave and invokes openFlutterwaveCheckout', async () => {
+    useCartStore.getState().addItem(
+      {
+        productId: 'prod-item-1',
+        vendorId: mockVendor.id,
+        serviceType: 'food',
+        name: 'Egusi with Pounded Yam',
+        price: 2800,
+        imageUrl: null,
+      },
+      mockVendor
+    )
+
+    vi.spyOn(orderService, 'createOrderSecure').mockResolvedValue({
+      data: 'order-uuid-flw-1',
+      error: null,
+    })
+
+    render(
+      <MemoryRouter>
+        <CheckoutPage />
+      </MemoryRouter>
+    )
+
+    // Wait until pricing resolves and submit button becomes enabled
+    await waitFor(() => {
+      const btn = screen.getByRole('button', { name: /Continue to Payment Place Order/i })
+      expect(btn.hasAttribute('disabled')).toBe(false)
+    })
+
+    // Click Flutterwave option
+    const flwOption = screen.getByRole('button', { name: /Pay via Flutterwave/i })
+    fireEvent.click(flwOption)
+
+    const policyCheckbox = screen.getByLabelText(/Accept Cancellation and Refund Policy/i)
+    fireEvent.click(policyCheckbox)
+
+    const placeOrderBtn = screen.getByRole('button', { name: /Continue to Payment Place Order/i })
+    fireEvent.click(placeOrderBtn)
+
+    await waitFor(
+      () => {
+        expect(flutterwaveService.openFlutterwaveCheckout).toHaveBeenCalledWith(
+          expect.objectContaining({
+            orderId: 'order-uuid-flw-1',
+          })
+        )
+      },
+      { timeout: 4000 }
+    )
+  })
+
+  it('automatically detects user current GPS location on mount when geolocation is available', async () => {
+    vi.mocked(addressService.getCustomerAddresses).mockResolvedValue({
+      data: [],
+      error: null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+    vi.spyOn(geoUtils, 'getCurrentBrowserCoordinates').mockResolvedValue({
+      latitude: 6.8211,
+      longitude: 3.9215,
+    })
+    vi.spyOn(locationService, 'checkLocationServiceability').mockResolvedValue({
+      isServiceable: true,
+      serviceArea: {
+        id: 'area-uuid-1',
+        name: 'Ijebu-Ode Central',
+        center_lat: 6.820556,
+        center_lon: 3.920833,
+        radius_km: 15,
+        is_active: true,
+      } as any,
+      error: null,
+    })
+
+    useCartStore.getState().addItem(
+      {
+        productId: 'prod-item-1',
+        vendorId: mockVendor.id,
+        serviceType: 'food',
+        name: 'Egusi with Pounded Yam',
+        price: 2800,
+        imageUrl: null,
+      },
+      mockVendor
+    )
+
+    render(
+      <MemoryRouter>
+        <CheckoutPage />
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      expect(geoUtils.getCurrentBrowserCoordinates).toHaveBeenCalled()
+    })
   })
 })
 

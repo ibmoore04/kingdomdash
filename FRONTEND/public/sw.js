@@ -51,6 +51,20 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // Never intercept Vite dev server, HMR, React refresh, or local development modules
+  if (
+    url.pathname.startsWith('/@') ||
+    url.pathname.startsWith('/src/') ||
+    url.pathname.includes('node_modules') ||
+    url.searchParams.has('t') ||
+    url.searchParams.has('import') ||
+    url.port === '5173' ||
+    url.hostname === 'localhost' ||
+    url.hostname === '127.0.0.1'
+  ) {
+    return
+  }
+
   // A. Supabase API & Auth requests: Network-first with offline fallback JSON
   if (url.hostname.includes('supabase.co')) {
     event.respondWith(
@@ -130,7 +144,11 @@ self.addEventListener('fetch', (event) => {
 
   // D. General fetch fallback
   event.respondWith(
-    fetch(req).catch(() => caches.match(req))
+    fetch(req).catch(async () => {
+      const cached = await caches.match(req)
+      if (cached) return cached
+      return new Response('', { status: 504, statusText: 'Gateway Timeout (Offline)' })
+    })
   )
 })
 

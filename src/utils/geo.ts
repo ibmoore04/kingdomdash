@@ -20,8 +20,8 @@ export const IJEBU_ODE_CENTER: Readonly<Coordinates> = Object.freeze({
   longitude: 3.920833,
 })
 
-/** Default radius for Ijebu-Ode Central service area in km */
-export const DEFAULT_SERVICE_RADIUS_KM = 12.5
+/** Default radius for Ijebu-Ode greater municipal and campus service area in km */
+export const DEFAULT_SERVICE_RADIUS_KM = 30.0
 
 /** Nigeria Bounding Box for Geocoding viewbox filtering */
 export const NIGERIA_BOUNDS = Object.freeze({
@@ -150,3 +150,101 @@ export function formatDistanceKm(distanceKm: number): string {
   const meters = Math.round(distanceKm * 1000)
   return `${meters} m`
 }
+
+/**
+ * Requests the user's current GPS position using the HTML5 Geolocation API.
+ * Returns a Promise that resolves with valid Coordinates or rejects with an Error.
+ */
+export function getCurrentBrowserCoordinates(options?: PositionOptions): Promise<Coordinates> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      reject(new Error('Geolocation is not supported by your browser.'))
+      return
+    }
+
+    const tryGetPosition = (highAccuracy: boolean) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords: Coordinates = {
+            latitude: Math.round(position.coords.latitude * 1000000) / 1000000,
+            longitude: Math.round(position.coords.longitude * 1000000) / 1000000,
+          }
+          if (isValidCoordinates(coords)) {
+            resolve(coords)
+          } else {
+            reject(new Error('Invalid coordinates returned by geolocation.'))
+          }
+        },
+        (error) => {
+          // If high accuracy failed (e.g. timeout or position unavailable indoors), retry with standard accuracy & cache
+          if (highAccuracy && (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE)) {
+            console.debug('[Geolocation] High accuracy timed out/unavailable, falling back to standard accuracy...')
+            tryGetPosition(false)
+            return
+          }
+
+          let message = 'Unable to retrieve location.'
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              message = 'Location permission was denied. Please allow location access in your browser.'
+              break
+            case error.POSITION_UNAVAILABLE:
+              message = 'Location information is currently unavailable. Please ensure device Location/GPS is turned on.'
+              break
+            case error.TIMEOUT:
+              message = 'Location detection request timed out. Please try again.'
+              break
+          }
+          reject(new Error(message))
+        },
+        {
+          enableHighAccuracy: highAccuracy,
+          timeout: highAccuracy ? 8000 : 15000,
+          maximumAge: highAccuracy ? 60000 : 300000,
+          ...options,
+        }
+      )
+    }
+
+    tryGetPosition(options?.enableHighAccuracy ?? true)
+  })
+}
+
+/**
+ * Formats a clean, human-readable address line without duplicated city/state or raw placeholders.
+ * Eliminates redundant repetitions (e.g. "Mobalufon, Ijebu-Ode, Ogun State, Ijebu-Ode, Ogun State")
+ * and legacy "Current Location" prefixes.
+ */
+export function formatAddressDisplay(address?: {
+  address_line_1?: string | null
+  city?: string | null
+  state?: string | null
+} | null): string {
+  if (!address) return ''
+  const line1 = (address.address_line_1 || '').trim()
+  const city = (address.city || '').trim()
+  const state = (address.state || '').trim()
+
+  if (!line1) {
+    return [city, state].filter(Boolean).join(', ')
+  }
+
+  // Strip legacy "Current Location" markers if present in line1
+  const cleanedLine1 = line1
+    .replace(/^Current Location,\s*/i, '')
+    .replace(/^Current Location$/i, '')
+    .trim()
+
+  const tokens = (cleanedLine1 || line1).split(',').map((t) => t.trim()).filter(Boolean)
+  const tokensLower = tokens.map((t) => t.toLowerCase())
+
+  if (city && !tokensLower.some((t) => t === city.toLowerCase() || t.includes(city.toLowerCase()))) {
+    tokens.push(city)
+  }
+  if (state && !tokensLower.some((t) => t === state.toLowerCase() || t.includes(state.toLowerCase()))) {
+    tokens.push(state)
+  }
+
+  return tokens.join(', ')
+}
+

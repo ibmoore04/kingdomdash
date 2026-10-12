@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
 import {
   Bike,
   Store,
@@ -11,6 +9,7 @@ import {
   ShieldCheck,
   Compass,
   Map as MapIcon,
+  ExternalLink,
 } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import type { Coordinates } from '@/types'
@@ -19,6 +18,8 @@ import {
   calculateHaversineDistanceKm,
   isValidCoordinates,
 } from '@/utils/geo'
+import { appConfig } from '@/config/app.config'
+import { loadGoogleMapsScript } from '@/services/maps/google-maps-loader'
 
 export interface DeliveryLiveMapProps {
   status: string
@@ -68,7 +69,8 @@ export function DeliveryLiveMap({
 }: DeliveryLiveMapProps) {
   const [viewMode, setViewMode] = useState<'radar' | 'streets'>(initialViewMode)
   const mapContainerRef = useRef<HTMLDivElement>(null)
-  const leafletMapRef = useRef<L.Map | null>(null)
+  const googleMapInstanceRef = useRef<any>(null)
+  const [googleJsLoaded, setGoogleJsLoaded] = useState(false)
 
   const isPreparing = status === 'preparing' || status === 'payment_confirmed'
   const isReady = status === 'ready' || status === 'ready_for_pickup'
@@ -139,91 +141,83 @@ export function DeliveryLiveMap({
     return 'Awaiting payment confirmation'
   }, [isCancelled, isDelivered, isInTransit, isReady, isPreparing])
 
-  // Leaflet Interactive Street Map Lifecycle
+  const centerCoords = useMemo(() => {
+    return riderCoords || customerCoords || vendorCoords || IJEBU_ODE_CENTER
+  }, [riderCoords, customerCoords, vendorCoords])
+
+  // Google Maps Interactive Street Map Lifecycle (when API key is present)
   useEffect(() => {
     if (viewMode !== 'streets' || !mapContainerRef.current) return
+    if (!appConfig.maps.googleMapsApiKey) return
 
-    try {
-      if (!leafletMapRef.current) {
-        const centerCoords = riderCoords || customerCoords || vendorCoords || IJEBU_ODE_CENTER
-        const map = L.map(mapContainerRef.current, {
-          center: [centerCoords.latitude, centerCoords.longitude],
+    let isMounted = true
+
+    loadGoogleMapsScript()
+      .then((googleObj) => {
+        if (!isMounted || !mapContainerRef.current) return
+
+        const map = new googleObj.maps.Map(mapContainerRef.current, {
+          center: { lat: centerCoords.latitude, lng: centerCoords.longitude },
           zoom: 14,
-          zoomControl: false,
-          attributionControl: false,
+          disableDefaultUI: false,
+          zoomControl: true,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: true,
         })
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-        }).addTo(map)
 
         // Vendor Marker
         const vCoords = vendorCoords || { latitude: 6.815, longitude: 3.915 }
-        const vendorIcon = L.divIcon({
-          className: 'kd-map-vendor-pin',
-          html: `<div style="background:#F59E0B;color:#fff;padding:6px;border-radius:12px;border:2px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,0.3);width:32px;height:32px;">🏪</div>`,
-          iconSize: [32, 32],
-          iconAnchor: [16, 16],
+        new googleObj.maps.Marker({
+          position: { lat: vCoords.latitude, lng: vCoords.longitude },
+          map,
+          title: vendorName,
         })
-        L.marker([vCoords.latitude, vCoords.longitude], { icon: vendorIcon })
-          .bindPopup(`<b>${vendorName}</b><br/>Order Pickup Location`)
-          .addTo(map)
 
         // Customer Marker
         const cCoords = customerCoords || { latitude: 6.828, longitude: 3.928 }
-        const customerIcon = L.divIcon({
-          className: 'kd-map-customer-pin',
-          html: `<div style="background:#E50914;color:#fff;padding:6px;border-radius:12px;border:2px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,0.3);width:32px;height:32px;">📍</div>`,
-          iconSize: [32, 32],
-          iconAnchor: [16, 16],
+        new googleObj.maps.Marker({
+          position: { lat: cCoords.latitude, lng: cCoords.longitude },
+          map,
+          title: deliveryAddress,
         })
-        L.marker([cCoords.latitude, cCoords.longitude], { icon: customerIcon })
-          .bindPopup(`<b>${deliveryAddress}</b><br/>Delivery Destination`)
-          .addTo(map)
 
         // Courier Marker
         const rCoords = riderCoords || {
           latitude: (vCoords.latitude + cCoords.latitude) / 2,
           longitude: (vCoords.longitude + cCoords.longitude) / 2,
         }
-        const riderIcon = L.divIcon({
-          className: 'kd-map-rider-pin',
-          html: `<div style="background:#10B981;color:#fff;padding:6px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(16,185,129,0.5);width:36px;height:36px;">🛵</div>`,
-          iconSize: [36, 36],
-          iconAnchor: [18, 18],
+        new googleObj.maps.Marker({
+          position: { lat: rCoords.latitude, lng: rCoords.longitude },
+          map,
+          title: `${riderName} (Courier)`,
         })
-        L.marker([rCoords.latitude, rCoords.longitude], { icon: riderIcon })
-          .bindPopup(`<b>${riderName}</b><br/>Current Courier Position`)
-          .addTo(map)
 
         // Route Polyline
-        L.polyline(
-          [
-            [vCoords.latitude, vCoords.longitude],
-            [rCoords.latitude, rCoords.longitude],
-            [cCoords.latitude, cCoords.longitude],
+        new googleObj.maps.Polyline({
+          path: [
+            { lat: vCoords.latitude, lng: vCoords.longitude },
+            { lat: rCoords.latitude, lng: rCoords.longitude },
+            { lat: cCoords.latitude, lng: cCoords.longitude },
           ],
-          { color: '#E50914', weight: 4, opacity: 0.8, dashArray: '6, 8' }
-        ).addTo(map)
+          geodesic: true,
+          strokeColor: '#E50914',
+          strokeOpacity: 0.8,
+          strokeWeight: 4,
+          map,
+        })
 
-        leafletMapRef.current = map
-      }
-
-      // Smooth resize trigger
-      setTimeout(() => {
-        leafletMapRef.current?.invalidateSize()
-      }, 150)
-    } catch {
-      // Safe fallback if leaflet dom elements not present
-    }
+        googleMapInstanceRef.current = map
+        setGoogleJsLoaded(true)
+      })
+      .catch((err) => {
+        console.warn('[DeliveryLiveMap] Google Maps JS API script failed:', err)
+      })
 
     return () => {
-      if (leafletMapRef.current) {
-        leafletMapRef.current.remove()
-        leafletMapRef.current = null
-      }
+      isMounted = false
     }
-  }, [viewMode, vendorCoords, customerCoords, riderCoords, vendorName, deliveryAddress, riderName])
+  }, [viewMode, centerCoords, vendorCoords, customerCoords, riderCoords, vendorName, deliveryAddress, riderName])
 
   // Formatted WhatsApp URL with campus gate context
   const whatsAppHref = useMemo(() => {
@@ -231,6 +225,11 @@ export function DeliveryLiveMap({
     const message = `Hello ${riderName}, I am tracking my KingdomDash Order #${orderNumber} from ${vendorName}. I'm waiting at: ${deliveryAddress}${landmark ? ` (${landmark})` : ''}.`
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
   }, [riderPhone, riderName, orderNumber, vendorName, deliveryAddress, landmark])
+
+  const vCoords = vendorCoords || { latitude: 6.815, longitude: 3.915 }
+  const cCoords = customerCoords || { latitude: 6.828, longitude: 3.928 }
+  const googleMapsDirectionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${vCoords.latitude},${vCoords.longitude}&destination=${cCoords.latitude},${cCoords.longitude}`
+  const googleMapsEmbedUrl = `https://maps.google.com/maps?q=${centerCoords.latitude},${centerCoords.longitude}&z=14&output=embed`
 
   return (
     <div
@@ -293,12 +292,12 @@ export function DeliveryLiveMap({
             type="button"
             onClick={() => setViewMode(viewMode === 'radar' ? 'streets' : 'radar')}
             className="flex items-center gap-1.5 rounded-full border border-neutral-700 bg-neutral-800/90 hover:bg-neutral-700 px-3 py-1.5 text-xs font-semibold text-neutral-200 transition-colors backdrop-blur-md cursor-pointer shadow-md"
-            title="Toggle between Radar Trajectory and OpenStreetMap Streets"
+            title="Toggle between Radar Trajectory and Google Maps Streets"
           >
             {viewMode === 'radar' ? (
               <>
                 <MapIcon className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="hidden sm:inline">Streets</span>
+                <span className="hidden sm:inline">Google Maps</span>
               </>
             ) : (
               <>
@@ -316,7 +315,35 @@ export function DeliveryLiveMap({
           ref={mapContainerRef}
           data-testid="leaflet-map-container"
           className="relative h-64 sm:h-76 w-full bg-[#0A0C10] z-10"
-        />
+        >
+          {/* If Google Maps JS API is not active, render Google Maps Embed */}
+          {(!appConfig.maps.googleMapsApiKey || !googleJsLoaded) && (
+            <div className="relative w-full h-full">
+              <iframe
+                title="Google Maps Delivery Live View"
+                src={googleMapsEmbedUrl}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full h-full"
+              />
+              {/* Overlay with Google Maps Brand & Route Link */}
+              <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2">
+                <a
+                  href={googleMapsDirectionsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 px-3 py-1.5 text-xs font-semibold text-white shadow-lg backdrop-blur-md hover:bg-slate-800 transition-colors"
+                >
+                  <span>Open Route in Google Maps</span>
+                  <ExternalLink className="h-3.5 w-3.5 text-primary" />
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
       ) : (
         /* Stylized Vector Radar Map Viewport */
         <div

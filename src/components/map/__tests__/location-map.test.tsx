@@ -32,8 +32,8 @@ describe('Map Components', () => {
     })
   })
 
-  describe('LocationMap & LocationPickerMap (Graceful Headless Handling)', () => {
-    it('renders without crashing in jsdom test environment', () => {
+  describe('Google Maps Integration (LocationMap & LocationPickerMap)', () => {
+    it('renders Google Maps LocationMap with Google Maps branding and iframe', () => {
       const { container } = render(
         <LocationMap
           center={{ latitude: 6.820556, longitude: 3.920833 }}
@@ -45,9 +45,16 @@ describe('Map Components', () => {
         />
       )
       expect(container).toBeInTheDocument()
+      expect(screen.getByTestId('google-location-map')).toBeInTheDocument()
+      expect(screen.getByTitle(/Google Maps Location Preview/i)).toBeInTheDocument()
+      expect(screen.getAllByText(/Google Maps/i).length).toBeGreaterThanOrEqual(1)
+      expect(screen.getByRole('link', { name: /Open in Google Maps/i })).toHaveAttribute(
+        'href',
+        expect.stringContaining('google.com/maps')
+      )
     })
 
-    it('renders LocationPickerMap without crashing in jsdom test environment', () => {
+    it('renders Google Maps LocationPickerMap with doorstep pin controls and Google branding', () => {
       const { container } = render(
         <LocationPickerMap
           value={{ latitude: 6.820556, longitude: 3.920833 }}
@@ -60,6 +67,11 @@ describe('Map Components', () => {
         />
       )
       expect(container).toBeInTheDocument()
+      expect(screen.getByTestId('google-location-picker-map')).toBeInTheDocument()
+      expect(screen.getByTitle(/Google Maps Pinpoint/i)).toBeInTheDocument()
+      expect(screen.getByText(/Doorstep Pin/i)).toBeInTheDocument()
+      expect(screen.getByTitle(/Nudge pin North/i)).toBeInTheDocument()
+      expect(screen.getByTitle(/Reset pin to Ijebu-Ode center/i)).toBeInTheDocument()
     })
   })
 })

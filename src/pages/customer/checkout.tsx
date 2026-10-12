@@ -13,6 +13,7 @@ import { PageContainer } from '@/components/layout/section'
 import { Button } from '@/components/ui/button'
 import { CheckoutProgress } from '@/components/checkout/checkout-progress'
 import { DeliveryLocationCard } from '@/components/checkout/delivery-location-card'
+import { LocationPermissionModal } from '@/components/common/location-permission-modal'
 import {
   DeliveryOptionsCard,
   type DeliveryOptionType,
@@ -27,10 +28,21 @@ import { EnterpriseTrustBanner } from '@/components/shared/trust-badges'
 import { CheckoutHelpCard } from '@/components/checkout/checkout-help-card'
 import { CostBreakdownAccordion } from '@/components/cart/cost-breakdown-accordion'
 import { useCartStore } from '@/stores/cart-store'
-import { getCustomerAddresses } from '@/services/supabase/addresses'
+import {
+  getCustomerAddresses,
+  createCustomerAddress,
+  updateCustomerAddress,
+} from '@/services/supabase/addresses'
+import { getCurrentBrowserCoordinates } from '@/utils/geo'
+import { checkLocationServiceability } from '@/services/supabase/locations'
+import { getGeocodingProvider } from '@/services/geocoding'
 import { createOrderSecure } from '@/services/supabase/orders'
 import { getDeliveryFeePreview } from '@/services/supabase/pricing'
 import { initializePaystackPayment } from '@/services/paystack/paystack'
+import {
+  openFlutterwaveCheckout,
+  initializeFlutterwavePayment,
+} from '@/services/flutterwave/flutterwave'
 import { validatePromoCode } from '@/services/promo/promo-service'
 import { useAuthStore } from '@/stores/auth-store'
 import {
@@ -61,6 +73,7 @@ export default function CheckoutPage() {
   const [promoDiscount, setPromoDiscount] = useState<number>(0)
   const [promoError, setPromoError] = useState<string | null>(null)
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(true)
+  const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submissionError, setSubmissionError] = useState<string | null>(null)
   const [acceptRefundPolicy, setAcceptRefundPolicy] = useState(false)
@@ -227,7 +240,193 @@ export default function CheckoutPage() {
     }
   }, [selectedAddress, vendor])
 
-  // Fetch Customer Saved Addresses
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false)
+  const hasUserManuallySelectedRef = useRef(false)
+
+  const detectCurrentLocation = async (silent = false, initialAddresses?: Address[]) => {
+    setIsDetectingLocation(true)
+    try {
+      const coords = await getCurrentBrowserCoordinates()
+
+      // Check dynamic serviceability against active service areas in database
+      const serviceCheck = await checkLocationServiceability(coords)
+      setIsAddressServiceable(serviceCheck.isServiceable)
+      if (serviceCheck.serviceArea?.name) {
+        setServiceAreaName(serviceCheck.serviceArea.name)
+      }
+
+      // Reverse geocode dynamically to resolve street, neighborhood, city, and state
+      let streetName = ''
+      let neighborhoodName = ''
+      let cityName = ''
+      let stateName = ''
+      let formattedAddress = ''
+
+      try {
+        const provider = getGeocodingProvider()
+        const geoRes = await provider.reverseGeocode(coords)
+        if (geoRes) {
+          streetName = geoRes.streetName || ''
+          neighborhoodName = geoRes.neighborhood || ''
+          cityName = geoRes.city || ''
+          stateName = geoRes.state || ''
+          formattedAddress = geoRes.formattedAddress || ''
+        }
+      } catch (geoErr) {
+        console.warn('[Checkout] Dynamic reverse geocoding fallback:', geoErr)
+      }
+
+      // If user manually selected a specific address while silent detection was running, respect their choice
+      if (silent && hasUserManuallySelectedRef.current) {
+        return
+      }
+
+      const activeAddresses = initialAddresses || addresses
+      const displayStreet = streetName || neighborhoodName || ''
+      const displayCity = cityName || ''
+
+      // Clean human-readable address line 1: e.g. "Mobalufon Street" or "Ajao Rd"
+      const cleanStreetLine =
+        streetName ||
+        (formattedAddress ? formattedAddress.split(',')[0].trim() : '') ||
+        neighborhoodName ||
+        displayCity ||
+        'Pinned Location'
+
+      const fullAddressLine1 = cleanStreetLine
+      const addressLabel = `📍 ${cleanStreetLine || displayCity || 'Detected Location'}`
+
+      const existingCurrentAddr = activeAddresses.find(
+        (a) =>
+          a.label?.startsWith('📍') ||
+          (a.latitude &&
+            Math.abs(a.latitude - coords.latitude) < 0.05 &&
+            a.longitude &&
+            Math.abs(a.longitude - coords.longitude) < 0.05)
+      )
+
+      if (profile?.id) {
+        if (existingCurrentAddr) {
+          const { data: updated, error } = await updateCustomerAddress(existingCurrentAddr.id, {
+            label: addressLabel,
+            address_line_1: fullAddressLine1,
+            city: cityName || existingCurrentAddr.city,
+            state: stateName || existingCurrentAddr.state,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            service_area_id: serviceCheck.serviceArea?.id || existingCurrentAddr.service_area_id,
+            is_default: true,
+          })
+          if (!error && updated) {
+            const updatedAddr = updated as Address
+            setAddresses((prev) =>
+              prev.map((a) => (a.id === updatedAddr.id ? updatedAddr : a))
+            )
+            setSelectedAddress(updatedAddr)
+          } else {
+            const patched: Address = {
+              ...existingCurrentAddr,
+              label: addressLabel,
+              address_line_1: fullAddressLine1,
+              city: cityName || existingCurrentAddr.city,
+              state: stateName || existingCurrentAddr.state,
+              latitude: coords.latitude,
+              longitude: coords.longitude,
+              service_area_id: serviceCheck.serviceArea?.id || existingCurrentAddr.service_area_id,
+            }
+            setSelectedAddress(patched)
+          }
+        } else {
+          const { data: created, error } = await createCustomerAddress({
+            label: addressLabel,
+            recipient_name: profile.full_name || 'Customer',
+            phone: profile.phone || '',
+            address_line_1: fullAddressLine1,
+            city: cityName || '',
+            state: stateName || '',
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            service_area_id: serviceCheck.serviceArea?.id || null,
+            is_default: true,
+          })
+          if (!error && created) {
+            const newAddr = created as Address
+            setAddresses((prev) => [newAddr, ...prev.filter((a) => a.id !== newAddr.id)])
+            setSelectedAddress(newAddr)
+          } else {
+            const fallbackAddr: Address = {
+              id: `gps-${Date.now()}`,
+              profile_id: profile.id,
+              label: addressLabel,
+              recipient_name: profile.full_name || 'Customer',
+              phone: profile.phone || '',
+              address_line_1: fullAddressLine1,
+              address_line_2: null,
+              city: cityName || '',
+              state: stateName || '',
+              postal_code: null,
+              latitude: coords.latitude,
+              longitude: coords.longitude,
+              service_area_id: serviceCheck.serviceArea?.id || null,
+              is_default: true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }
+            setAddresses((prev) => [fallbackAddr, ...prev])
+            setSelectedAddress(fallbackAddr)
+          }
+        }
+      } else {
+        const guestAddr: Address = {
+          id: `guest-gps-${Date.now()}`,
+          profile_id: 'guest',
+          label: addressLabel,
+          recipient_name: 'Customer',
+          phone: '',
+          address_line_1: fullAddressLine1,
+          address_line_2: null,
+          city: cityName || '',
+          state: stateName || '',
+          postal_code: null,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          service_area_id: serviceCheck.serviceArea?.id || null,
+          is_default: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+        setSelectedAddress(guestAddr)
+      }
+
+      if (!silent) {
+        const isIspLagosRouted =
+          cityName.toLowerCase().includes('ikeja') ||
+          cityName.toLowerCase().includes('lagos')
+
+        pushToast({
+          variant: isIspLagosRouted ? 'warning' : 'success',
+          title: isIspLagosRouted ? 'ISP Hub Detected (Ikeja)' : 'Location Detected',
+          message: isIspLagosRouted
+            ? `Your internet provider routed your connection through Ikeja (${[displayStreet, displayCity].filter(Boolean).join(', ')}). Click 'Change location' to set your exact street in Ijebu-Ode.`
+            : `Delivery pin set to ${[displayStreet, displayCity].filter(Boolean).join(', ') || 'your detected location'}.`,
+        })
+      }
+    } catch (err) {
+      if (!silent) {
+        setIsPermissionModalOpen(true)
+        pushToast({
+          variant: 'warning',
+          title: 'Location Unavailable',
+          message: err instanceof Error ? err.message : 'Could not detect GPS location. You can enter your street name directly.',
+        })
+      }
+      console.warn('[Checkout] Location detection:', err)
+    } finally {
+      setIsDetectingLocation(false)
+    }
+  }
+
+  // Fetch Customer Saved Addresses and Auto-detect Current Location
   useEffect(() => {
     let isMounted = true
 
@@ -236,15 +435,30 @@ export default function CheckoutPage() {
       try {
         const { data, error } = await getCustomerAddresses()
         if (isMounted) {
+          let list: Address[] = []
           if (!error && data) {
-            const list = data as Address[]
+            list = (data as Address[]).filter(
+              (addr, index, self) =>
+                index ===
+                self.findIndex(
+                  (t) => t.address_line_1 === addr.address_line_1 && t.label === addr.label
+                )
+            )
             setAddresses(list)
             const defaultAddr = list.find((a) => a.is_default) || list[0] || null
             setSelectedAddress(defaultAddr)
           }
+          // If customer has saved addresses, use their default/first address.
+          // Only auto-detect if customer has zero saved addresses to avoid
+          // overwriting their location with ISP-routed IP geolocation.
+          if (list.length === 0) {
+            detectCurrentLocation(true, [])
+          }
         }
       } catch {
-        // Handled silently
+        if (isMounted) {
+          detectCurrentLocation(true, [])
+        }
       } finally {
         if (isMounted) setIsLoadingAddresses(false)
       }
@@ -258,7 +472,8 @@ export default function CheckoutPage() {
   }, [])
 
   const handleAddressCreated = (newAddr: Address) => {
-    setAddresses((prev) => [newAddr, ...prev])
+    hasUserManuallySelectedRef.current = true
+    setAddresses((prev) => [newAddr, ...prev.filter((a) => a.id !== newAddr.id)])
     setSelectedAddress(newAddr)
   }
 
@@ -438,7 +653,7 @@ export default function CheckoutPage() {
 
       clearCart()
 
-      // Handle Paystack Payment Initialization
+      // 1. Paystack Flow
       if (selectedPaymentMethod === 'paystack') {
         try {
           const initData = await initializePaystackPayment({
@@ -471,15 +686,111 @@ export default function CheckoutPage() {
         }
       }
 
-      // Non-Paystack / Fallback flow
+      // 2. Flutterwave Flow
+      if (selectedPaymentMethod === 'flutterwave') {
+        try {
+          setPaymentState('payment opened')
+          pushToast({
+            variant: 'info',
+            title: 'Connecting to Flutterwave',
+            message: 'Initializing secure Flutterwave payment...',
+          })
+
+          let flwInitData: { link?: string; tx_ref?: string } | null = null
+          try {
+            flwInitData = await initializeFlutterwavePayment({
+              order_id: orderId,
+              callback_url: `${window.location.origin}/order/${orderId}/confirmation?gateway=flutterwave`,
+            })
+          } catch (initErr) {
+            console.warn('[Checkout] Backend flutterwave-initialize fallback:', initErr)
+          }
+
+          const isKdPass = Boolean(loyaltyAccount?.hasActiveKdPass && subtotal >= 3500)
+          const fee =
+            deliveryFee !== null
+              ? isKdPass
+                ? 0
+                : selectedDeliveryOption === 'express'
+                ? deliveryFee + 600
+                : deliveryFee
+              : 0
+          const payableAmount = Math.max(
+            0,
+            subtotal - promoDiscount - pointsDiscount + fee + serviceFee + riderTip
+          )
+
+          await openFlutterwaveCheckout({
+            orderId,
+            txRef: flwInitData?.tx_ref,
+            amount: payableAmount,
+            customer: {
+              email: profile?.email || 'customer@kingdomdash.ng',
+              name: selectedAddress?.recipient_name || profile?.full_name || 'Customer',
+              phone_number: selectedAddress?.phone || profile?.phone || '',
+            },
+            onSuccess: (flwData) => {
+              setPaymentState('payment confirmed')
+              pushToast({
+                variant: 'success',
+                title: 'Payment Successful!',
+                message: 'Your Flutterwave payment was approved.',
+              })
+              const txId = flwData.transaction_id ? String(flwData.transaction_id) : ''
+              navigate(
+                `/order/${orderId}/confirmation?reference=${encodeURIComponent(flwData.tx_ref)}&transaction_id=${encodeURIComponent(txId)}&flw_ref=${encodeURIComponent(String(flwData.flw_ref || ''))}&gateway=flutterwave`
+              )
+            },
+            onCancel: () => {
+              setPaymentState('payment cancelled')
+              pushToast({
+                variant: 'info',
+                title: 'Payment Incomplete',
+                message: 'You can complete your payment anytime from your order confirmation page.',
+              })
+              navigate(`/order/${orderId}/confirmation?gateway=flutterwave&status=incomplete`)
+            },
+            onError: (flwErr) => {
+              console.error('[Checkout] Flutterwave initialization failed:', flwErr)
+              if (flwInitData?.link) {
+                window.location.href = flwInitData.link
+                return
+              }
+              setPaymentState('payment initialization failed')
+              pushToast({
+                variant: 'error',
+                title: 'Flutterwave Notice',
+                message: flwErr.message || 'Could not load Flutterwave checkout. Please retry.',
+              })
+              navigate(`/order/${orderId}/confirmation?gateway=flutterwave&status=error`)
+            },
+          })
+          return
+        } catch (paymentErr) {
+          console.error('[Checkout] Flutterwave execution failed:', paymentErr)
+          setPaymentState('payment initialization failed')
+          pushToast({
+            variant: 'error',
+            title: 'Payment Gateway Notice',
+            message:
+              paymentErr instanceof Error
+                ? paymentErr.message
+                : 'Could not connect to Flutterwave. Please retry from your order confirmation page.',
+          })
+          navigate(`/order/${orderId}/confirmation?gateway=flutterwave`)
+          return
+        }
+      }
+
+      // 3. Cash on Delivery Flow
       setPaymentState('payment confirmed')
       pushToast({
         variant: 'success',
-        title: 'Order Placed Successfully!',
-        message: 'Your order has been recorded and submitted to the vendor.',
+        title: 'Order Placed (Cash on Delivery)',
+        message: 'Your order has been sent to the vendor! Please have cash ready for your rider.',
       })
 
-      navigate(`/order/${orderId}/confirmation`)
+      navigate(`/order/${orderId}/confirmation?payment_channel=cash`)
     } catch (err) {
       setPaymentState('payment initialization failed')
       setSubmissionError(
@@ -587,7 +898,10 @@ export default function CheckoutPage() {
               <DeliveryLocationCard
                 addresses={addresses}
                 selectedAddress={selectedAddress}
-                onSelectAddress={(addr) => setSelectedAddress(addr)}
+                onSelectAddress={(addr) => {
+                  hasUserManuallySelectedRef.current = true
+                  setSelectedAddress(addr)
+                }}
                 onAddressCreated={handleAddressCreated}
                 isServiceable={isAddressServiceable}
                 isPinned={!!(selectedAddress?.latitude && selectedAddress?.longitude)}
@@ -596,6 +910,9 @@ export default function CheckoutPage() {
                 estimatedTime={
                   selectedDeliveryOption === 'express' ? '15-25 mins' : '30-45 mins'
                 }
+                onDetectLocation={() => detectCurrentLocation(false)}
+                isDetectingLocation={isDetectingLocation}
+                onShowPermissionGuide={() => setIsPermissionModalOpen(true)}
               />
             </div>
 
@@ -762,14 +1079,20 @@ export default function CheckoutPage() {
                     <span>
                       {selectedPaymentMethod === 'paystack'
                         ? 'Connecting to Paystack...'
-                        : 'Processing Order...'}
+                        : selectedPaymentMethod === 'flutterwave'
+                        ? 'Connecting to Flutterwave...'
+                        : 'Placing Cash Order...'}
                     </span>
                     <span className="sr-only">Place Order</span>
                   </>
                 ) : paymentState === 'payment opened' ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-                    <span>Opening Paystack...</span>
+                    <span>
+                      {selectedPaymentMethod === 'flutterwave'
+                        ? 'Opening Flutterwave...'
+                        : 'Opening Paystack...'}
+                    </span>
                     <span className="sr-only">Place Order</span>
                   </>
                 ) : paymentState === 'payment awaiting confirmation' ? (
@@ -800,7 +1123,9 @@ export default function CheckoutPage() {
                     <span>
                       {selectedPaymentMethod === 'paystack'
                         ? 'Pay with Paystack'
-                        : 'Continue to Payment'}
+                        : selectedPaymentMethod === 'flutterwave'
+                        ? 'Pay with Flutterwave'
+                        : 'Place Order (Cash on Delivery)'}
                     </span>
                     <span className="sr-only">Place Order</span>
                     <ArrowRight className="h-4 w-4 stroke-[2.5]" aria-hidden="true" />
@@ -890,6 +1215,13 @@ export default function CheckoutPage() {
             </Button>
           </div>
         </div>
+
+        {/* Mobile Location Permission Guide & Force-Prompt Modal */}
+        <LocationPermissionModal
+          isOpen={isPermissionModalOpen}
+          onClose={() => setIsPermissionModalOpen(false)}
+          onLocationGranted={() => detectCurrentLocation(false)}
+        />
       </PageContainer>
     </div>
   )

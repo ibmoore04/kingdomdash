@@ -72,8 +72,16 @@ export function extractReceiptData(
     deliveryFee,
     riderTip,
     total,
-    paymentReference: payment?.paystack_reference || 'Authoritative Ledger',
-    paymentMethod: payment?.channel ? `Via ${payment.channel.toUpperCase()}` : 'Paystack Escrow',
+    paymentReference:
+      payment?.paystack_reference || (payment as any)?.reference || 'Authoritative Ledger',
+    paymentMethod:
+      payment?.channel === 'flutterwave'
+        ? 'Flutterwave Escrow'
+        : payment?.channel === 'cash'
+        ? 'Cash on Delivery'
+        : payment?.channel
+        ? `Via ${payment.channel.toUpperCase()}`
+        : 'Paystack Escrow',
     verificationUrl: getReceiptVerificationUrl(order.id),
   }
 }

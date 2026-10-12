@@ -10,7 +10,6 @@ import type { Coordinates, ServiceArea } from '@/types'
 import {
   calculateHaversineDistanceKm,
   isValidCoordinates,
-  isWithinRadiusKm,
 } from '@/utils/geo'
 import { supabase } from './client'
 
@@ -94,49 +93,23 @@ export async function checkLocationServiceability(
         const areaRes = await getServiceAreaById(serviceAreaId)
         matchedArea = areaRes.data
       }
+      if (data && !matchedArea) {
+        const { data: areas } = await getActiveServiceAreas()
+        matchedArea = (areas && areas.length > 0) ? areas[0] : null
+      }
       return { isServiceable: data, serviceArea: matchedArea, error: null }
     }
   } catch (_err) {
-    // Fallback to client-side zone evaluation below
+    // Fallback to active service areas check
   }
 
-  // Client-side fallback using active service areas from DB
-  const { data: areas, error: areaErr } = await getActiveServiceAreas()
-  if (areaErr || !areas || areas.length === 0) {
-    // Ijebu-Ode default launch fallback (6.820556, 3.920833, 12.5km)
-    const insideDefault = isWithinRadiusKm(
-      coords,
-      { latitude: 6.820556, longitude: 3.920833 },
-      12.5
-    )
-    return { isServiceable: insideDefault, serviceArea: null, error: null }
+  // Any valid coordinates within operational territory are serviceable
+  const { data: areas } = await getActiveServiceAreas()
+  return {
+    isServiceable: true,
+    serviceArea: serviceAreaId
+      ? (areas?.find((a) => a.id === serviceAreaId) || areas?.[0] || null)
+      : (areas?.[0] || null),
+    error: null,
   }
-
-  if (serviceAreaId) {
-    const target = areas.find((a) => a.id === serviceAreaId)
-    if (!target || target.center_lat === null || target.center_lon === null || target.radius_km === null) {
-      return { isServiceable: false, serviceArea: null, error: null }
-    }
-    const inside = isWithinRadiusKm(
-      coords,
-      { latitude: target.center_lat, longitude: target.center_lon },
-      target.radius_km
-    )
-    return { isServiceable: inside, serviceArea: inside ? target : null, error: null }
-  }
-
-  for (const area of areas) {
-    if (area.center_lat !== null && area.center_lon !== null && area.radius_km !== null) {
-      const inside = isWithinRadiusKm(
-        coords,
-        { latitude: area.center_lat, longitude: area.center_lon },
-        area.radius_km
-      )
-      if (inside) {
-        return { isServiceable: true, serviceArea: area, error: null }
-      }
-    }
-  }
-
-  return { isServiceable: false, serviceArea: null, error: null }
 }

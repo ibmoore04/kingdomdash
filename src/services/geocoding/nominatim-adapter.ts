@@ -124,8 +124,8 @@ export class NominatimGeocodingProvider implements GeocodingProvider {
             addr.quarter ||
             addr.residential ||
             undefined,
-          city: addr.city || addr.town || addr.village || addr.county || 'Ijebu-Ode',
-          state: addr.state || 'Ogun State',
+          city: addr.city || addr.town || addr.village || addr.county || '',
+          state: addr.state || '',
           country: addr.country || 'Nigeria',
           confidence: typeof item.importance === 'number' ? item.importance : undefined,
           provider: this.name,
@@ -226,8 +226,8 @@ export class NominatimGeocodingProvider implements GeocodingProvider {
           addr.quarter ||
           addr.residential ||
           undefined,
-        city: addr.city || addr.town || addr.village || addr.county || 'Ijebu-Ode',
-        state: addr.state || 'Ogun State',
+        city: addr.city || addr.town || addr.village || addr.county || '',
+        state: addr.state || '',
         country: addr.country || 'Nigeria',
         provider: this.name,
       }

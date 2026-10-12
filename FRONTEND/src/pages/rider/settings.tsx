@@ -282,7 +282,7 @@ export default function RiderSettingsPage() {
                 {[
                   { id: 'google_maps', label: 'Google Maps', desc: 'Default Android & Web navigation' },
                   { id: 'apple_maps', label: 'Apple Maps', desc: 'Optimized for iOS devices' },
-                  { id: 'in_app', label: 'In-App Map Only', desc: 'Leaflet route map view' },
+                  { id: 'in_app', label: 'In-App Map Only', desc: 'Google Maps route view' },
                 ].map((item) => (
                   <button
                     key={item.id}

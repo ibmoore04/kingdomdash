@@ -2,6 +2,7 @@ import { AlertTriangle, Info, Lock, Loader2, Navigation, ShieldCheck } from 'luc
 import { Button } from '@/components/ui/button'
 import { formatNgn } from '@/utils/formatting'
 import { formatDistanceKm } from '@/utils/geo'
+import type { PaymentMethodType } from './payment-methods-card'
 
 export interface CheckoutSummaryCardProps {
   subtotal: number
@@ -17,7 +18,7 @@ export interface CheckoutSummaryCardProps {
   isPinned?: boolean
   isServiceable?: boolean
   serviceAreaName?: string
-  paymentMethod?: 'paystack' | 'bank_transfer' | 'cash_on_delivery'
+  paymentMethod?: PaymentMethodType
   onSubmitOrder: () => void
 }
 
@@ -151,7 +152,13 @@ export function CheckoutSummaryCard({
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              <span>{paymentMethod === 'paystack' ? 'Connecting to Paystack...' : 'Processing Order...'}</span>
+              <span>
+                {paymentMethod === 'paystack'
+                  ? 'Connecting to Paystack...'
+                  : paymentMethod === 'flutterwave'
+                  ? 'Connecting to Flutterwave...'
+                  : 'Placing Cash Order...'}
+              </span>
             </>
           ) : (
             <>
@@ -159,7 +166,9 @@ export function CheckoutSummaryCard({
               <span>
                 {paymentMethod === 'paystack'
                   ? `Pay ${formatNgn(finalTotal)} with Paystack`
-                  : 'Place Order'}
+                  : paymentMethod === 'flutterwave'
+                  ? `Pay ${formatNgn(finalTotal)} with Flutterwave`
+                  : `Place Order (Cash on Delivery)`}
               </span>
             </>
           )}

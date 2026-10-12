@@ -1,7 +1,6 @@
 import { CircleAlert, CircleCheck, Info, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { useUiStore } from '@/stores/ui-store'
-import { AudioUnlockBanner } from '@/components/common/audio-unlock-banner'
 
 const iconMap = {
   success: CircleCheck,
@@ -16,7 +15,6 @@ export function ToastViewport() {
 
   return (
     <>
-      <AudioUnlockBanner label="Tap to enable sound alerts" className="bottom-20 right-4" />
       <div
         className="pointer-events-none fixed bottom-4 right-4 z-[60] flex w-[calc(100%-2rem)] max-w-sm flex-col gap-2"
         aria-live="polite"

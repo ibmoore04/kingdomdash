@@ -117,6 +117,19 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     return null
   }
 
+  // During local development, unregister any active service worker so it never intercepts Vite dev modules
+  if (import.meta.env.DEV) {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      for (const registration of registrations) {
+        await registration.unregister()
+      }
+    } catch {
+      // Ignore in dev
+    }
+    return null
+  }
+
   try {
     const reg = await navigator.serviceWorker.register('/sw.js', {
       scope: '/',

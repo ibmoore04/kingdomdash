@@ -321,7 +321,7 @@ export default function RiderActiveDeliveryPage() {
           </Badge>
         </div>
 
-        {/* Leaflet Map Preview */}
+        {/* Google Maps Preview */}
         <RouteMapView
           pickupCoords={
             activeDelivery.pickup_latitude && activeDelivery.pickup_longitude

@@ -15,11 +15,10 @@ import { getGeocodingProvider, type GeocodeResult } from '@/services/geocoding'
 import { LocationPickerMap } from '@/components/map'
 import type { Address, Coordinates } from '@/types'
 import {
-  IJEBU_ODE_CENTER,
   isValidCoordinates,
-  formatCoordinates,
+  getCurrentBrowserCoordinates,
 } from '@/utils/geo'
-import { AlertTriangle, CheckCircle2, MapPin, Search } from 'lucide-react'
+import { CheckCircle2, MapPin, Search, Locate } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 
 export interface AddressFormModalProps {
@@ -29,33 +28,6 @@ export interface AddressFormModalProps {
   onSuccess: (savedAddress: Address) => void
 }
 
-const POPULAR_LANDMARKS: Array<{ name: string; address: string; coords: Coordinates }> = [
-  {
-    name: '🏟️ Dipo Dina Stadium',
-    address: 'Otunba Dipo Dina International Stadium Road, Ijebu-Ode',
-    coords: { latitude: 6.8197, longitude: 3.9247 },
-  },
-  {
-    name: '👑 Awujale Palace',
-    address: 'Awujale Palace Complex, Itoro, Ijebu-Ode',
-    coords: { latitude: 6.8215, longitude: 3.9185 },
-  },
-  {
-    name: '🎓 TASUED / Ijagun',
-    address: 'Tai Solarin University of Education Road, Ijagun, Ijebu-Ode',
-    coords: { latitude: 6.8042, longitude: 3.8863 },
-  },
-  {
-    name: '🛣️ Molipa Express',
-    address: 'Molipa Express Junction, Ijebu-Ode',
-    coords: { latitude: 6.8351, longitude: 3.9212 },
-  },
-  {
-    name: '🌳 OGD Heritage Park',
-    address: 'OGD Heritage Park, Itoro, Ijebu-Ode',
-    coords: { latitude: 6.8225, longitude: 3.9192 },
-  },
-]
 
 function isValidNigerianPhone(phone: string): boolean {
   const cleaned = phone.replace(/[\s\-()]/g, '')
@@ -134,7 +106,7 @@ export function AddressFormModal({
           })
           .catch(() => {})
       } else {
-        setCoords(IJEBU_ODE_CENTER)
+        setCoords(null)
       }
     } else {
       setLabel('Home')
@@ -146,7 +118,7 @@ export function AddressFormModal({
       setStateVal('Ogun State')
       setPostalCode('')
       setIsDefault(false)
-      setCoords(IJEBU_ODE_CENTER)
+      setCoords(null)
       setServiceAreaId(null)
       setIsServiceable(true)
       setActiveZoneName('Ijebu-Ode Central')
@@ -226,7 +198,7 @@ export function AddressFormModal({
     }
   }
 
-  // Handle Pin Drag/Click on Map
+  // Handle Pin Drag/Click on Map with automatic reverse geocoding
   const handleMapPinChange = async (newCoords: Coordinates) => {
     setCoords(newCoords)
     const checkRes = await checkLocationServiceability(newCoords)
@@ -234,6 +206,51 @@ export function AddressFormModal({
     if (checkRes.serviceArea) {
       setServiceAreaId(checkRes.serviceArea.id)
       setActiveZoneName(checkRes.serviceArea.name)
+    }
+
+    try {
+      const provider = getGeocodingProvider()
+      const geoRes = await provider.reverseGeocode(newCoords)
+      if (geoRes) {
+        const street = geoRes.streetName || geoRes.formattedAddress.split(',')[0]
+        if (street) setAddressLine1(street)
+        if (geoRes.city) setCity(geoRes.city)
+        if (geoRes.state) setStateVal(geoRes.state)
+      }
+    } catch {
+      // reverse geocode fallback
+    }
+  }
+
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false)
+
+  const handleDetectCurrentLocation = async () => {
+    setIsDetectingLocation(true)
+    try {
+      const detectedCoords = await getCurrentBrowserCoordinates()
+      setCoords(detectedCoords)
+
+      const checkRes = await checkLocationServiceability(detectedCoords)
+      setIsServiceable(checkRes.isServiceable)
+      if (checkRes.serviceArea) {
+        setServiceAreaId(checkRes.serviceArea.id)
+        setActiveZoneName(checkRes.serviceArea.name)
+      }
+
+      try {
+        const provider = getGeocodingProvider()
+        const geoRes = await provider.reverseGeocode(detectedCoords)
+        if (geoRes) {
+          const street = geoRes.streetName || geoRes.formattedAddress.split(',')[0]
+          if (street && !addressLine1.trim()) setAddressLine1(street)
+          if (geoRes.city) setCity(geoRes.city)
+          if (geoRes.state) setStateVal(geoRes.state)
+        }
+      } catch {}
+    } catch (err) {
+      console.warn('[AddressFormModal] Geolocation detection error:', err)
+    } finally {
+      setIsDetectingLocation(false)
     }
   }
 
@@ -395,33 +412,6 @@ export function AddressFormModal({
               </div>
             )}
 
-            {/* Popular Landmarks Quick Pills */}
-            <div className="mt-2 space-y-1.5">
-              <span className="text-[11px] font-medium text-neutral-500">Popular Ijebu-Ode Locations:</span>
-              <div className="flex flex-wrap gap-1.5">
-                {POPULAR_LANDMARKS.map((landmark) => (
-                  <button
-                    key={landmark.name}
-                    type="button"
-                    onClick={() => {
-                      setAddressLine1(landmark.address)
-                      setCoords(landmark.coords)
-                      setCity('Ijebu-Ode')
-                      setStateVal('Ogun State')
-                      checkLocationServiceability(landmark.coords)
-                        .then((res) => {
-                          setIsServiceable(res.isServiceable)
-                          if (res.serviceArea?.name) setActiveZoneName(res.serviceArea.name)
-                        })
-                        .catch(() => {})
-                    }}
-                    className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[11px] font-medium text-neutral-700 hover:border-primary hover:bg-primary/5 hover:text-primary transition-colors active:scale-95"
-                  >
-                    {landmark.name}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           <FormField id="address-line-2" label="Apartment / Suite / Landmark Note (Optional)">
@@ -441,37 +431,31 @@ export function AddressFormModal({
                 <MapPin className="w-3.5 h-3.5 text-primary" />
                 Pinpoint Delivery Doorstep
               </Label>
-              {coords && isValidCoordinates(coords) && (
-                <span className="text-text-muted font-mono text-[11px]">
-                  {formatCoordinates(coords)}
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleDetectCurrentLocation}
+                  disabled={isDetectingLocation || isSubmitting}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline cursor-pointer disabled:opacity-50"
+                  title="Detect my current location via GPS"
+                >
+                  <Locate className={`w-3 h-3 ${isDetectingLocation ? 'animate-spin' : ''}`} />
+                  <span>{isDetectingLocation ? 'Detecting...' : 'Use Current Location'}</span>
+                </button>
+              </div>
             </div>
 
             <LocationPickerMap
               value={coords}
               onChange={handleMapPinChange}
-              serviceArea={{
-                center: IJEBU_ODE_CENTER,
-                radiusKm: 12.5,
-                name: activeZoneName,
-              }}
               height={200}
               readOnly={isSubmitting}
             />
 
-            {/* Serviceability Banner */}
-            {!isServiceable ? (
-              <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs mt-2">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <p>
-                  <strong>Notice:</strong> This location appears to be outside our primary Ijebu-Ode delivery perimeter. You can save this address, but delivery availability will be confirmed at checkout.
-                </p>
-              </div>
-            ) : (
+            {isServiceable && (
               <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200 mt-1">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Delivery confirmed within <strong>{activeZoneName}</strong>.</span>
+                <span>Delivery available for this location ({activeZoneName}).</span>
               </div>
             )}
           </div>

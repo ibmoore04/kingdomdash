@@ -1,15 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+import React, { useState } from 'react'
 import type { Coordinates } from '@/types'
 import {
   formatCoordinates,
   IJEBU_ODE_CENTER,
   isValidCoordinates,
-  isWithinRadiusKm,
 } from '@/utils/geo'
-import { MapPin, RotateCcw } from 'lucide-react'
-import { MapFallback } from './map-fallback'
+import {
+  MapPin,
+  RotateCcw,
+  ExternalLink,
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
 import { appConfig } from '@/config/app.config'
 import { GoogleMapView } from './google-map-view'
 
@@ -26,24 +30,8 @@ export interface LocationPickerMapProps {
   readOnly?: boolean
 }
 
-// Custom SVG Draggable Pin Icon for Leaflet
-const createPickerIcon = (isServiceable = true) =>
-  L.divIcon({
-    className: 'kingdomdash-picker-pin',
-    html: `
-      <div style="position: relative; transform: translate(-50%, -100%); cursor: grab; display: flex; flex-direction: column; align-items: center;">
-        <svg width="38" height="46" viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 0C5.37258 0 0 5.37258 0 12C0 20.25 12 30 12 30C12 30 24 20.25 24 12C24 5.37258 18.6274 0 12 0Z" fill="${isServiceable ? '#10b981' : '#f59e0b'}"/>
-          <circle cx="12" cy="11" r="5" fill="#FFFFFF"/>
-        </svg>
-        <span style="background: rgba(15, 23, 42, 0.85); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; margin-top: -4px; white-space: nowrap; border: 1px solid rgba(255,255,255,0.2);">
-          Drag to pinpoint
-        </span>
-      </div>
-    `,
-    iconSize: [38, 46],
-    iconAnchor: [19, 46],
-  })
+// Micro coordinate step in degrees (~0.0003 deg is ~33m, ideal for doorstep accuracy)
+const NUDGE_STEP = 0.0003
 
 export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
   value,
@@ -53,163 +41,40 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
   className = '',
   readOnly = false,
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const mapInstanceRef = useRef<L.Map | null>(null)
-  const markerRef = useRef<L.Marker | null>(null)
-  const circleRef = useRef<L.Circle | null>(null)
-  const [initFailed, setInitFailed] = useState(false)
-  const [useGoogleMaps, setUseGoogleMaps] = useState(Boolean(appConfig.maps.googleMapsApiKey))
+  const [googleJsApiError, setGoogleJsApiError] = useState(false)
+  const apiKey = appConfig.maps.googleMapsApiKey
 
   const activeCoords: Coordinates =
     value && isValidCoordinates(value) ? value : IJEBU_ODE_CENTER
 
-  const isServiceable = serviceArea
-    ? isWithinRadiusKm(activeCoords, serviceArea.center, serviceArea.radiusKm)
-    : true
+  const isServiceable = true
 
-  // Handle location reset to center
   const handleResetToCenter = () => {
     const center = serviceArea?.center || IJEBU_ODE_CENTER
     onChange(center)
   }
 
-  // Leaflet map lifecycle fallback
-  useEffect(() => {
-    if (!containerRef.current || useGoogleMaps) return
-
-    let timer1: ReturnType<typeof setTimeout> | null = null
-    let timer2: ReturnType<typeof setTimeout> | null = null
-
-    const safeInvalidateSize = (m: L.Map | null) => {
-      if (!m) return
-      try {
-        if ((m as any)._mapPane && containerRef.current) {
-          m.invalidateSize()
-        }
-      } catch {
-        // Silently catch unmounted / detached leaflet pane errors
-      }
+  const handleNudge = (deltaLat: number, deltaLng: number) => {
+    if (readOnly) return
+    const newCoords: Coordinates = {
+      latitude: Math.round((activeCoords.latitude + deltaLat) * 1000000) / 1000000,
+      longitude: Math.round((activeCoords.longitude + deltaLng) * 1000000) / 1000000,
     }
+    onChange(newCoords)
+  }
 
-    try {
-      if (!mapInstanceRef.current) {
-        const map = L.map(containerRef.current, {
-          center: [activeCoords.latitude, activeCoords.longitude],
-          zoom: 15,
-          zoomControl: true,
-          attributionControl: false,
-        })
+  const styleHeight = typeof height === 'number' ? `${height}px` : height
 
-        const tileLayer = L.tileLayer(
-          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
-          {
-            maxZoom: 19,
-            attribution: '&copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
-          }
-        )
-        tileLayer.on('tileerror', () => {
-          // Silently handle tile errors
-        })
-        tileLayer.addTo(map)
-
-        timer1 = setTimeout(() => safeInvalidateSize(mapInstanceRef.current), 150)
-        timer2 = setTimeout(() => safeInvalidateSize(mapInstanceRef.current), 400)
-
-        // Click on map to place/move pin
-        if (!readOnly) {
-          map.on('click', (e: L.LeafletMouseEvent) => {
-            const newCoords: Coordinates = {
-              latitude: Math.round(e.latlng.lat * 1000000) / 1000000,
-              longitude: Math.round(e.latlng.lng * 1000000) / 1000000,
-            }
-            onChange(newCoords)
-          })
-        }
-
-        mapInstanceRef.current = map
-      }
-    } catch (err) {
-      console.warn('[LocationPickerMap] Failed to initialize Leaflet map, using fallback:', err)
-      setInitFailed(true)
-      return
-    }
-
-    const map = mapInstanceRef.current
-    if (!map) return
-
-    safeInvalidateSize(map)
-
-    // Update marker
-    if (markerRef.current) {
-      markerRef.current.setLatLng([activeCoords.latitude, activeCoords.longitude])
-      markerRef.current.setIcon(createPickerIcon(isServiceable))
-    } else {
-      const marker = L.marker([activeCoords.latitude, activeCoords.longitude], {
-        icon: createPickerIcon(isServiceable),
-        draggable: !readOnly,
-      }).addTo(map)
-
-      if (!readOnly) {
-        marker.on('dragend', (e) => {
-          const latlng = (e.target as L.Marker).getLatLng()
-          onChange({
-            latitude: Math.round(latlng.lat * 1000000) / 1000000,
-            longitude: Math.round(latlng.lng * 1000000) / 1000000,
-          })
-        })
-      }
-
-      markerRef.current = marker
-    }
-
-    // Update Service Area Circle
-    if (serviceArea && isValidCoordinates(serviceArea.center) && serviceArea.radiusKm > 0) {
-      const radiusMeters = serviceArea.radiusKm * 1000
-      if (circleRef.current) {
-        circleRef.current.setLatLng([
-          serviceArea.center.latitude,
-          serviceArea.center.longitude,
-        ])
-        circleRef.current.setRadius(radiusMeters)
-      } else {
-        circleRef.current = L.circle(
-          [serviceArea.center.latitude, serviceArea.center.longitude],
-          {
-            radius: radiusMeters,
-            color: '#10b981',
-            fillColor: '#10b981',
-            fillOpacity: 0.12,
-            weight: 2,
-          }
-        ).addTo(map)
-      }
-    }
-
-    return () => {
-      if (timer1) clearTimeout(timer1)
-      if (timer2) clearTimeout(timer2)
-    }
-  }, [activeCoords, isServiceable, serviceArea, readOnly, onChange, useGoogleMaps])
-
-  useEffect(() => {
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove()
-        mapInstanceRef.current = null
-      }
-    }
-  }, [])
-
-  // Attempt Google Maps if key exists
-  if (useGoogleMaps && appConfig.maps.googleMapsApiKey) {
+  // 1. If Google Maps API key is configured, render full interactive Google Maps JS API
+  if (apiKey && !googleJsApiError) {
     return (
-      <div className="relative">
+      <div className={`relative ${className}`} data-testid="google-location-picker-map">
         <GoogleMapView
           center={activeCoords}
-          zoom={15}
+          zoom={16}
+          marker={{ coords: activeCoords, label: 'Delivery Doorstep' }}
           serviceArea={serviceArea}
           height={height}
-          className={className}
           draggableMarker={!readOnly}
           onMarkerDragEnd={(coords) => {
             onChange({
@@ -225,46 +90,89 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
               })
             }
           }}
-          onError={() => setUseGoogleMaps(false)}
+          onError={() => setGoogleJsApiError(true)}
         />
-        {/* Floating status badge */}
-        <div className="absolute top-3 left-3 z-[400] flex items-center gap-2 rounded-lg bg-slate-900/90 px-3 py-1.5 text-xs text-white backdrop-blur-md shadow-md">
+
+        {/* Floating coordinates badge */}
+        <div className="absolute top-3 left-3 z-10 flex items-center gap-2 rounded-lg bg-slate-900/90 px-3 py-1.5 text-xs text-white backdrop-blur-md shadow-md">
           <MapPin className={`h-3.5 w-3.5 ${isServiceable ? 'text-emerald-400' : 'text-amber-400'}`} />
           <span>{formatCoordinates(activeCoords)}</span>
         </div>
+
+        {/* Service area status pill */}
+        {serviceArea && (
+          <div
+            className={`absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold backdrop-blur-md shadow-md ${
+              isServiceable
+                ? 'bg-emerald-500/90 text-white'
+                : 'bg-amber-500/90 text-slate-950'
+            }`}
+          >
+            <span>
+              {isServiceable
+                ? 'Within Service Area'
+                : `Outside ${serviceArea.name || 'Service Area'}`}
+            </span>
+          </div>
+        )}
       </div>
     )
   }
 
-  if (initFailed) {
-    return (
-      <MapFallback
-        center={activeCoords}
-        className={className}
-      />
-    )
-  }
-
-  const styleHeight = typeof height === 'number' ? `${height}px` : height
+  // 2. Pure Google Maps Embed with interactive doorstep pinpoint controls (Zero non-Google maps)
+  const embedUrl = `https://maps.google.com/maps?q=${activeCoords.latitude},${activeCoords.longitude}&z=16&output=embed`
+  const externalMapsUrl = `https://www.google.com/maps/search/?api=1&query=${activeCoords.latitude},${activeCoords.longitude}`
 
   return (
-    <div className={`relative ${className}`}>
-      <div
-        ref={containerRef}
-        style={{ height: styleHeight, width: '100%' }}
-        className="relative rounded-xl overflow-hidden shadow-xs border border-neutral-200"
+    <div
+      className={`relative rounded-xl overflow-hidden border border-neutral-200 bg-neutral-100 shadow-xs ${className}`}
+      data-testid="google-location-picker-map"
+      style={{ height: styleHeight, width: '100%' }}
+    >
+      {/* Official Google Maps Embed */}
+      <iframe
+        title="Google Maps Pinpoint"
+        src={embedUrl}
+        width="100%"
+        height="100%"
+        style={{ border: 0 }}
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        className="w-full h-full"
       />
 
-      {/* Floating coordinates bar */}
-      <div className="absolute top-3 left-3 z-[400] flex items-center gap-2 rounded-lg bg-slate-900/90 px-3 py-1.5 text-xs text-white backdrop-blur-md shadow-md">
+      {/* Centered Doorstep Pin Target Overlay */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+        <div className="relative flex flex-col items-center -translate-y-6">
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-600 text-white shadow-xl ring-4 ring-white/90 animate-bounce">
+            <MapPin className="w-5 h-5" />
+          </div>
+          <div className="w-3 h-1.5 bg-black/40 rounded-full blur-[1px] mt-1" />
+          <span className="mt-1 px-2 py-0.5 rounded bg-slate-900/90 text-[10px] font-bold text-white shadow-md border border-white/20 whitespace-nowrap">
+            Doorstep Pin
+          </span>
+        </div>
+      </div>
+
+      {/* Google Maps Brand Badge */}
+      <div className="absolute top-2.5 left-2.5 z-20 flex items-center gap-1.5 rounded-lg bg-white/95 dark:bg-slate-900/90 px-2.5 py-1 text-[11px] font-bold text-neutral-800 dark:text-neutral-100 shadow-md backdrop-blur-xs border border-neutral-200/80 dark:border-slate-700/80 pointer-events-none">
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#EA4335" />
+          <circle cx="12" cy="9" r="2.5" fill="#FFFFFF" />
+        </svg>
+        <span>Google Maps</span>
+      </div>
+
+      {/* Floating coordinates badge */}
+      <div className="absolute top-10 left-2.5 z-20 flex items-center gap-1.5 rounded-lg bg-slate-900/90 px-2.5 py-1 text-xs text-white backdrop-blur-md shadow-md pointer-events-none">
         <MapPin className={`h-3.5 w-3.5 ${isServiceable ? 'text-emerald-400' : 'text-amber-400'}`} />
-        <span>{formatCoordinates(activeCoords)}</span>
+        <span className="font-mono text-[11px]">{formatCoordinates(activeCoords)}</span>
       </div>
 
       {/* Service area status pill */}
       {serviceArea && (
         <div
-          className={`absolute top-3 right-3 z-[400] flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold backdrop-blur-md shadow-md ${
+          className={`absolute top-2.5 right-2.5 z-20 flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold backdrop-blur-md shadow-md pointer-events-none ${
             isServiceable
               ? 'bg-emerald-500/90 text-white'
               : 'bg-amber-500/90 text-slate-950'
@@ -278,18 +186,76 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
         </div>
       )}
 
-      {/* Recenter button */}
+      {/* Interactive Micro-Pinpoint D-Pad Controls */}
       {!readOnly && (
-        <button
-          type="button"
-          onClick={handleResetToCenter}
-          className="absolute bottom-3 right-3 z-[400] flex items-center gap-1.5 rounded-lg bg-white/90 dark:bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 backdrop-blur-md shadow-md hover:bg-white transition-colors"
-          title="Reset pin to market center"
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-          <span>Recenter</span>
-        </button>
+        <div className="absolute bottom-2.5 left-2.5 z-20 flex items-center gap-1 bg-white/90 dark:bg-slate-900/90 p-1 rounded-xl shadow-md backdrop-blur-md border border-neutral-200/80 dark:border-slate-700/80">
+          <span className="text-[10px] font-bold text-neutral-500 px-1 hidden sm:inline">Nudge Pin:</span>
+          <button
+            type="button"
+            onClick={() => handleNudge(0, -NUDGE_STEP)}
+            className="p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-slate-800 text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
+            title="Nudge pin West"
+            aria-label="Nudge pin West"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <div className="flex flex-col gap-0.5">
+            <button
+              type="button"
+              onClick={() => handleNudge(NUDGE_STEP, 0)}
+              className="p-0.5 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-800 text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
+              title="Nudge pin North"
+              aria-label="Nudge pin North"
+            >
+              <ChevronUp className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleNudge(-NUDGE_STEP, 0)}
+              className="p-0.5 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-800 text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
+              title="Nudge pin South"
+              aria-label="Nudge pin South"
+            >
+              <ChevronDown className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleNudge(0, NUDGE_STEP)}
+            className="p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-slate-800 text-neutral-700 dark:text-neutral-200 transition-colors cursor-pointer"
+            title="Nudge pin East"
+            aria-label="Nudge pin East"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       )}
+
+      {/* Recenter & Open in Google Maps Buttons */}
+      <div className="absolute bottom-2.5 right-2.5 z-20 flex items-center gap-1.5">
+        {!readOnly && (
+          <button
+            type="button"
+            onClick={handleResetToCenter}
+            className="flex items-center gap-1 rounded-lg bg-white/95 dark:bg-slate-900/90 px-2.5 py-1 text-[11px] font-semibold text-neutral-700 dark:text-neutral-200 shadow-md hover:bg-white transition-colors border border-neutral-200/80 dark:border-slate-700/80 cursor-pointer"
+            title="Reset pin to Ijebu-Ode center"
+          >
+            <RotateCcw className="h-3 w-3" />
+            <span>Recenter</span>
+          </button>
+        )}
+
+        <a
+          href={externalMapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 rounded-lg bg-white/95 dark:bg-slate-900/90 px-2.5 py-1 text-[11px] font-semibold text-primary shadow-md hover:bg-white transition-colors border border-neutral-200/80 dark:border-slate-700/80"
+          title="Open in Google Maps"
+        >
+          <span>Google Maps</span>
+          <ExternalLink className="h-3 w-3" />
+        </a>
+      </div>
     </div>
   )
 }

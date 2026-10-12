@@ -17,6 +17,7 @@ import {
   Check,
   Printer,
   Share2,
+  Banknote,
 } from 'lucide-react'
 import { PageContainer, Section } from '@/components/layout/section'
 import { Badge } from '@/components/ui/badge'
@@ -29,6 +30,11 @@ import {
   initializePaystackPayment,
   getLatestPaymentForOrder,
 } from '@/services/paystack/paystack'
+import {
+  openFlutterwaveCheckout,
+  initializeFlutterwavePayment,
+  verifyFlutterwavePayment,
+} from '@/services/flutterwave/flutterwave'
 import type { Order, OrderItem } from '@/types'
 import type { PaymentRow } from '@/services/paystack/types'
 import { OrderStatusTimeline } from '@/components/customer/OrderStatusTimeline'
@@ -49,6 +55,11 @@ export default function OrderConfirmationPage() {
   const { orderId } = useParams<{ orderId: string }>()
   const [searchParams] = useSearchParams()
   const reference = searchParams.get('reference')
+  const gateway = searchParams.get('gateway')
+  const flwRef = searchParams.get('flw_ref')
+  const transactionId = searchParams.get('transaction_id')
+  const txRefParam = searchParams.get('tx_ref')
+  const paymentChannelParam = searchParams.get('payment_channel')
 
   const [order, setOrder] = useState<FullOrder | null>(null)
   const [payment, setPayment] = useState<PaymentRow | null>(null)
@@ -61,6 +72,9 @@ export default function OrderConfirmationPage() {
   const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false)
   const [copiedOrderId, setCopiedOrderId] = useState(false)
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false)
+
+  const isCashOrder = paymentChannelParam === 'cash' || payment?.channel === 'cash'
+  const isFlutterwave = gateway === 'flutterwave' || payment?.channel === 'flutterwave' || Boolean(flwRef)
 
   useEffect(() => {
     document.title = 'Order Confirmation — KingdomDash'
@@ -78,7 +92,7 @@ export default function OrderConfirmationPage() {
 
       // Mobile WebView / Transient Auth Loss Recovery:
       // If order query failed but we have a Paystack transaction reference, run active verification via Edge Function
-      if ((fetchErr || !data) && reference) {
+      if ((fetchErr || !data) && reference && !isFlutterwave) {
         setIsVerifying(true)
         try {
           const verifyRes = await verifyPaystackPayment({ reference })
@@ -116,8 +130,46 @@ export default function OrderConfirmationPage() {
           })
           .catch(() => {})
 
-        // If we have a reference in URL and order is not confirmed, trigger active verification
-        if (reference && fullOrder.status !== 'payment_confirmed') {
+        const effectiveTxRef = reference || txRefParam
+        const isFlutterwaveCallback =
+          gateway === 'flutterwave' || Boolean(flwRef) || Boolean(txRefParam)
+
+        // Handle Flutterwave callback return with active server verification
+        if (isFlutterwaveCallback && (effectiveTxRef || transactionId)) {
+          if (fullOrder.status !== 'payment_confirmed') {
+            setIsVerifying(true)
+            try {
+              const verifyRes = await verifyFlutterwavePayment({
+                tx_ref: effectiveTxRef || undefined,
+                transaction_id: transactionId || undefined,
+              })
+              if (verifyRes.success && verifyRes.status === 'payment_confirmed') {
+                setOrder((prev) => (prev ? { ...prev, status: 'payment_confirmed' } : null))
+                setVerificationNotice('Payment verified successfully via Flutterwave.')
+                const updatedPay = await getLatestPaymentForOrder(orderId)
+                if (updatedPay) setPayment(updatedPay)
+              } else if (verifyRes.status === 'failed') {
+                setVerificationNotice('Payment was declined or cancelled on Flutterwave.')
+                const updatedPay = await getLatestPaymentForOrder(orderId)
+                if (updatedPay) {
+                  setPayment(updatedPay)
+                } else {
+                  setPayment((prev) => (prev ? { ...prev, status: 'failed' } : null))
+                }
+              } else {
+                setVerificationNotice('Flutterwave payment is pending confirmation from gateway.')
+              }
+            } catch (vErr) {
+              console.warn('[OrderConfirmation] Flutterwave active verification notice:', vErr)
+              setVerificationNotice('Awaiting confirmation from Flutterwave. We are verifying your transaction.')
+            } finally {
+              setIsVerifying(false)
+            }
+          } else {
+            setVerificationNotice('Payment verified successfully via Flutterwave.')
+          }
+        } else if (reference && fullOrder.status !== 'payment_confirmed') {
+          // If we have a Paystack reference in URL and order is not confirmed, trigger active verification
           setIsVerifying(true)
           try {
             const verifyRes = await verifyPaystackPayment({ reference })
@@ -149,7 +201,7 @@ export default function OrderConfirmationPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [orderId, reference])
+  }, [orderId, reference, gateway, flwRef, isFlutterwave])
 
   useEffect(() => {
     fetchOrderAndPayment()
@@ -219,6 +271,69 @@ export default function OrderConfirmationPage() {
     }
   }
 
+  const handleRetryPaymentFlutterwave = async () => {
+    if (!order || isRetrying) return
+    setIsRetrying(true)
+    try {
+      let initData: { link?: string; tx_ref?: string } | null = null
+      try {
+        initData = await initializeFlutterwavePayment({
+          order_id: order.id,
+          callback_url: `${window.location.origin}/order/${order.id}/confirmation?gateway=flutterwave`,
+        })
+      } catch (err) {
+        console.warn('[OrderConfirmation] Flutterwave retry init fallback:', err)
+      }
+
+      await openFlutterwaveCheckout({
+        orderId: order.id,
+        txRef: initData?.tx_ref,
+        amount: order.total,
+        customer: {
+          email: 'customer@kingdomdash.ng',
+          name: 'Customer',
+        },
+        onSuccess: async (flwRes) => {
+          setIsRetrying(false)
+          setIsVerifying(true)
+          try {
+            const verifyRes = await verifyFlutterwavePayment({
+              tx_ref: flwRes.tx_ref,
+              transaction_id: flwRes.transaction_id,
+            })
+            if (verifyRes.success && verifyRes.status === 'payment_confirmed') {
+              setVerificationNotice('Payment verified successfully via Flutterwave.')
+              setOrder((prev) => (prev ? { ...prev, status: 'payment_confirmed' } : null))
+              const updatedPay = await getLatestPaymentForOrder(order.id)
+              if (updatedPay) setPayment(updatedPay)
+            }
+          } catch {
+            setVerificationNotice('Payment received, confirming order status...')
+            setOrder((prev) => (prev ? { ...prev, status: 'payment_confirmed' } : null))
+          } finally {
+            setIsVerifying(false)
+          }
+        },
+        onCancel: () => {
+          setIsRetrying(false)
+        },
+        onError: (flwErr) => {
+          setIsRetrying(false)
+          if (initData?.link) {
+            window.location.href = initData.link
+            return
+          }
+          setVerificationNotice(flwErr.message || 'Could not load Flutterwave checkout.')
+        },
+      })
+    } catch (err) {
+      setIsRetrying(false)
+      setVerificationNotice(
+        err instanceof Error ? err.message : 'Failed to initialize Flutterwave retry.'
+      )
+    }
+  }
+
   if (isLoading) {
     return (
       <PageContainer>
@@ -272,7 +387,8 @@ export default function OrderConfirmationPage() {
     | 'unknown' = (() => {
     if (
       ['payment_confirmed', 'preparing', 'ready_for_pickup', 'picked_up', 'in_transit', 'delivered'].includes(order.status) ||
-      payment?.status === 'successful'
+      payment?.status === 'successful' ||
+      ((isCashOrder || (isFlutterwave && Boolean(reference))) && order.status !== 'cancelled')
     ) {
       return 'payment_confirmed'
     }
@@ -462,7 +578,9 @@ export default function OrderConfirmationPage() {
                     <div>
                       <span
                         className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${
-                          isConfirmed
+                          isCashOrder
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : isConfirmed
                             ? 'bg-emerald-100 text-emerald-800'
                             : isPendingConfirmation
                             ? 'bg-amber-100 text-amber-900'
@@ -471,8 +589,12 @@ export default function OrderConfirmationPage() {
                             : 'bg-primary/15 text-primary'
                         }`}
                       >
-                        {isConfirmed
-                          ? 'Payment Confirmed'
+                        {isCashOrder
+                          ? 'Cash on Delivery'
+                          : isConfirmed
+                          ? isFlutterwave
+                            ? 'Paid (Flutterwave)'
+                            : 'Payment Confirmed'
                           : isPendingConfirmation
                           ? 'Payment Being Confirmed'
                           : isFailedOrCancelled
@@ -480,7 +602,9 @@ export default function OrderConfirmationPage() {
                           : 'Payment Pending'}
                       </span>
                       <h1 className="text-xl sm:text-2xl font-extrabold text-neutral-900 tracking-tight mt-0.5">
-                        {isConfirmed
+                        {isCashOrder
+                          ? 'Order Placed — Cash on Delivery'
+                          : isConfirmed
                           ? 'Thank you for your order!'
                           : isPendingConfirmation
                           ? 'Payment being confirmed...'
@@ -492,17 +616,41 @@ export default function OrderConfirmationPage() {
                   </div>
 
                   <p className="text-sm text-neutral-600 leading-relaxed max-w-xl">
-                    {isConfirmed
-                      ? 'Your payment has been confirmed via Paystack. The vendor has been notified to prepare your order.'
+                    {isCashOrder
+                      ? 'Your order has been sent to the vendor! Please have cash ready to pay your rider upon delivery.'
+                      : isConfirmed
+                      ? isFlutterwave
+                        ? 'Your payment has been completed via Flutterwave. The vendor has been notified to prepare your order.'
+                        : 'Your payment has been confirmed via Paystack. The vendor has been notified to prepare your order.'
                       : isPendingConfirmation
-                      ? 'We are waiting for Paystack to confirm your transaction. Please hold on or refresh once your bank completes the debit.'
+                      ? 'We are waiting for payment confirmation. Please hold on or refresh once your bank completes the debit.'
                       : isFailedOrCancelled
                       ? 'Your payment was not completed or was cancelled. You can retry paying safely below without re-ordering.'
-                      : 'Your order has been recorded in KingdomDash. Please complete payment using Paystack so the vendor can begin.'}
+                      : 'Your order has been recorded in KingdomDash. Please complete payment so the vendor can begin.'}
                   </p>
 
-                  {/* Immediate Action Banner When Awaiting Payment or Incomplete */}
-                  {!isConfirmed && (
+                  {/* Immediate Action Banner When Awaiting Payment or Cash on Delivery */}
+                  {isCashOrder ? (
+                    <div className="mt-5 rounded-2xl bg-emerald-50/90 border border-emerald-200 p-4 sm:p-5 shadow-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                        <div>
+                          <p className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">
+                            Cash Amount Due
+                          </p>
+                          <p className="text-2xl sm:text-3xl font-black text-emerald-900">
+                            {formatNgn(order.total)}
+                          </p>
+                        </div>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          <Banknote className="h-3.5 w-3.5 text-emerald-700" />
+                          <span>Pay Dispatch Rider</span>
+                        </span>
+                      </div>
+                      <p className="text-xs text-emerald-800 leading-relaxed">
+                        Please have <strong>{formatNgn(order.total)}</strong> ready in cash for your dispatch rider. Share your 4-digit Delivery PIN below once you receive and inspect your items.
+                      </p>
+                    </div>
+                  ) : !isConfirmed && (
                     <div className="mt-5 rounded-2xl bg-white/95 border border-rose-200/90 p-4 sm:p-5 shadow-xs">
                       <div className="flex flex-wrap items-center justify-between gap-3 mb-3.5">
                         <div>
@@ -519,33 +667,59 @@ export default function OrderConfirmationPage() {
                         </span>
                       </div>
 
-                      <Button
-                        type="button"
-                        variant="primary"
-                        onClick={handleRetryPayment}
-                        disabled={isRetrying}
-                        className="w-full h-12 rounded-xl text-sm sm:text-base font-bold flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg transition-all"
-                      >
-                        {isRetrying ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                            <span>Connecting to Paystack...</span>
-                          </>
-                        ) : (
-                          <>
-                            <CreditCard className="h-4 w-4" aria-hidden="true" />
-                            <span>
-                              {isFailedOrCancelled
-                                ? `Retry Payment (${formatNgn(order.total)}) with Paystack`
-                                : `Pay ${formatNgn(order.total)} with Paystack`}
-                            </span>
-                          </>
-                        )}
-                      </Button>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button
+                          type="button"
+                          variant="primary"
+                          onClick={handleRetryPayment}
+                          disabled={isRetrying}
+                          className="flex-1 h-12 rounded-xl text-sm font-bold flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg transition-all"
+                        >
+                          {isRetrying ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                              <span>Connecting to Paystack...</span>
+                            </>
+                          ) : (
+                            <>
+                              <CreditCard className="h-4 w-4" aria-hidden="true" />
+                              <span>
+                                {isFailedOrCancelled
+                                  ? `Retry Payment (${formatNgn(order.total)}) with Paystack`
+                                  : `Pay ${formatNgn(order.total)} with Paystack`}
+                              </span>
+                            </>
+                          )}
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleRetryPaymentFlutterwave}
+                          disabled={isRetrying}
+                          className="flex-1 h-12 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border-amber-300 bg-amber-50/60 hover:bg-amber-100 text-amber-900 shadow-xs transition-all"
+                        >
+                          {isRetrying ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                              <span>Opening Flutterwave...</span>
+                            </>
+                          ) : (
+                            <>
+                              <CreditCard className="h-4 w-4 text-amber-600" aria-hidden="true" />
+                              <span>
+                                {isFailedOrCancelled
+                                  ? `Retry with Flutterwave`
+                                  : `Pay with Flutterwave`}
+                              </span>
+                            </>
+                          )}
+                        </Button>
+                      </div>
 
                       <p className="mt-2 text-center text-[11px] text-neutral-400 flex items-center justify-center gap-1 font-medium">
                         <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                        <span>Secured via Paystack 256-bit bank encryption</span>
+                        <span>Secured via 256-bit bank-grade encryption</span>
                       </p>
                     </div>
                   )}
@@ -790,8 +964,12 @@ export default function OrderConfirmationPage() {
                           : 'text-amber-800'
                       }`}
                     >
-                      {isConfirmed
-                        ? 'Paid (Paystack)'
+                      {isCashOrder
+                        ? 'Pay on Delivery (Cash)'
+                        : isConfirmed
+                        ? isFlutterwave
+                          ? 'Paid (Flutterwave)'
+                          : 'Paid (Paystack)'
                         : isFailedOrCancelled
                         ? 'Payment Failed / Cancelled'
                         : isPendingConfirmation
@@ -799,18 +977,24 @@ export default function OrderConfirmationPage() {
                         : 'Payment Pending'}
                     </span>
                   </div>
-                  {payment?.paystack_reference && (
+                  {(payment?.paystack_reference || reference) && (
                     <div className="flex items-center justify-between text-neutral-500">
                       <span>Reference:</span>
-                      <span className="font-mono font-bold text-neutral-800">{payment.paystack_reference}</span>
+                      <span className="font-mono font-bold text-neutral-800">
+                        {payment?.paystack_reference || reference}
+                      </span>
                     </div>
                   )}
-                  {payment?.channel && (
-                    <div className="flex items-center justify-between text-neutral-500">
-                      <span>Channel:</span>
-                      <span className="capitalize font-medium text-neutral-800">{payment.channel}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center justify-between text-neutral-500">
+                    <span>Channel:</span>
+                    <span className="capitalize font-medium text-neutral-800">
+                      {isCashOrder
+                        ? 'Cash on Delivery'
+                        : isFlutterwave
+                        ? 'Flutterwave'
+                        : payment?.channel || 'Paystack'}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Official Invoice / Receipt Action Button */}

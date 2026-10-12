@@ -17,9 +17,13 @@ import {
   CupSoda,
   Cookie,
   Apple,
+  Locate,
 } from 'lucide-react'
 import { PageContainer } from '@/components/layout/section'
 import { Button } from '@/components/ui/button'
+import { LocationPermissionModal } from '@/components/common/location-permission-modal'
+import { getCurrentBrowserCoordinates } from '@/utils/geo'
+import { getGeocodingProvider } from '@/services/geocoding'
 import { PromoHeroCarousel } from '@/components/shared/promo-hero-carousel'
 import { QuickReorderBar } from '@/components/customer/quick-reorder-bar'
 import { appConfig } from '@/config/app.config'
@@ -116,6 +120,28 @@ export default function HomePage() {
   const [addressInput, setAddressInput] = useState('')
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [isLoadingVendors, setIsLoadingVendors] = useState(true)
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false)
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false)
+
+  const handleDetectHomeLocation = async () => {
+    setIsDetectingLocation(true)
+    try {
+      const coords = await getCurrentBrowserCoordinates()
+      const provider = getGeocodingProvider()
+      const geoRes = await provider.reverseGeocode(coords)
+      if (geoRes?.formattedAddress) {
+        setAddressInput(geoRes.formattedAddress)
+      } else if (geoRes?.streetName) {
+        setAddressInput([geoRes.streetName, geoRes.city, geoRes.state].filter(Boolean).join(', '))
+      } else {
+        setAddressInput('Ijebu-Ode, Ogun State')
+      }
+    } catch {
+      setIsLocationModalOpen(true)
+    } finally {
+      setIsDetectingLocation(false)
+    }
+  }
 
   useEffect(() => {
     let isMounted = true
@@ -225,6 +251,16 @@ export default function HomePage() {
                       placeholder="Enter your delivery address in Ijebu-Ode"
                       className="w-full bg-transparent text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-0 border-none outline-none"
                     />
+                    <button
+                      type="button"
+                      onClick={handleDetectHomeLocation}
+                      disabled={isDetectingLocation}
+                      className="flex h-7 w-7 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 text-neutral-500 hover:text-primary hover:border-primary/40 transition-colors shrink-0"
+                      title="Use current GPS location"
+                      aria-label="Use current GPS location"
+                    >
+                      <Locate className={`h-3.5 w-3.5 ${isDetectingLocation ? 'animate-spin text-primary' : ''}`} />
+                    </button>
                   </div>
                   <Button
                     type="submit"
@@ -671,6 +707,20 @@ export default function HomePage() {
           </div>
         </PageContainer>
       </section>
+      {/* Location Permission Guide Modal */}
+      <LocationPermissionModal
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        onLocationGranted={async (coords) => {
+          try {
+            const provider = getGeocodingProvider()
+            const geoRes = await provider.reverseGeocode(coords)
+            if (geoRes?.formattedAddress) {
+              setAddressInput(geoRes.formattedAddress)
+            }
+          } catch {}
+        }}
+      />
     </div>
   )
 }
