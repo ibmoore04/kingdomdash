@@ -57,14 +57,6 @@ export function PwaInstallBanner() {
       setActiveTab('ios')
     }
 
-    // Always show banner for responsive installation
-    const checkCanShow = () => {
-      if (isStandalonePwa()) return
-      setShowBanner(true)
-    }
-
-    checkCanShow()
-
     const handleInstallable = () => {
       if (!isStandalonePwa()) {
         setShowBanner(true)
@@ -75,12 +67,12 @@ export function PwaInstallBanner() {
     window.addEventListener('kd:pwa-installable', handleInstallable)
     window.addEventListener('kd:pwa-installed', handleInstalled)
 
-    // Fallback: Show on mobile & desktop browsers after 3 seconds
+    // Gentle delay: Show after 2.5s on mobile & desktop browsers if not dismissed
     const timer = setTimeout(() => {
       if (!isStandalonePwa() && !dismissedUntil) {
         setShowBanner(true)
       }
-    }, 3000)
+    }, 2500)
 
     return () => {
       window.removeEventListener('kd:pwa-installable', handleInstallable)
@@ -153,10 +145,10 @@ export function PwaInstallBanner() {
 
   return (
     <>
-      {/* Sleek, Non-Intrusive Installation Banner (Top on mobile, bottom-right on desktop) */}
+      {/* Sleek, Non-Intrusive Installation Banner (Bottom floating card on mobile & desktop) */}
       <aside
         aria-label="Install KingdomDash application"
-        className="fixed top-14 sm:top-auto sm:bottom-6 left-3 right-3 sm:left-auto sm:right-6 z-40 sm:max-w-sm rounded-2xl border border-neutral-800 bg-neutral-900/95 text-white p-3.5 sm:p-4 shadow-xl backdrop-blur-md transition-all animate-in fade-in slide-in-from-top-2 sm:slide-in-from-bottom-4 duration-300"
+        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] sm:bottom-6 left-3 right-3 sm:left-auto sm:right-6 z-50 sm:max-w-sm rounded-2xl border border-neutral-800 bg-neutral-900/95 text-white p-3.5 sm:p-4 shadow-2xl backdrop-blur-md transition-all animate-in fade-in slide-in-from-bottom-4 duration-300"
       >
         <div className="flex items-start gap-3">
           <img
