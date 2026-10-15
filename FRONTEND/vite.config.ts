@@ -14,6 +14,9 @@ export default defineConfig({
   server: {
     host: true, // exposes on all network interfaces (0.0.0.0)
   },
+  build: {
+    sourcemap: false,
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
