@@ -15,7 +15,7 @@ export const appConfig = {
   url:
     (typeof window !== 'undefined' && window.location?.origin)
       ? window.location.origin
-      : (import.meta.env.VITE_APP_URL || 'https://kingdomdash.net'),
+      : (import.meta.env.VITE_APP_URL || 'https://kingdomdash-rouge.vercel.app'),
   launchMarket: 'Ijebu-Ode, Ogun State',
   expansionMarkets: 'Ogun State and subsequent markets',
   support: {
