@@ -27,6 +27,20 @@ export interface AssignedRiderInfo {
  */
 export async function getAssignedRiderForOrder(orderId: string): Promise<AssignedRiderInfo | null> {
   try {
+    // 0. Primary: Authoritative SECURITY DEFINER RPC (bypasses customer RLS restrictions securely)
+    if (typeof db.rpc === 'function') {
+      const { data: rpcRider, error: rpcErr } = await db.rpc('get_assigned_rider_for_order', {
+        p_order_id: orderId,
+      })
+
+      if (!rpcErr && rpcRider && typeof rpcRider === 'object' && rpcRider.name) {
+        return {
+          name: rpcRider.name,
+          phone: rpcRider.phone || null,
+        }
+      }
+    }
+
     // 1. Direct Delivery & Assignment Query with nested rider + profile join
     const { data: delivery, error: delErr } = await db
       .from('deliveries')

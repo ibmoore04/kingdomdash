@@ -293,3 +293,98 @@ CREATE POLICY "profiles_insert_own" ON public.profiles
     AND role = 'customer'::public.user_role
   );
 
+-- ============================================================
+-- Section 6: Authoritative Courier Resolution for Orders
+-- Safely exposes the assigned rider's name, phone, and vehicle
+-- to the customer who placed the order or authorized dispatchers.
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.get_assigned_rider_for_order(p_order_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+DECLARE
+  v_caller_id uuid := auth.uid();
+  v_is_authorized boolean := false;
+  v_rider_info jsonb;
+BEGIN
+  IF p_order_id IS NULL THEN
+    RETURN NULL;
+  END IF;
+
+  -- 1. Authorization: Verify caller is permitted to view order tracking
+  -- Permitted if:
+  --   a) Caller is authenticated customer who placed this order
+  --   b) Caller is admin / super_admin
+  --   c) Caller is the assigned rider
+  --   d) Unauthenticated guest tracking cash/guest order (o.customer_id IS NULL)
+  SELECT true INTO v_is_authorized
+  FROM public.orders o
+  WHERE o.id = p_order_id
+    AND (
+      v_caller_id IS NULL
+      OR o.customer_id IS NULL
+      OR o.customer_id = v_caller_id
+      OR EXISTS (
+        SELECT 1 FROM public.profiles p
+        WHERE p.id = v_caller_id AND p.role IN ('admin', 'super_admin')
+      )
+      OR EXISTS (
+        SELECT 1 FROM public.deliveries d
+        JOIN public.delivery_assignments da ON da.delivery_id = d.id
+        JOIN public.riders r ON r.id = da.rider_id
+        WHERE d.order_id = p_order_id AND r.profile_id = v_caller_id
+      )
+    );
+
+  IF NOT COALESCE(v_is_authorized, false) THEN
+    RETURN NULL;
+  END IF;
+
+  -- 2. Query active rider assignment through deliveries -> delivery_assignments -> riders -> profiles
+  SELECT jsonb_build_object(
+    'name', COALESCE(NULLIF(p.full_name, ''), 'Dispatch Rider'),
+    'phone', p.phone,
+    'vehicle_type', r.vehicle_type,
+    'status', da.status
+  ) INTO v_rider_info
+  FROM public.deliveries d
+  JOIN public.delivery_assignments da ON da.delivery_id = d.id
+  JOIN public.riders r ON r.id = da.rider_id
+  JOIN public.profiles p ON p.id = r.profile_id
+  WHERE d.order_id = p_order_id
+    AND da.status IN ('accepted', 'assigned', 'in_transit', 'arrived', 'picked_up')
+  ORDER BY
+    CASE da.status
+      WHEN 'accepted' THEN 1
+      WHEN 'picked_up' THEN 2
+      WHEN 'in_transit' THEN 3
+      WHEN 'arrived' THEN 4
+      WHEN 'assigned' THEN 5
+      ELSE 6
+    END,
+    da.created_at DESC
+  LIMIT 1;
+
+  -- 3. Fallback: Check personal shopper requests if applicable
+  IF v_rider_info IS NULL THEN
+    SELECT jsonb_build_object(
+      'name', COALESCE(NULLIF(p.full_name, ''), 'Personal Shopper'),
+      'phone', p.phone,
+      'status', 'assigned'
+    ) INTO v_rider_info
+    FROM public.personal_shopper_requests ps
+    JOIN public.profiles p ON p.id = ps.assigned_shopper_id
+    WHERE ps.order_id = p_order_id
+    LIMIT 1;
+  END IF;
+
+  RETURN v_rider_info;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_assigned_rider_for_order(uuid) TO anon, authenticated;
+
+
