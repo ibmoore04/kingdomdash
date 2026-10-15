@@ -232,11 +232,6 @@ export default function FoodPage() {
       {/* ─── 3. AVAILABLE RESTAURANTS (Core Showcase) ───────────────────────── */}
       <section id="available-kitchens" className="py-10 sm:py-14 bg-white">
         <PageContainer>
-          {/* Featured Deals Carousel */}
-          <div className="mb-10 sm:mb-12">
-            <PromoHeroCarousel />
-          </div>
-
           {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 pb-4 border-b border-neutral-100">
             <div>
@@ -298,6 +293,11 @@ export default function FoodPage() {
               </div>
             </div>
           )}
+
+          {/* Featured Deals Carousel (placed below vendor cards) */}
+          <div className="mt-12 sm:mt-16 pt-8 border-t border-neutral-100">
+            <PromoHeroCarousel />
+          </div>
         </PageContainer>
       </section>
 

@@ -394,14 +394,7 @@ export default function HomePage() {
         </PageContainer>
       </section>
 
-      {/* ─── 3. PROMOTIONAL HERO CAROUSEL ─────────────────────────────────── */}
-      <section className="py-6 sm:py-8 bg-neutral-50/60 border-y border-neutral-100">
-        <PageContainer>
-          <PromoHeroCarousel />
-        </PageContainer>
-      </section>
-
-      {/* ─── 4. POPULAR VENDORS SECTION ───────────────────────────────────── */}
+      {/* ─── 3. POPULAR VENDORS SECTION ───────────────────────────────────── */}
       <section className="py-12 sm:py-16 bg-white">
         <PageContainer>
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-8 sm:mb-10">
@@ -499,6 +492,13 @@ export default function HomePage() {
               </div>
             </div>
           )}
+        </PageContainer>
+      </section>
+
+      {/* ─── 4. PROMOTIONAL HERO CAROUSEL ─────────────────────────────────── */}
+      <section className="py-6 sm:py-8 bg-neutral-50/60 border-y border-neutral-100">
+        <PageContainer>
+          <PromoHeroCarousel />
         </PageContainer>
       </section>
 
