@@ -289,7 +289,7 @@ export default function RegisterPage() {
       {/* Google Sign-In — at the top, before the manual credentials */}
       <div className="mt-6">
         <GoogleSignInButton
-          redirectParam={new URLSearchParams(location.search).get('redirect')}
+          redirectParam={new URLSearchParams(location.search).get('redirect') || '/dashboard'}
           onError={(msg) => setError(msg)}
         />
       </div>

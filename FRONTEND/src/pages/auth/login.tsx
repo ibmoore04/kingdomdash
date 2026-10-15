@@ -461,7 +461,7 @@ export default function LoginPage() {
             </div>
 
             <GoogleSignInButton
-              redirectParam={new URLSearchParams(location.search).get('redirect')}
+              redirectParam={new URLSearchParams(location.search).get('redirect') || '/dashboard'}
               onError={(msg) => setError(msg)}
               className="mt-3"
             />

@@ -58,7 +58,7 @@ function GoogleGMark() {
 }
 
 export function GoogleSignInButton({
-  redirectParam,
+  redirectParam = '/dashboard',
   onError,
   className = '',
 }: GoogleSignInButtonProps) {
@@ -68,7 +68,8 @@ export function GoogleSignInButton({
     if (isLoading) return
     setIsLoading(true)
 
-    const { error } = await signInWithGoogle(redirectParam)
+    const targetRedirect = redirectParam || '/dashboard'
+    const { error } = await signInWithGoogle(targetRedirect)
 
     if (error) {
       // signInWithOAuth resolves before the redirect; only errors come back here

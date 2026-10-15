@@ -202,3 +202,94 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+-- ============================================================
+-- Section 5: Profile Self-Healing RPC and INSERT Policy
+-- Allows authenticated sessions (including OAuth) to reliably
+-- obtain/create their customer profile without RLS failures.
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION public.ensure_user_profile()
+RETURNS public.profiles
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+DECLARE
+  v_user_id uuid := auth.uid();
+  v_user record;
+  v_profile public.profiles;
+  v_full_name text;
+  v_referral text;
+BEGIN
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'Not authenticated';
+  END IF;
+
+  -- 1. Check if profile already exists by user ID
+  SELECT * INTO v_profile
+  FROM public.profiles
+  WHERE id = v_user_id;
+
+  IF FOUND THEN
+    RETURN v_profile;
+  END IF;
+
+  -- 2. Fetch user details from auth.users
+  SELECT * INTO v_user
+  FROM auth.users
+  WHERE id = v_user_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'User not found in auth.users';
+  END IF;
+
+  -- 3. Check if profile exists by email
+  IF v_user.email IS NOT NULL THEN
+    SELECT * INTO v_profile
+    FROM public.profiles
+    WHERE LOWER(email) = LOWER(v_user.email);
+
+    IF FOUND THEN
+      RETURN v_profile;
+    END IF;
+  END IF;
+
+  -- 4. Create missing profile
+  v_full_name := COALESCE(
+    v_user.raw_user_meta_data->>'full_name',
+    v_user.raw_user_meta_data->>'name',
+    SPLIT_PART(v_user.email, '@', 1),
+    'Customer'
+  );
+  v_referral := public.generate_unique_referral_code();
+
+  INSERT INTO public.profiles (id, email, full_name, phone, role, referral_code, is_active)
+  VALUES (
+    v_user_id,
+    COALESCE(v_user.email, ''),
+    v_full_name,
+    v_user.raw_user_meta_data->>'phone',
+    'customer'::public.user_role,
+    v_referral,
+    true
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
+    updated_at = NOW()
+  RETURNING * INTO v_profile;
+
+  RETURN v_profile;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.ensure_user_profile() TO authenticated;
+
+-- Allow authenticated users to insert their own customer profile row as an RLS backup
+DROP POLICY IF EXISTS "profiles_insert_own" ON public.profiles;
+CREATE POLICY "profiles_insert_own" ON public.profiles
+  FOR INSERT WITH CHECK (
+    id = auth.uid()
+    AND role = 'customer'::public.user_role
+  );
+

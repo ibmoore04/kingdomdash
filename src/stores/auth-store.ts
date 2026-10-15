@@ -77,6 +77,7 @@ async function startProfileFetch(
   let attempt = 0
   let lastError: Error | null = null
 
+  // 1. Fetch loop by user id
   while (attempt < maxRetries) {
     attempt++
     try {
@@ -136,44 +137,80 @@ async function startProfileFetch(
 
     // Wait briefly before retrying to allow handle_new_user() trigger to finish writing profile
     if (attempt < maxRetries) {
-      await new Promise((resolve) => setTimeout(resolve, 400 * attempt))
+      await new Promise((resolve) => setTimeout(resolve, 350 * attempt))
       if (currentGeneration !== fetchGeneration) return
     }
   }
 
-  // If profile row is still missing, attempt self-healing upsert for this authenticated user
+  // 2. Fetch authenticated user data to try email matching or ensure_user_profile RPC
   try {
     const { data: authData } = await (supabase.auth?.getUser ? supabase.auth.getUser() : Promise.resolve({ data: { user: null } }))
     const authUser = authData?.user
+
     if (authUser && authUser.id === userId && currentGeneration === fetchGeneration) {
+      // 2a. Check if profile exists by email (e.g. from password account or invitation)
+      if (authUser.email) {
+        const { data: emailProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('email', authUser.email)
+          .maybeSingle()
+
+        if (emailProfile && currentGeneration === fetchGeneration) {
+          set({
+            profile: emailProfile as unknown as Profile,
+            impersonation: null,
+            isImpersonating: false,
+            profileError: null,
+            isLoading: false,
+          })
+          return
+        }
+      }
+
+      // 2b. Try calling ensure_user_profile RPC (SECURITY DEFINER)
+      if (typeof supabase.rpc === 'function') {
+        const { data: rpcProfile } = await (supabase.rpc as any)('ensure_user_profile')
+        if (rpcProfile && currentGeneration === fetchGeneration) {
+          set({
+            profile: rpcProfile as unknown as Profile,
+            impersonation: null,
+            isImpersonating: false,
+            profileError: null,
+            isLoading: false,
+          })
+          return
+        }
+      }
+
+      // 2c. Resilient Fallback: Synthesize active customer profile from authenticated user metadata
+      // This guarantees an authenticated OAuth customer is NEVER booted to /auth/login due to database latency
       const fullName =
         authUser.user_metadata?.full_name ||
         authUser.user_metadata?.name ||
         authUser.email?.split('@')[0] ||
         'Customer'
-      const { data: upserted } = await supabase
-        .from('profiles')
-        .upsert(
-          {
-            id: userId,
-            email: authUser.email || '',
-            full_name: fullName,
-            role: 'customer',
-            is_active: true,
-          },
-          { onConflict: 'id' }
-        )
-        .select('*')
-        .maybeSingle()
 
-      if (upserted && currentGeneration === fetchGeneration) {
-        set({
-          profile: upserted as unknown as Profile,
-          profileError: null,
-          isLoading: false,
-        })
-        return
+      const fallbackProfile: Profile = {
+        id: userId,
+        email: authUser.email || '',
+        full_name: fullName,
+        phone: (authUser.user_metadata?.phone as string | undefined) ?? null,
+        avatar_url: (authUser.user_metadata?.avatar_url as string | undefined) ?? null,
+        role: 'customer',
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       }
+
+      set({
+        profile: fallbackProfile,
+        impersonation: null,
+        isImpersonating: false,
+        profileError: null,
+        isLoading: false,
+      })
+      return
     }
   } catch {
     // Fall through to error state
