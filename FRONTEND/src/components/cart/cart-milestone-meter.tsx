@@ -26,7 +26,7 @@ export function CartMilestoneMeter({ subtotal, className }: CartMilestoneMeterPr
     <div
       data-testid="cart-milestone-meter"
       className={cn(
-        'relative overflow-hidden rounded-xl border p-3 transition-all duration-300',
+        'relative overflow-hidden rounded-xl border p-2 sm:p-2.5 transition-all duration-300',
         isTier2Unlocked
           ? 'border-amber-400/60 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-primary/10 shadow-xs'
           : isTier1Unlocked
@@ -35,11 +35,11 @@ export function CartMilestoneMeter({ subtotal, className }: CartMilestoneMeterPr
         className
       )}
     >
-      <div className="flex items-start justify-between gap-2.5">
+      <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <div
             className={cn(
-              'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors shadow-2xs',
+              'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors shadow-2xs',
               isTier2Unlocked
                 ? 'bg-amber-500 text-white'
                 : isTier1Unlocked
@@ -48,23 +48,23 @@ export function CartMilestoneMeter({ subtotal, className }: CartMilestoneMeterPr
             )}
           >
             {isTier2Unlocked ? (
-              <Trophy className="h-3.5 w-3.5" aria-hidden="true" />
+              <Trophy className="h-3 w-3" aria-hidden="true" />
             ) : isTier1Unlocked ? (
-              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+              <Sparkles className="h-3 w-3" aria-hidden="true" />
             ) : (
-              <Gift className="h-3.5 w-3.5" aria-hidden="true" />
+              <Gift className="h-3 w-3" aria-hidden="true" />
             )}
           </div>
 
           <div>
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-primary block leading-none mb-0.5">
+            <span className="text-[9px] font-extrabold uppercase tracking-wider text-primary block leading-none mb-0.5">
               {isTier2Unlocked
                 ? 'VIP Rewards Unlocked'
                 : isTier1Unlocked
                 ? 'Milestone 1 Unlocked'
                 : 'Loyalty Rewards'}
             </span>
-            <p className="text-xs font-bold text-neutral-900 leading-snug">
+            <p className="text-[11px] sm:text-xs font-bold text-neutral-900 leading-tight">
               {isTier2Unlocked ? (
                 <span className="text-amber-800">
                   🎉 VIP Tier Achieved: 350 Loyalty Points + Priority Dispatch!
@@ -87,15 +87,15 @@ export function CartMilestoneMeter({ subtotal, className }: CartMilestoneMeterPr
         </div>
 
         {isTier1Unlocked && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200 shadow-2xs shrink-0">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+          <span className="inline-flex items-center gap-1 rounded-full bg-white px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 border border-emerald-200 shadow-2xs shrink-0">
+            <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600" />
             <span>Unlocked</span>
           </span>
         )}
       </div>
 
       {/* Progress Bar */}
-      <div className="mt-2.5 space-y-1">
+      <div className="mt-1.5 space-y-0.5">
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-200/90 shadow-inner">
           <div
             data-testid="milestone-progress-bar"
@@ -110,7 +110,7 @@ export function CartMilestoneMeter({ subtotal, className }: CartMilestoneMeterPr
         </div>
 
         {/* Milestone Threshold Labels */}
-        <div className="flex items-center justify-between text-[10px] font-semibold text-neutral-400 px-0.5 pt-0.5">
+        <div className="hidden sm:flex items-center justify-between text-[9px] font-medium text-neutral-400 px-0.5 pt-0.5">
           <span>₦0</span>
           <span
             className={cn(

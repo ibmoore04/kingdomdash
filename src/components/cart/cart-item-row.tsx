@@ -27,9 +27,9 @@ export function CartItemRow({ item }: CartItemRowProps) {
   }
 
   return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-border/60 last:border-b-0">
+    <div className="flex items-start gap-3 py-2 border-b border-border/60 last:border-b-0">
       {/* Thumbnail */}
-      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-dark-surface mt-0.5">
+      <div className="relative h-12 w-12 sm:h-13 sm:w-13 shrink-0 overflow-hidden rounded-lg bg-dark-surface mt-0.5">
         <img
           src={item.imageUrl || '/kingdomdash-backup.jpg'}
           alt={item.name}
@@ -42,23 +42,23 @@ export function CartItemRow({ item }: CartItemRowProps) {
 
       {/* Info & pricing */}
       <div className="flex flex-1 flex-col min-w-0">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-1.5">
           <h4 className="text-body-small font-semibold text-text-primary truncate">
             {item.name}
           </h4>
           <button
             type="button"
             onClick={() => removeItem(itemKey)}
-            className="text-text-muted hover:text-error transition-colors p-2 sm:p-1 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation"
+            className="text-text-muted hover:text-error transition-colors p-1 min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation cursor-pointer shrink-0"
             aria-label={`Remove ${item.name} from cart`}
           >
-            <Trash2 className="h-4 w-4" aria-hidden="true" />
+            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </div>
 
         {/* Selected Modifiers Pills */}
         {item.selectedModifiers && item.selectedModifiers.length > 0 && (
-          <div className="mt-1 flex flex-wrap gap-1">
+          <div className="mt-0.5 flex flex-wrap gap-1">
             {item.selectedModifiers.map((mod) => (
               <span
                 key={`${mod.groupId}-${mod.optionId}`}
@@ -73,28 +73,28 @@ export function CartItemRow({ item }: CartItemRowProps) {
 
         {/* Special Instructions Note */}
         {item.specialInstructions && (
-          <p className="mt-1 text-[11px] text-neutral-500 italic line-clamp-1">
+          <p className="mt-0.5 text-[11px] text-neutral-500 italic line-clamp-1">
             Note: &ldquo;{item.specialInstructions}&rdquo;
           </p>
         )}
 
-        <p className="text-caption text-text-secondary mt-1">
+        <p className="text-[11px] sm:text-caption text-text-secondary mt-0.5">
           {formatNgn(item.price)} each
         </p>
 
         {/* Quantity Controls & Line Total */}
-        <div className="mt-2 flex items-center justify-between">
+        <div className="mt-1.5 flex items-center justify-between">
           <div className="flex items-center rounded-lg border border-border bg-white shadow-xs">
             <button
               type="button"
               onClick={handleDecrement}
               aria-label={item.quantity <= 1 ? `Remove ${item.name}` : `Decrease quantity of ${item.name}`}
-              className="flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center text-text-secondary hover:bg-neutral-100 hover:text-text-primary rounded-l-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation"
+              className="flex h-8 w-8 sm:h-7 sm:w-7 items-center justify-center text-text-secondary hover:bg-neutral-100 hover:text-text-primary rounded-l-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation cursor-pointer"
             >
-              <Minus className="h-4 w-4 sm:h-3 sm:w-3" aria-hidden="true" />
+              <Minus className="h-3.5 w-3.5 sm:h-3 sm:w-3" aria-hidden="true" />
             </button>
             <span
-              className="w-9 sm:w-8 text-center text-caption font-semibold text-text-primary select-none"
+              className="w-8 sm:w-7 text-center text-caption font-semibold text-text-primary select-none"
               aria-live="polite"
             >
               {item.quantity}
@@ -104,9 +104,9 @@ export function CartItemRow({ item }: CartItemRowProps) {
               disabled={item.quantity >= 999}
               onClick={handleIncrement}
               aria-label={`Increase quantity of ${item.name}`}
-              className="flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center text-text-secondary hover:bg-neutral-100 hover:text-text-primary rounded-r-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation"
+              className="flex h-8 w-8 sm:h-7 sm:w-7 items-center justify-center text-text-secondary hover:bg-neutral-100 hover:text-text-primary rounded-r-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary touch-manipulation cursor-pointer"
             >
-              <Plus className="h-4 w-4 sm:h-3 sm:w-3" aria-hidden="true" />
+              <Plus className="h-3.5 w-3.5 sm:h-3 sm:w-3" aria-hidden="true" />
             </button>
           </div>
 

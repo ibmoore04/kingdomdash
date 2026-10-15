@@ -87,19 +87,19 @@ export function CartDrawer() {
         ) : (
           <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
             {/* Loyalty & Milestone Rewards Progress Meter (Phase 3) */}
-            <div className="px-5 sm:px-6 pt-3 pb-1 shrink-0">
+            <div className="px-4 sm:px-6 pt-2 pb-1 shrink-0">
               <CartMilestoneMeter subtotal={subtotal} />
             </div>
 
             {/* Scrollable list of items */}
-            <div className="flex-1 overflow-y-auto px-5 sm:px-6 divide-y divide-border/40 overscroll-contain">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-6 divide-y divide-border/40 overscroll-contain pb-3">
               {items.map((item) => (
                 <CartItemRow key={item.itemKey || item.productId} item={item} />
               ))}
             </div>
 
             {/* Bottom pinned summary */}
-            <div className="border-t border-border bg-neutral-50/80 px-5 sm:px-6 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] shadow-inner shrink-0">
+            <div className="border-t border-border bg-neutral-50/90 px-4 sm:px-6 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] shadow-xs shrink-0">
               <CartSummary onClose={() => setCartOpen(false)} showFullCartLink={true} />
             </div>
           </div>
