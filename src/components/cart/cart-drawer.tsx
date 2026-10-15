@@ -55,14 +55,14 @@ export function CartDrawer() {
         className="relative z-10 flex h-full w-full max-w-md flex-col bg-white shadow-2xl transition-transform duration-300 ease-out"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+        <div className="flex items-center justify-between border-b border-border px-5 py-3.5 sm:px-6 sm:py-4 bg-white shrink-0">
           <div className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5 text-primary" aria-hidden="true" />
             <h2 id="cart-drawer-title" className="text-h4 font-bold text-text-primary">
               Your Cart
             </h2>
             {itemCount > 0 && (
-              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-caption font-semibold text-primary">
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-caption font-semibold text-primary">
                 {itemCount} {itemCount === 1 ? 'item' : 'items'}
               </span>
             )}
@@ -71,8 +71,9 @@ export function CartDrawer() {
           <button
             type="button"
             onClick={() => setCartOpen(false)}
-            className="rounded-full p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="flex items-center gap-1 rounded-full p-2 text-text-secondary hover:bg-neutral-100 hover:text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
             aria-label="Close cart"
+            title="Close cart (Esc)"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -84,21 +85,21 @@ export function CartDrawer() {
             <EmptyCartView onActionClick={() => setCartOpen(false)} />
           </div>
         ) : (
-          <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
             {/* Loyalty & Milestone Rewards Progress Meter (Phase 3) */}
-            <div className="px-6 pt-3 pb-1">
+            <div className="px-5 sm:px-6 pt-3 pb-1 shrink-0">
               <CartMilestoneMeter subtotal={subtotal} />
             </div>
 
             {/* Scrollable list of items */}
-            <div className="flex-1 overflow-y-auto px-6 divide-y divide-border/40">
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 divide-y divide-border/40 overscroll-contain">
               {items.map((item) => (
                 <CartItemRow key={item.itemKey || item.productId} item={item} />
               ))}
             </div>
 
             {/* Bottom pinned summary */}
-            <div className="border-t border-border bg-neutral-50/50 px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] shadow-inner">
+            <div className="border-t border-border bg-neutral-50/80 px-5 sm:px-6 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] shadow-inner shrink-0">
               <CartSummary onClose={() => setCartOpen(false)} showFullCartLink={true} />
             </div>
           </div>

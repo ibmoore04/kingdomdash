@@ -62,6 +62,9 @@ export function invalidateFetch(): void {
   fetchGeneration++
 }
 
+export { isUserEmailConfirmed } from '@/utils/auth-helpers'
+import { isUserEmailConfirmed } from '@/utils/auth-helpers'
+
 // Module-level singleton auth listener management
 let authSubscription: Subscription | null = null
 
@@ -70,66 +73,119 @@ async function startProfileFetch(
   currentGeneration: number,
   set: (partial: Partial<AuthState>) => void
 ): Promise<void> {
-  try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
+  const maxRetries = 3
+  let attempt = 0
+  let lastError: Error | null = null
 
-    // Discard if a newer event occurred while fetching (P7)
-    if (currentGeneration !== fetchGeneration) {
-      return
-    }
-
-    if (error) {
-      set({
-        profile: null,
-        profileError: new Error(error.message),
-        isLoading: false,
-      })
-      return
-    }
-
-    const userProfile = data as unknown as Profile
-
-    // Restore impersonation session if one was active for this admin
-    let savedImpersonation: ImpersonationSession | null = null
+  while (attempt < maxRetries) {
+    attempt++
     try {
-      const raw = typeof window !== 'undefined' ? sessionStorage.getItem('kingdomdash_impersonation_session') : null
-      if (raw) savedImpersonation = JSON.parse(raw)
-    } catch {
-      // safe
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle()
+
+      // Discard if a newer event occurred while fetching (P7)
+      if (currentGeneration !== fetchGeneration) {
+        return
+      }
+
+      if (data) {
+        const userProfile = data as unknown as Profile
+
+        // Restore impersonation session if one was active for this admin
+        let savedImpersonation: ImpersonationSession | null = null
+        try {
+          const raw = typeof window !== 'undefined' ? sessionStorage.getItem('kingdomdash_impersonation_session') : null
+          if (raw) savedImpersonation = JSON.parse(raw)
+        } catch {
+          // safe
+        }
+
+        if (savedImpersonation && savedImpersonation.originalAdminProfile.id === userProfile.id) {
+          set({
+            profile: savedImpersonation.targetProfile,
+            impersonation: savedImpersonation,
+            isImpersonating: true,
+            profileError: null,
+            isLoading: false,
+          })
+          return
+        }
+
+        set({
+          profile: userProfile,
+          impersonation: null,
+          isImpersonating: false,
+          profileError: null,
+          isLoading: false,
+        })
+        return
+      }
+
+      if (error) {
+        lastError = new Error(error.message)
+      }
+    } catch (err) {
+      if (currentGeneration !== fetchGeneration) {
+        return
+      }
+      lastError = err instanceof Error ? err : new Error('Failed to fetch profile')
     }
 
-    if (savedImpersonation && savedImpersonation.originalAdminProfile.id === userProfile.id) {
-      set({
-        profile: savedImpersonation.targetProfile,
-        impersonation: savedImpersonation,
-        isImpersonating: true,
-        profileError: null,
-        isLoading: false,
-      })
-      return
+    // Wait briefly before retrying to allow handle_new_user() trigger to finish writing profile
+    if (attempt < maxRetries) {
+      await new Promise((resolve) => setTimeout(resolve, 400 * attempt))
+      if (currentGeneration !== fetchGeneration) return
     }
-
-    set({
-      profile: userProfile,
-      impersonation: null,
-      isImpersonating: false,
-      profileError: null,
-      isLoading: false,
-    })
-  } catch (err) {
-    if (currentGeneration !== fetchGeneration) {
-      return
-    }
-    set({
-      profile: null,
-      profileError: err instanceof Error ? err : new Error('Failed to fetch profile'),
-      isLoading: false,
-    })
   }
+
+  // If profile row is still missing, attempt self-healing upsert for this authenticated user
+  try {
+    const { data: authData } = await (supabase.auth?.getUser ? supabase.auth.getUser() : Promise.resolve({ data: { user: null } }))
+    const authUser = authData?.user
+    if (authUser && authUser.id === userId && currentGeneration === fetchGeneration) {
+      const fullName =
+        authUser.user_metadata?.full_name ||
+        authUser.user_metadata?.name ||
+        authUser.email?.split('@')[0] ||
+        'Customer'
+      const { data: upserted } = await supabase
+        .from('profiles')
+        .upsert(
+          {
+            id: userId,
+            email: authUser.email || '',
+            full_name: fullName,
+            role: 'customer',
+            is_active: true,
+          },
+          { onConflict: 'id' }
+        )
+        .select('*')
+        .maybeSingle()
+
+      if (upserted && currentGeneration === fetchGeneration) {
+        set({
+          profile: upserted as unknown as Profile,
+          profileError: null,
+          isLoading: false,
+        })
+        return
+      }
+    }
+  } catch {
+    // Fall through to error state
+  }
+
+  if (currentGeneration !== fetchGeneration) return
+
+  set({
+    profile: null,
+    profileError: lastError || new Error('Failed to fetch profile'),
+    isLoading: false,
+  })
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -307,7 +363,7 @@ export function initAuthListener(): void {
             session,
             mfaLevel: extractJwtAal(session.access_token),
             isLoading: true,
-            isEmailConfirmed: Boolean(session.user?.email_confirmed_at),
+            isEmailConfirmed: isUserEmailConfirmed(session),
           })
           const gen = ++fetchGeneration
           void startProfileFetch(session.user.id, gen, set)
@@ -332,7 +388,7 @@ export function initAuthListener(): void {
             mfaLevel: extractJwtAal(session.access_token),
             isRecoverySession: false,
             isLoading: true,
-            isEmailConfirmed: Boolean(session.user?.email_confirmed_at),
+            isEmailConfirmed: isUserEmailConfirmed(session),
           })
           const gen = ++fetchGeneration
           void startProfileFetch(session.user.id, gen, set)
@@ -361,7 +417,7 @@ export function initAuthListener(): void {
         set({
           session,
           mfaLevel: extractJwtAal(session?.access_token),
-          isEmailConfirmed: Boolean(session?.user?.email_confirmed_at),
+          isEmailConfirmed: isUserEmailConfirmed(session),
         })
         break
 
@@ -370,7 +426,7 @@ export function initAuthListener(): void {
           session,
           isRecoverySession: true,
           isLoading: true,
-          isEmailConfirmed: Boolean(session?.user?.email_confirmed_at),
+          isEmailConfirmed: isUserEmailConfirmed(session),
         })
         if (session) {
           useCartStore.getState().setUser(session.user.id)
@@ -386,7 +442,7 @@ export function initAuthListener(): void {
           set({
             session,
             isLoading: true,
-            isEmailConfirmed: Boolean(session.user?.email_confirmed_at),
+            isEmailConfirmed: isUserEmailConfirmed(session),
           })
           const gen = ++fetchGeneration
           await startProfileFetch(session.user.id, gen, set)

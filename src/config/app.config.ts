@@ -13,8 +13,9 @@ export const appConfig = {
   tagline: 'SWIFT IN MOTION.',
   philosophy: 'Powered by Excellence. Guided by Grace.',
   url:
-    import.meta.env.VITE_APP_URL ||
-    (import.meta.env.DEV ? 'http://localhost:5173' : 'https://kingdomdash.net'),
+    (typeof window !== 'undefined' && window.location?.origin)
+      ? window.location.origin
+      : (import.meta.env.VITE_APP_URL || 'https://kingdomdash.net'),
   launchMarket: 'Ijebu-Ode, Ogun State',
   expansionMarkets: 'Ogun State and subsequent markets',
   support: {

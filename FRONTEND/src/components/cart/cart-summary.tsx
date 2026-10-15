@@ -26,17 +26,17 @@ export function CartSummary({ onClose, showFullCartLink = true }: CartSummaryPro
   }
 
   return (
-    <div className="space-y-4 pt-4 border-t border-border">
+    <div className="space-y-3 pt-2">
       {/* Vendor context info */}
       {vendor && (
-        <div className="flex items-center justify-between text-caption text-text-secondary bg-neutral-50 px-3 py-2 rounded-lg border border-border/50">
-          <span>
+        <div className="flex items-center justify-between text-caption text-text-secondary bg-neutral-100/70 px-3 py-1.5 rounded-lg border border-border/50">
+          <span className="truncate mr-2">
             Ordering from <strong className="text-text-primary">{vendor.name}</strong>
           </span>
           <button
             type="button"
             onClick={clearCart}
-            className="inline-flex items-center gap-1 text-text-muted hover:text-error transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+            className="inline-flex items-center gap-1 text-text-muted hover:text-error transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded shrink-0 cursor-pointer"
             title="Clear all items in cart"
           >
             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -46,7 +46,7 @@ export function CartSummary({ onClose, showFullCartLink = true }: CartSummaryPro
       )}
 
       {/* Financial Line Items */}
-      <div className="space-y-2 text-body-small">
+      <div className="space-y-1.5 text-body-small">
         <div className="flex items-center justify-between text-text-secondary">
           <span>Subtotal</span>
           <span className="font-semibold text-text-primary">{formatNgn(subtotal)}</span>
@@ -60,26 +60,26 @@ export function CartSummary({ onClose, showFullCartLink = true }: CartSummaryPro
         </div>
 
         {/* Phase 8 Explanatory Notice */}
-        <div className="rounded-lg bg-info/10 border border-info/20 p-2.5 text-caption text-text-secondary flex gap-2 items-start">
-          <Info className="h-4 w-4 text-info shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="leading-tight">
+        <div className="rounded-lg bg-info/10 border border-info/20 px-2.5 py-1.5 text-caption text-text-secondary flex gap-2 items-start">
+          <Info className="h-3.5 w-3.5 text-info shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="leading-tight text-[11px]">
             Delivery fee will be calculated based on distance in Phase 8. For this launch preview, base delivery fee is set to ₦0.00.
           </p>
         </div>
 
-        <div className="pt-2 border-t border-border flex items-center justify-between text-body font-bold text-text-primary">
+        <div className="pt-1.5 border-t border-border flex items-center justify-between text-body font-bold text-text-primary">
           <span>Estimated Total</span>
           <span className="text-h4 text-primary font-bold">{formatNgn(subtotal)}</span>
         </div>
       </div>
 
       {/* CTA Buttons */}
-      <div className="space-y-2 pt-2">
+      <div className="space-y-2 pt-1">
         <Button
           type="button"
           variant="primary"
           onClick={handleCheckout}
-          className="w-full h-12 rounded-xl text-button font-bold flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
+          className="w-full h-11 rounded-xl text-button font-bold flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
         >
           <span>Proceed to Checkout</span>
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -90,7 +90,7 @@ export function CartSummary({ onClose, showFullCartLink = true }: CartSummaryPro
             type="button"
             variant="outline"
             onClick={handleViewCart}
-            className="w-full h-11 rounded-xl text-body-small font-medium text-text-secondary hover:text-text-primary cursor-pointer"
+            className="w-full h-9 rounded-xl text-caption font-medium text-text-secondary hover:text-text-primary cursor-pointer"
           >
             View Full Cart
           </Button>

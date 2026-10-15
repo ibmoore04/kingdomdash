@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuthStore, extractJwtAal, type UserRole } from '@/stores/auth-store'
+import { isUserEmailConfirmed } from '@/utils/auth-helpers'
 import { roleDashboardPath, ROLE_DASHBOARD_MAP } from '@/utils/safe-redirect'
 
 export { roleDashboardPath, ROLE_DASHBOARD_MAP }
@@ -31,7 +32,7 @@ export function RouteGuard({ allowedRoles }: RouteGuardProps) {
 
   const isResolvingProfile = session !== null && profile === null && profileError === null
 
-  // Inactive profile or unresolvable profile error: trigger sign-out once
+  // Inactive profile or unresolvable profile error: trigger sign-out once (P9, P13)
   useEffect(() => {
     if (!signOutInitiated.current) {
       if (profile && !profile.is_active) {
@@ -55,9 +56,9 @@ export function RouteGuard({ allowedRoles }: RouteGuardProps) {
     return <Navigate to={`/auth/login?redirect=${redirectParam}`} replace />
   }
 
-  // 3. Email verification guard: An authenticated Supabase session is NOT sufficient
-  // for normal KingdomDash application access. email_confirmed_at must be present.
-  if (!session.user?.email_confirmed_at) {
+  // 3. Email verification guard: An authenticated Supabase session is verified via
+  // email_confirmed_at, confirmed_at, or trusted OAuth provider (e.g. Google).
+  if (!isUserEmailConfirmed(session)) {
     return <Navigate to="/auth/verify-email" replace />
   }
 

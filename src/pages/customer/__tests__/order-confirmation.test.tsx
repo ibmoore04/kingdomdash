@@ -251,4 +251,35 @@ describe('OrderConfirmationPage', () => {
       expect(screen.getByText('Payment verified successfully via Flutterwave.')).toBeDefined()
     })
   })
+
+  it('renders assigned rider name and contact details when courier has been assigned', async () => {
+    vi.spyOn(orderService, 'getOrderById').mockResolvedValue({
+      data: { ...mockFullOrder, status: 'ready_for_pickup' },
+      error: null,
+    })
+
+    const deliveriesService = await import('@/services/supabase/deliveries')
+    vi.spyOn(deliveriesService, 'getAssignedRiderForOrder').mockResolvedValue({
+      name: 'Tunde Adeleke',
+      phone: '+2348011223344',
+    })
+
+    render(
+      <MemoryRouter initialEntries={['/order/order-1234-abcd/confirmation']}>
+        <Routes>
+          <Route path="/order/:orderId/confirmation" element={<OrderConfirmationPage />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    await waitFor(() => {
+      // Name should appear in the assigned courier section
+      expect(screen.getAllByText('Tunde Adeleke').length).toBeGreaterThan(0)
+      // Phone number should appear in the contact section
+      expect(screen.getAllByText('+2348011223344').length).toBeGreaterThan(0)
+      // Awaiting match text should no longer be present
+      expect(screen.queryByText('Matching Nearby Courier')).toBeNull()
+      expect(screen.queryByText('Central dispatch matching active')).toBeNull()
+    })
+  })
 })

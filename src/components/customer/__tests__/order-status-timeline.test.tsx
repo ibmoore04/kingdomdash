@@ -52,4 +52,15 @@ describe('OrderStatusTimeline Component (Phase 10)', () => {
     expect(screen.getByText('Item out of stock at restaurant')).toBeInTheDocument()
     expect(screen.getByText(/Refund Status: Queued for review/i)).toBeInTheDocument()
   })
+
+  it('renders Cash on Delivery labels and active step when isCashOnDelivery is true', () => {
+    render(<OrderStatusTimeline status="pending" serviceType="food" isCashOnDelivery={true} />)
+
+    expect(screen.getByText('Order Placed')).toBeInTheDocument()
+    expect(screen.getByText('Cash on handover')).toBeInTheDocument()
+    expect(screen.getByText('Cash on Delivery')).toBeInTheDocument()
+    expect(screen.getByText(/Order placed with Cash on Delivery!/i)).toBeInTheDocument()
+    const paidStep = screen.getByTestId('timeline-step-paid')
+    expect(paidStep).toHaveAttribute('data-step-status', 'current')
+  })
 })

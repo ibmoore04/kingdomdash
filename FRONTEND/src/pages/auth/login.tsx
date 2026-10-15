@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Eye, EyeOff, MapPin, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/services/supabase/client'
-import { useAuthStore } from '@/stores/auth-store'
+import { useAuthStore, isUserEmailConfirmed } from '@/stores/auth-store'
 import { resolvePostLoginTarget } from '@/utils/safe-redirect'
 import { mapAuthError } from '@/utils/auth-errors'
 import { appConfig } from '@/config/app.config'
@@ -28,7 +28,7 @@ export default function LoginPage() {
   // Already-authenticated redirect (P4)
   useEffect(() => {
     if (session) {
-      if (!session.user?.email_confirmed_at) {
+      if (!isUserEmailConfirmed(session)) {
         navigate('/auth/verify-email', { replace: true })
         return
       }
@@ -91,7 +91,7 @@ export default function LoginPage() {
         return
       }
 
-      if (signInData?.session && !signInData.session.user?.email_confirmed_at) {
+      if (signInData?.session && !isUserEmailConfirmed(signInData.session)) {
         navigate('/auth/verify-email', { replace: true })
         return
       }

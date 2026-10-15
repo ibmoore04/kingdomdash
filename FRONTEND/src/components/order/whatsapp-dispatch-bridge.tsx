@@ -6,8 +6,8 @@ export interface WhatsappDispatchBridgeProps {
   customerName?: string;
   deliveryAddress?: string;
   vendorName?: string;
-  riderName?: string;
-  riderPhone?: string;
+  riderName?: string | null;
+  riderPhone?: string | null;
   supportPhone?: string;
   className?: string;
 }
@@ -17,8 +17,8 @@ export const WhatsappDispatchBridge: React.FC<WhatsappDispatchBridgeProps> = ({
   customerName = 'Customer',
   deliveryAddress = 'Delivery Destination',
   vendorName = 'Kitchen Store',
-  riderName = 'Babatunde A.',
-  riderPhone = '+2348077958755',
+  riderName,
+  riderPhone,
   supportPhone = '+2348077958755',
   className = '',
 }) => {
@@ -31,18 +31,18 @@ export const WhatsappDispatchBridge: React.FC<WhatsappDispatchBridgeProps> = ({
     return clean;
   };
 
-  const riderWaNumber = sanitizePhoneForWa(riderPhone);
+  const riderWaNumber = riderPhone ? sanitizePhoneForWa(riderPhone) : '';
   const supportWaNumber = sanitizePhoneForWa(supportPhone);
 
   const riderMessage = encodeURIComponent(
-    `Hello ${riderName}! I am tracking my KingdomDash Order #${orderNumber} from ${vendorName}.\nDestination: ${deliveryAddress}.\nPlease ping me as soon as you arrive at the gate.`
+    `Hello ${riderName || 'Courier'}! I am tracking my KingdomDash Order #${orderNumber} from ${vendorName}.\nDestination: ${deliveryAddress}.\nPlease ping me as soon as you arrive at the gate.`
   );
 
   const supportMessage = encodeURIComponent(
     `Hello KingdomDash Dispatch Support! I need assistance with Order #${orderNumber} for ${customerName}.\nAddress: ${deliveryAddress}.`
   );
 
-  const riderWaUrl = `https://wa.me/${riderWaNumber}?text=${riderMessage}`;
+  const riderWaUrl = riderWaNumber ? `https://wa.me/${riderWaNumber}?text=${riderMessage}` : '#';
   const supportWaUrl = `https://wa.me/${supportWaNumber}?text=${supportMessage}`;
 
   return (
@@ -70,36 +70,61 @@ export const WhatsappDispatchBridge: React.FC<WhatsappDispatchBridgeProps> = ({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {/* Chat with Rider */}
-        <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-neutral-50 border border-neutral-200/80 flex flex-col justify-between space-y-3">
-          <div>
-            <div className="flex items-center justify-between text-xs text-neutral-500 mb-1">
-              <span>Assigned Courier</span>
-              <span className="font-semibold text-emerald-600">On Active Route</span>
+        {/* Chat with Rider OR Awaiting Assignment State */}
+        {riderName ? (
+          <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-neutral-50 border border-neutral-200/80 flex flex-col justify-between space-y-3">
+            <div>
+              <div className="flex items-center justify-between text-xs text-neutral-500 mb-1">
+                <span>Assigned Courier</span>
+                <span className="font-semibold text-emerald-600">On Active Route</span>
+              </div>
+              <div className="text-sm font-bold text-neutral-900">{riderName}</div>
+              {riderPhone && <div className="text-xs text-neutral-500 font-mono">{riderPhone}</div>}
             </div>
-            <div className="text-sm font-bold text-neutral-900">{riderName}</div>
-            <div className="text-xs text-neutral-500 font-mono">{riderPhone}</div>
-          </div>
 
-          <div className="flex items-center gap-2 pt-1">
-            <a
-              href={riderWaUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 h-11 py-2.5 px-3 rounded-xl bg-[#25D366] hover:bg-[#20ba59] active:scale-[0.98] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
-            >
-              <MessageCircle className="w-4 h-4 fill-white text-[#25D366]" />
-              <span>Chat on WhatsApp</span>
-            </a>
-            <a
-              href={`tel:${riderPhone}`}
-              className="w-11 h-11 rounded-xl bg-white border border-neutral-200 hover:bg-neutral-100 active:scale-[0.98] text-neutral-700 flex items-center justify-center transition-all shrink-0 cursor-pointer"
-              title="Call courier directly"
-            >
-              <Phone className="w-4 h-4" />
-            </a>
+            <div className="flex items-center gap-2 pt-1">
+              <a
+                href={riderWaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 h-11 py-2.5 px-3 rounded-xl bg-[#25D366] hover:bg-[#20ba59] active:scale-[0.98] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              >
+                <MessageCircle className="w-4 h-4 fill-white text-[#25D366]" />
+                <span>Chat on WhatsApp</span>
+              </a>
+              {riderPhone && (
+                <a
+                  href={`tel:${riderPhone}`}
+                  className="w-11 h-11 rounded-xl bg-white border border-neutral-200 hover:bg-neutral-100 active:scale-[0.98] text-neutral-700 flex items-center justify-center transition-all shrink-0 cursor-pointer"
+                  title="Call courier directly"
+                >
+                  <Phone className="w-4 h-4" />
+                </a>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-neutral-50 border border-neutral-200/80 flex flex-col justify-between space-y-3">
+            <div>
+              <div className="flex items-center justify-between text-xs text-neutral-500 mb-1">
+                <span>Assigned Courier</span>
+                <span className="font-semibold text-amber-600">Awaiting Dispatch</span>
+              </div>
+              <div className="text-sm font-bold text-neutral-900">Matching Nearby Courier</div>
+              <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                A verified dispatch rider will be assigned once the merchant prepares your package.
+              </p>
+            </div>
+
+            <div className="pt-1 flex items-center gap-2 text-xs text-neutral-600 font-medium">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
+              <span>Central dispatch matching active</span>
+            </div>
+          </div>
+        )}
 
         {/* Chat with Support Dispatch */}
         <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-neutral-50 border border-neutral-200/80 flex flex-col justify-between space-y-3">

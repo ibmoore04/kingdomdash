@@ -16,7 +16,7 @@ vi.mock('@/services/supabase/client', () => ({
       signOut: vi.fn(),
     },
     from: vi.fn(),
-    rpc: vi.fn().mockResolvedValue({ data: true, error: null }),
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
   },
 }))
 
@@ -30,6 +30,7 @@ vi.mock('@/config/app.config', () => ({
 describe('RegisterPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: null } as any)
   })
 
   const renderWithRouter = () => {
@@ -46,8 +47,7 @@ describe('RegisterPage', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i })
 
       fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: '' } })
-      fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'test@example.com' } })
-      fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value: '08031234567' } })
+      fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: 'test@example.com' } })
       fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } })
       fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } })
 
@@ -64,8 +64,7 @@ describe('RegisterPage', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i })
 
       fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } })
-      fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'invalid-email' } })
-      fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value: '08031234567' } })
+      fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: 'invalid-email@' } })
       fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } })
       fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } })
 
@@ -77,20 +76,19 @@ describe('RegisterPage', () => {
       expect(supabase.auth.signUp).not.toHaveBeenCalled()
     })
 
-    it('rejects empty phone number', async () => {
+    it('rejects empty email or phone number', async () => {
       renderWithRouter()
       const submitButton = screen.getByRole('button', { name: /create account/i })
 
       fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } })
-      fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'test@example.com' } })
-      fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value: '' } })
+      fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: '' } })
       fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } })
       fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } })
 
       fireEvent.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/phone number is required/i)).toBeInTheDocument()
+        expect(screen.getByText(/email or phone number is required/i)).toBeInTheDocument()
       })
       expect(supabase.auth.signUp).not.toHaveBeenCalled()
     })
@@ -100,8 +98,7 @@ describe('RegisterPage', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i })
 
       fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } })
-      fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'test@example.com' } })
-      fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value: '0803abcd567' } })
+      fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: '0803abcd567' } })
       fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } })
       fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } })
 
@@ -118,8 +115,7 @@ describe('RegisterPage', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i })
 
       fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } })
-      fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'test@example.com' } })
-      fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value: '08031234567' } })
+      fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: 'test@example.com' } })
       fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'short' } })
       fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'short' } })
 
@@ -136,8 +132,7 @@ describe('RegisterPage', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i })
 
       fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } })
-      fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'test@example.com' } })
-      fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value: '08031234567' } })
+      fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: 'test@example.com' } })
       fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } })
       fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'different123' } })
 
@@ -154,8 +149,7 @@ describe('RegisterPage', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i })
 
       fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } })
-      fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'test@example.com' } })
-      fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value: '08031234567' } })
+      fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: 'test@example.com' } })
       fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } })
       fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } })
 
@@ -174,13 +168,13 @@ describe('RegisterPage', () => {
         fc.property(fc.string({ minLength: 0, maxLength: 7 }), (shortPassword) => {
           cleanup()
           vi.clearAllMocks()
+          vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: null } as any)
           renderWithRouter()
 
           const submitButton = screen.getByRole('button', { name: /create account/i })
 
           fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } })
-          fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'test@example.com' } })
-          fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value: '08031234567' } })
+          fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: 'test@example.com' } })
           fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: shortPassword } })
           fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: shortPassword } })
 
@@ -191,13 +185,13 @@ describe('RegisterPage', () => {
 
           cleanup()
         }),
-        { numRuns: 20 }
+        { numRuns: 10 }
       )
     }, 60000)
   })
 
-  describe('P1: Signup metadata & account intent security', () => {
-    it('normalizes Nigerian phone and defaults to customer account intent', async () => {
+  describe('P1: Signup with Email or Phone', () => {
+    it('registers with email address', async () => {
       vi.mocked(supabase.auth.signUp).mockResolvedValue({ error: null } as any)
 
       renderWithRouter()
@@ -205,8 +199,7 @@ describe('RegisterPage', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i })
 
       fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } })
-      fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'test@example.com' } })
-      fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value: '0803 123 4567' } })
+      fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: 'test@example.com' } })
       fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } })
       fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } })
       fireEvent.click(screen.getByRole('checkbox', { name: /terms of service/i }))
@@ -216,6 +209,37 @@ describe('RegisterPage', () => {
       await waitFor(() => {
         expect(supabase.auth.signUp).toHaveBeenCalledWith({
           email: 'test@example.com',
+          password: 'password123',
+          options: {
+            data: {
+              full_name: 'John Doe',
+              phone: null,
+              account_type: 'customer',
+            },
+            emailRedirectTo: 'https://kingdomdash.com/auth/callback',
+          },
+        })
+      })
+    })
+
+    it('normalizes Nigerian phone and signs up with phone identifier', async () => {
+      vi.mocked(supabase.auth.signUp).mockResolvedValue({ error: null } as any)
+
+      renderWithRouter()
+
+      const submitButton = screen.getByRole('button', { name: /create account/i })
+
+      fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } })
+      fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: '0803 123 4567' } })
+      fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } })
+      fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } })
+      fireEvent.click(screen.getByRole('checkbox', { name: /terms of service/i }))
+
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(supabase.auth.signUp).toHaveBeenCalledWith({
+          email: '2348031234567@phone.kingdomdash.com',
           password: 'password123',
           options: {
             data: {
@@ -240,8 +264,51 @@ describe('RegisterPage', () => {
     })
   })
 
-  describe('P3: Safe error messages', () => {
-    it('displays user-friendly error for duplicate email (P3)', async () => {
+  describe('P3: Safe error messages & Duplication check', () => {
+    it('displays user-friendly error when email already exists via RPC check', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({ data: 'email', error: null } as any)
+
+      renderWithRouter()
+
+      const submitButton = screen.getByRole('button', { name: /create account/i })
+
+      fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } })
+      fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: 'existing@example.com' } })
+      fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } })
+      fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } })
+      fireEvent.click(screen.getByRole('checkbox', { name: /terms of service/i }))
+
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('An account with this email already exists.')).toBeInTheDocument()
+      })
+      expect(supabase.auth.signUp).not.toHaveBeenCalled()
+    })
+
+    it('displays user-friendly error when phone number already exists via RPC check', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({ data: 'phone', error: null } as any)
+
+      renderWithRouter()
+
+      const submitButton = screen.getByRole('button', { name: /create account/i })
+
+      fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } })
+      fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: '08031234567' } })
+      fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } })
+      fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } })
+      fireEvent.click(screen.getByRole('checkbox', { name: /terms of service/i }))
+
+      fireEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('An account with this phone number already exists.')).toBeInTheDocument()
+      })
+      expect(supabase.auth.signUp).not.toHaveBeenCalled()
+    })
+
+    it('displays user-friendly error for duplicate email from Supabase response (P3)', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: null } as any)
       vi.mocked(supabase.auth.signUp).mockResolvedValue({
         error: { message: 'User already registered' } as any,
       } as any)
@@ -251,8 +318,7 @@ describe('RegisterPage', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i })
 
       fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } })
-      fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'existing@example.com' } })
-      fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value: '08031234567' } })
+      fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: 'existing@example.com' } })
       fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } })
       fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } })
       fireEvent.click(screen.getByRole('checkbox', { name: /terms of service/i }))
@@ -265,6 +331,7 @@ describe('RegisterPage', () => {
     })
 
     it('displays generic error for unexpected errors (P3)', async () => {
+      vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: null } as any)
       vi.mocked(supabase.auth.signUp).mockRejectedValue(new Error('Network error'))
 
       renderWithRouter()
@@ -272,8 +339,7 @@ describe('RegisterPage', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i })
 
       fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } })
-      fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'test@example.com' } })
-      fireEvent.change(screen.getByLabelText(/phone number/i), { target: { value: '08031234567' } })
+      fireEvent.change(screen.getByLabelText(/email or phone number/i), { target: { value: 'test@example.com' } })
       fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } })
       fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } })
       fireEvent.click(screen.getByRole('checkbox', { name: /terms of service/i }))

@@ -27,8 +27,9 @@ export interface DeliveryLiveMapProps {
   vendorName?: string
   deliveryAddress?: string
   landmark?: string
-  riderName?: string
-  riderPhone?: string
+  riderName?: string | null
+  riderPhone?: string | null
+  supportPhone?: string
   estimatedMinutes?: number
   distanceKm?: number | null
   vendorCoords?: Coordinates | null
@@ -37,6 +38,7 @@ export interface DeliveryLiveMapProps {
   className?: string
   showContactActions?: boolean
   initialViewMode?: 'radar' | 'streets'
+  isCashOnDelivery?: boolean
 }
 
 /**
@@ -56,8 +58,9 @@ export function DeliveryLiveMap({
   vendorName = 'Restaurant Kitchen',
   deliveryAddress = 'TASUED Main Campus Gate',
   landmark = 'Near ATM Gallery',
-  riderName = 'Babatunde A.',
-  riderPhone = '+2348077958755',
+  riderName,
+  riderPhone,
+  supportPhone = '+2348077958755',
   estimatedMinutes = 18,
   distanceKm: initialDistanceKm = 2.4,
   vendorCoords,
@@ -66,6 +69,7 @@ export function DeliveryLiveMap({
   className,
   showContactActions = true,
   initialViewMode = 'radar',
+  isCashOnDelivery = false,
 }: DeliveryLiveMapProps) {
   const [viewMode, setViewMode] = useState<'radar' | 'streets'>(initialViewMode)
   const mapContainerRef = useRef<HTMLDivElement>(null)
@@ -138,8 +142,9 @@ export function DeliveryLiveMap({
     if (isInTransit) return 'Rider en route to your doorstep'
     if (isReady) return 'Meal boxed • Rider approaching kitchen'
     if (isPreparing) return 'Kitchen is preparing your order'
+    if (isCashOnDelivery) return 'Order Placed • Cash on Delivery'
     return 'Awaiting payment confirmation'
-  }, [isCancelled, isDelivered, isInTransit, isReady, isPreparing])
+  }, [isCancelled, isDelivered, isInTransit, isReady, isPreparing, isCashOnDelivery])
 
   const centerCoords = useMemo(() => {
     return riderCoords || customerCoords || vendorCoords || IJEBU_ODE_CENTER
@@ -182,24 +187,34 @@ export function DeliveryLiveMap({
           title: deliveryAddress,
         })
 
-        // Courier Marker
         const rCoords = riderCoords || {
           latitude: (vCoords.latitude + cCoords.latitude) / 2,
           longitude: (vCoords.longitude + cCoords.longitude) / 2,
         }
-        new googleObj.maps.Marker({
-          position: { lat: rCoords.latitude, lng: rCoords.longitude },
-          map,
-          title: `${riderName} (Courier)`,
-        })
 
-        // Route Polyline
+        // Courier Marker (only plotted if rider assigned)
+        if (riderName) {
+          new googleObj.maps.Marker({
+            position: { lat: rCoords.latitude, lng: rCoords.longitude },
+            map,
+            title: `${riderName} (Courier)`,
+          })
+        }
+
+        // Route Polyline: vendor -> (rider waypoint if assigned) -> customer
+        const routePath = riderName
+          ? [
+              { lat: vCoords.latitude, lng: vCoords.longitude },
+              { lat: rCoords.latitude, lng: rCoords.longitude },
+              { lat: cCoords.latitude, lng: cCoords.longitude },
+            ]
+          : [
+              { lat: vCoords.latitude, lng: vCoords.longitude },
+              { lat: cCoords.latitude, lng: cCoords.longitude },
+            ]
+
         new googleObj.maps.Polyline({
-          path: [
-            { lat: vCoords.latitude, lng: vCoords.longitude },
-            { lat: rCoords.latitude, lng: rCoords.longitude },
-            { lat: cCoords.latitude, lng: cCoords.longitude },
-          ],
+          path: routePath,
           geodesic: true,
           strokeColor: '#E50914',
           strokeOpacity: 0.8,
@@ -221,8 +236,9 @@ export function DeliveryLiveMap({
 
   // Formatted WhatsApp URL with campus gate context
   const whatsAppHref = useMemo(() => {
+    if (!riderPhone) return '#'
     const cleanPhone = riderPhone.replace(/[^0-9]/g, '')
-    const message = `Hello ${riderName}, I am tracking my KingdomDash Order #${orderNumber} from ${vendorName}. I'm waiting at: ${deliveryAddress}${landmark ? ` (${landmark})` : ''}.`
+    const message = `Hello ${riderName || 'Courier'}, I am tracking my KingdomDash Order #${orderNumber} from ${vendorName}. I'm waiting at: ${deliveryAddress}${landmark ? ` (${landmark})` : ''}.`
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`
   }, [riderPhone, riderName, orderNumber, vendorName, deliveryAddress, landmark])
 
@@ -412,7 +428,7 @@ export function DeliveryLiveMap({
             </g>
 
             {/* Rider Beacon Marker Along Bezier Curve */}
-            {!isCancelled && (
+            {!isCancelled && riderName && (
               <g
                 transform={`translate(${riderCoordinates.x}, ${riderCoordinates.y})`}
                 className="transition-all duration-700 ease-out"
@@ -436,7 +452,7 @@ export function DeliveryLiveMap({
             </div>
           </div>
 
-          {!isCancelled && (
+          {!isCancelled && riderName && (
             <div
               className="absolute z-15 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-all duration-700 ease-out flex items-center justify-center text-white"
               style={{
@@ -460,51 +476,90 @@ export function DeliveryLiveMap({
       {/* Bottom Dispatch & Rider Handover Dock */}
       <div className="border-t border-neutral-800/80 bg-neutral-900/90 p-4 sm:p-5 backdrop-blur-md">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          {/* Dispatch Courier Details */}
-          <div className="flex items-center gap-3.5">
-            <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-neutral-800 border border-neutral-700 text-primary shadow-inner">
-              <Bike className="h-5 w-5" />
-              <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-white shadow-xs">
-                <ShieldCheck className="h-2.5 w-2.5" />
+          {riderName ? (
+            <>
+              {/* Dispatch Courier Details */}
+              <div className="flex items-center gap-3.5">
+                <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-neutral-800 border border-neutral-700 text-primary shadow-inner">
+                  <Bike className="h-5 w-5" />
+                  <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-white shadow-xs">
+                    <ShieldCheck className="h-2.5 w-2.5" />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-neutral-100">{riderName}</h4>
+                    <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-400">
+                      Verified Courier
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-400 mt-0.5">
+                    {isInTransit
+                      ? 'Delivering order to designated landmark • Be on standby'
+                      : isDelivered
+                      ? 'Delivery completed and PIN verified'
+                      : 'Assigned to your dispatch order'}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h4 className="text-sm font-bold text-neutral-100">{riderName}</h4>
-                <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-400">
-                  Verified Courier
-                </span>
-              </div>
-              <p className="text-xs text-neutral-400 mt-0.5">
-                {isInTransit
-                  ? 'Delivering order to designated landmark • Be on standby'
-                  : isDelivered
-                  ? 'Delivery completed and PIN verified'
-                  : 'Assigned to your dispatch order'}
-              </p>
-            </div>
-          </div>
 
-          {/* Quick Courier Communication Dock */}
-          {showContactActions && !isDelivered && !isCancelled && (
-            <div className="flex items-center gap-2">
-              <a
-                href={`tel:${riderPhone}`}
-                className="flex items-center gap-1.5 rounded-xl border border-neutral-700 bg-neutral-800 px-3.5 py-2 text-xs font-semibold text-neutral-200 transition-colors hover:bg-neutral-700 hover:text-white cursor-pointer"
-              >
-                <Phone className="h-3.5 w-3.5 text-primary" />
-                <span>Call Rider</span>
-              </a>
-              <a
-                href={whatsAppHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer"
-              >
-                <MessageCircle className="h-3.5 w-3.5" />
-                <span>WhatsApp Courier</span>
-              </a>
-            </div>
+              {/* Quick Courier Communication Dock */}
+              {showContactActions && !isDelivered && !isCancelled && riderPhone && (
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`tel:${riderPhone}`}
+                    className="flex items-center gap-1.5 rounded-xl border border-neutral-700 bg-neutral-800 px-3.5 py-2 text-xs font-semibold text-neutral-200 transition-colors hover:bg-neutral-700 hover:text-white cursor-pointer"
+                  >
+                    <Phone className="h-3.5 w-3.5 text-primary" />
+                    <span>Call Rider</span>
+                  </a>
+                  <a
+                    href={whatsAppHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer"
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" />
+                    <span>WhatsApp Courier</span>
+                  </a>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Unassigned / Awaiting Courier Match */}
+              <div className="flex items-center gap-3.5">
+                <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-neutral-800 border border-neutral-700 text-neutral-400 shadow-inner">
+                  <Bike className="h-5 w-5 animate-pulse text-amber-500" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-neutral-100">Courier Assignment in Progress</h4>
+                    <span className="rounded bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-semibold text-amber-400">
+                      Awaiting Rider
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-400 mt-0.5">
+                    {isReady
+                      ? 'Order is packaged! Central dispatch is assigning the nearest courier for pickup.'
+                      : 'Central dispatch will assign a verified rider once food prep begins.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Central Operations Dispatch Support */}
+              <div className="flex items-center gap-2">
+                <a
+                  href={`https://wa.me/${supportPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello KingdomDash Dispatch Support! I am tracking Order #${orderNumber}.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 rounded-xl border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 px-3.5 py-2 text-xs font-semibold text-neutral-200 transition-colors cursor-pointer"
+                >
+                  <MessageCircle className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>Dispatch Support</span>
+                </a>
+              </div>
+            </>
           )}
         </div>
       </div>

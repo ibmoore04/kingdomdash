@@ -39,8 +39,13 @@ export function mapAuthError(error: unknown, actionFallback = 'Operation'): stri
   if (
     normalized.includes('already registered') ||
     normalized.includes('user already registered') ||
-    normalized.includes('email already in use')
+    normalized.includes('email already in use') ||
+    normalized.includes('already exists') ||
+    normalized.includes('duplicate key')
   ) {
+    if (normalized.includes('phone')) {
+      return 'An account with this phone number already exists.'
+    }
     return 'An account with this email already exists.'
   }
 

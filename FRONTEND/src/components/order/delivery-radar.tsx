@@ -17,6 +17,7 @@ export interface DeliveryRadarProps {
   cancellationReason?: string | null
   refundRequired?: boolean
   className?: string
+  isCashOnDelivery?: boolean
 }
 
 interface RadarStep {
@@ -32,6 +33,7 @@ export function DeliveryRadar({
   cancellationReason,
   refundRequired,
   className,
+  isCashOnDelivery = false,
 }: DeliveryRadarProps) {
   const isCourier = serviceType === 'courier'
   const isGrocery = serviceType === 'grocery'
@@ -40,8 +42,8 @@ export function DeliveryRadar({
   const standardSteps: RadarStep[] = [
     {
       id: 'paid',
-      label: 'Payment Confirmed',
-      description: 'Order placed & verified',
+      label: isCashOnDelivery ? 'Order Placed' : 'Payment Confirmed',
+      description: isCashOnDelivery ? 'Cash on handover' : 'Order placed & verified',
       icon: CheckCircle2,
     },
     {
@@ -73,8 +75,8 @@ export function DeliveryRadar({
   const courierSteps: RadarStep[] = [
     {
       id: 'paid',
-      label: 'Booking Confirmed',
-      description: 'Courier request booked',
+      label: isCashOnDelivery ? 'Booking Placed' : 'Booking Confirmed',
+      description: isCashOnDelivery ? 'Cash on handover' : 'Courier request booked',
       icon: CheckCircle2,
     },
     {
@@ -104,7 +106,7 @@ export function DeliveryRadar({
       case 'pending':
       case 'payment_pending':
       case 'payment_processing':
-        return -1
+        return isCashOnDelivery ? 0 : -1
       case 'payment_confirmed':
         return 0
       case 'preparing':
@@ -130,9 +132,13 @@ export function DeliveryRadar({
       case 'pending':
       case 'payment_pending':
       case 'payment_processing':
-        return 'Waiting for payment confirmation to initiate delivery...'
+        return isCashOnDelivery
+          ? 'Order placed with Cash on Delivery! Merchant has received your order and cash will be paid on delivery.'
+          : 'Waiting for payment confirmation to initiate delivery...'
       case 'payment_confirmed':
-        return 'Payment verified! Your order is being dispatched to the merchant...'
+        return isCashOnDelivery
+          ? 'Order confirmed with Cash on Delivery! Preparing items for dispatch.'
+          : 'Payment verified! Your order is being dispatched to the merchant...'
       case 'preparing':
         return isCourier
           ? 'Courier dispatch is reviewing pickup coordinates...'
@@ -213,7 +219,11 @@ export function DeliveryRadar({
 
         <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3.5 py-1 text-xs font-bold text-primary capitalize border border-primary/20">
           <Sparkles className="h-3 w-3" aria-hidden="true" />
-          <span>{status.replace(/_/g, ' ')}</span>
+          <span>
+            {isCashOnDelivery && (status === 'pending' || status === 'payment_pending')
+              ? 'Cash on Delivery'
+              : status.replace(/_/g, ' ')}
+          </span>
         </span>
       </div>
 

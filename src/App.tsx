@@ -7,7 +7,19 @@ import { useAuthStore } from '@/stores/auth-store'
 
 function RedirectWithQuery({ to }: { to: string }) {
   const location = useLocation()
-  return <Navigate to={`${to}${location.search}`} replace />
+  return <Navigate to={`${to}${location.search}${location.hash}`} replace />
+}
+
+function OAuthRootRedirect() {
+  const location = useLocation()
+  if (
+    typeof window !== 'undefined' &&
+    (location.hash.includes('access_token=') ||
+      (location.search.includes('code=') && !location.pathname.startsWith('/auth/callback')))
+  ) {
+    return <Navigate to={`/auth/callback${location.search}${location.hash}`} replace />
+  }
+  return <HomePage />
 }
 
 function GroceryAliasRedirect() {
@@ -214,7 +226,7 @@ export default function App() {
 
         {/* ── Public routes — wrapped in PublicLayout ───────────────────────────── */}
         <Route element={<PublicLayout />}>
-          <Route index element={<HomePage />} />
+          <Route index element={<OAuthRootRedirect />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/cart" element={<CartPage />} />

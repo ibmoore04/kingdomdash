@@ -11,6 +11,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { supabase } from '@/services/supabase/client'
 import { useAuthStore } from '@/stores/auth-store'
+import { isUserEmailConfirmed } from '@/utils/auth-helpers'
 import { resolvePostLoginTarget } from '@/utils/safe-redirect'
 import { AuthShell } from '@/components/auth/auth-shell'
 
@@ -32,20 +33,24 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     let cancelled = false
     const search = location.search || (typeof window !== 'undefined' ? window.location.search : '')
-    const params = new URLSearchParams(search)
-    const code = params.get('code')
-    const oauthError = params.get('error')
+    const hash = location.hash || (typeof window !== 'undefined' ? window.location.hash : '')
 
-    // Google (and other providers) may return ?error=access_denied when the
-    // user cancels the account-picker or denies consent.
+    const params = new URLSearchParams(search)
+    const hashClean = hash.startsWith('#') ? hash.substring(1) : hash
+    const hashParams = new URLSearchParams(hashClean)
+
+    const code = params.get('code') || hashParams.get('code')
+    const accessToken = hashParams.get('access_token') || params.get('access_token')
+    const refreshToken = hashParams.get('refresh_token') || params.get('refresh_token') || ''
+    const oauthError = params.get('error') || hashParams.get('error')
+
+    // Google (and other providers) may return error when user cancels or denies consent
     if (oauthError) {
-      const description = params.get('error_description') || ''
+      const description = params.get('error_description') || hashParams.get('error_description') || ''
       const isCancel =
         oauthError === 'access_denied' ||
         description.toLowerCase().includes('cancel') ||
         description.toLowerCase().includes('denied')
-      // Redirect to login; append a query param so the login page can
-      // optionally surface a friendly message without exposing raw OAuth errors.
       navigate(
         isCancel ? '/auth/login?oauth=cancelled' : '/auth/login?oauth=error',
         { replace: true }
@@ -53,36 +58,71 @@ export default function AuthCallbackPage() {
       return
     }
 
-    if (!code) {
-      navigate('/auth/login', { replace: true })
+    // 1. PKCE flow with code:
+    if (code) {
+      if (hasExchanged.current || exchangedCodes.has(code)) {
+        return
+      }
+      hasExchanged.current = true
+      exchangedCodes.add(code)
+
+      supabase.auth
+        .exchangeCodeForSession(code)
+        .then(({ error }) => {
+          if (cancelled) return
+          if (error) {
+            navigate('/auth/login', { replace: true })
+          }
+        })
+        .catch(() => {
+          if (cancelled) return
+          navigate('/auth/login', { replace: true })
+        })
       return
     }
 
-    if (hasExchanged.current || exchangedCodes.has(code)) {
-      return
+    // 2. Implicit / Hash token flow:
+    if (accessToken) {
+      if (typeof supabase.auth?.setSession === 'function') {
+        supabase.auth
+          .setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          })
+          .then(({ error }) => {
+            if (cancelled) return
+            if (error) {
+              navigate('/auth/login', { replace: true })
+            }
+          })
+          .catch(() => {
+            if (cancelled) return
+            navigate('/auth/login', { replace: true })
+          })
+        return
+      }
     }
-    hasExchanged.current = true
-    exchangedCodes.add(code)
 
-    supabase.auth
-      .exchangeCodeForSession(code)
-      .then(({ error }) => {
+    // 3. Neither code nor access token in URL — check if Supabase client already holds a session
+    if (typeof supabase.auth?.getSession === 'function') {
+      supabase.auth.getSession().then(({ data }) => {
         if (cancelled) return
-        if (error) {
+        if (!data?.session) {
           navigate('/auth/login', { replace: true })
         }
-        // Success: onAuthStateChange fires PASSWORD_RECOVERY or SIGNED_IN
-        // Reaction effect below handles navigation
-      })
-      .catch(() => {
+      }).catch(() => {
         if (cancelled) return
         navigate('/auth/login', { replace: true })
       })
+      return
+    }
+
+    navigate('/auth/login', { replace: true })
 
     return () => {
       cancelled = true
     }
-  }, [location.search, navigate])
+  }, [location.search, location.hash, navigate])
 
   // Reaction effect (responds to auth store state with deterministic routing)
   useEffect(() => {
@@ -94,16 +134,30 @@ export default function AuthCallbackPage() {
     }
 
     if (session) {
-      if (!session.user?.email_confirmed_at) {
+      const isConfirmed = isUserEmailConfirmed(session)
+
+      if (!isConfirmed) {
         navigate('/auth/verify-email', { replace: true })
         return
       }
+
+      const params = new URLSearchParams(location.search)
+      const redirectParam = params.get('redirect')
+
       if (profile) {
-        const params = new URLSearchParams(location.search)
-        const redirectParam = params.get('redirect')
         navigate(resolvePostLoginTarget(redirectParam, profile), { replace: true })
         return
       }
+
+      // If profile is still resolving or failed to load after trigger, fallback to customer role
+      // to ensure customer is never stranded on the callback loading screen
+      const timer = setTimeout(() => {
+        const currentProfile = useAuthStore.getState().profile
+        const targetProfile = currentProfile || { role: 'customer' as const }
+        navigate(resolvePostLoginTarget(redirectParam, targetProfile), { replace: true })
+      }, 1500)
+
+      return () => clearTimeout(timer)
     }
   }, [isRecoverySession, session, profile, isLoading, location.search, navigate])
   // ── End frozen logic ────────────────────────────────────────────────────

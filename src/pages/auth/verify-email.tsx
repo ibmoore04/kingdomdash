@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { Mail, ArrowLeft, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/services/supabase/client'
-import { useAuthStore } from '@/stores/auth-store'
+import { useAuthStore, isUserEmailConfirmed } from '@/stores/auth-store'
 import { resolvePostLoginTarget } from '@/utils/safe-redirect'
 import {
   AuthShell,
@@ -30,7 +30,7 @@ export default function VerifyEmailPage() {
 
   // If the user's email is already confirmed and profile is loaded, send them to public homepage
   useEffect(() => {
-    if (session && isEmailConfirmed) {
+    if (session && (isEmailConfirmed || isUserEmailConfirmed(session))) {
       const redirectParam = new URLSearchParams(location.search).get('redirect')
       if (profile) {
         navigate(resolvePostLoginTarget(redirectParam, profile), { replace: true })

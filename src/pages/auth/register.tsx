@@ -42,8 +42,7 @@ type ReferralStatus = 'idle' | 'checking' | 'valid' | 'invalid'
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -58,8 +57,7 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<{
     fullName?: string
-    email?: string
-    phone?: string
+    identifier?: string
     password?: string
     confirmPassword?: string
     terms?: string
@@ -127,8 +125,7 @@ export default function RegisterPage() {
 
     const errors: {
       fullName?: string
-      email?: string
-      phone?: string
+      identifier?: string
       password?: string
       confirmPassword?: string
       terms?: string
@@ -138,15 +135,35 @@ export default function RegisterPage() {
       errors.fullName = 'Full name is required'
     }
 
-    if (!email.trim()) {
-      errors.email = 'Email is required'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      errors.email = 'Please enter a valid email address'
+    const trimmedIdentifier = identifier.trim()
+    if (!trimmedIdentifier) {
+      errors.identifier = 'Email or phone number is required'
     }
 
-    const phoneValidation = validatePhoneNumber(phone)
-    if (!phoneValidation.isValid) {
-      errors.phone = phoneValidation.error || 'Please enter a valid phone number'
+    // Determine if identifier is an email or phone number
+    const isEmail = trimmedIdentifier.includes('@')
+    let resolvedEmail = ''
+    let resolvedPhone: string | null = null
+
+    if (trimmedIdentifier) {
+      if (isEmail) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedIdentifier)) {
+          errors.identifier = 'Please enter a valid email address'
+        } else {
+          resolvedEmail = trimmedIdentifier.toLowerCase()
+        }
+      } else {
+        const phoneValidation = validatePhoneNumber(trimmedIdentifier)
+        if (!phoneValidation.isValid) {
+          errors.identifier = phoneValidation.error || 'Please enter a valid phone number'
+        } else {
+          resolvedPhone = phoneValidation.normalized || null
+          // Supabase Auth requires an email or phone for sign-up; for phone-only signup
+          // we use the canonical local email representation so it routes seamlessly
+          const digitsOnly = (phoneValidation.normalized || '').replace(/^\+/, '')
+          resolvedEmail = `${digitsOnly}@phone.kingdomdash.com`
+        }
+      }
     }
 
     if (!password) {
@@ -174,6 +191,27 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
+      // 1. Strict duplicate account check: Exactly one account allowed per email or phone number
+      const checkValue = resolvedPhone || resolvedEmail
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: existingType } = await (supabase.rpc as any)('check_identifier_exists', {
+          p_identifier: checkValue,
+        })
+        if (existingType === 'email') {
+          setError('An account with this email already exists.')
+          setIsLoading(false)
+          return
+        }
+        if (existingType === 'phone') {
+          setError('An account with this phone number already exists.')
+          setIsLoading(false)
+          return
+        }
+      } catch {
+        // Fallback to supabase.auth.signUp error handling if RPC is not yet executed
+      }
+
       // If a referral code is present but not yet validated (or invalid), block submission
       if (referralCode.trim() && referralStatus === 'checking') {
         setError('Please wait while we validate your referral code.')
@@ -196,12 +234,12 @@ export default function RegisterPage() {
 
       // Send intent only in metadata — role assignment is strictly server-authoritative
       const { error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: resolvedEmail,
         password,
         options: {
           data: {
             full_name: fullName.trim(),
-            phone: phoneValidation.normalized,
+            phone: resolvedPhone,
             account_type: 'customer',
             referral_code: referralCode.trim() || undefined,
           },
@@ -212,7 +250,12 @@ export default function RegisterPage() {
       if (signUpError) {
         setError(mapAuthError(signUpError, 'Sign up'))
       } else {
-        navigate(`/auth/verify-email?email=${encodeURIComponent(email.trim())}`, { replace: true })
+        if (isEmail) {
+          navigate(`/auth/verify-email?email=${encodeURIComponent(resolvedEmail)}`, { replace: true })
+        } else {
+          // Phone registered: forward to login with pre-filled notification
+          navigate('/auth/login?registered=true', { replace: true })
+        }
       }
     } catch (err) {
       setError(mapAuthError(err, 'Sign up'))
@@ -243,7 +286,7 @@ export default function RegisterPage() {
         </div>
       )}
 
-      {/* Google Sign-In — at the top, before the email form */}
+      {/* Google Sign-In — at the top, before the manual credentials */}
       <div className="mt-6">
         <GoogleSignInButton
           redirectParam={new URLSearchParams(location.search).get('redirect')}
@@ -254,7 +297,7 @@ export default function RegisterPage() {
       {/* OR divider */}
       <div className="mt-5 flex items-center gap-3">
         <div className="flex-1 h-px bg-[#e5e7eb]" />
-        <span className="text-eyebrow text-[#9ca3af]">OR REGISTER WITH EMAIL</span>
+        <span className="text-eyebrow text-[#9ca3af]">OR REGISTER WITH EMAIL / PHONE</span>
         <div className="flex-1 h-px bg-[#e5e7eb]" />
       </div>
 
@@ -281,36 +324,20 @@ export default function RegisterPage() {
           autoComplete="name"
         />
 
-        {/* Email */}
+        {/* Email or Phone Number — Unified Single Credential Field */}
         <AuthField
-          id="register-email"
-          label="Email address"
-          type="email"
+          id="register-identifier"
+          label="Email or Phone number"
+          type="text"
           required
-          value={email}
+          value={identifier}
           onChange={(e) => {
-            setEmail(e.target.value)
-            if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }))
+            setIdentifier(e.target.value)
+            if (fieldErrors.identifier) setFieldErrors((prev) => ({ ...prev, identifier: undefined }))
           }}
-          placeholder="Enter your email address"
-          error={fieldErrors.email}
-          autoComplete="email"
-        />
-
-        {/* Phone number */}
-        <AuthField
-          id="register-phone"
-          label="Phone number"
-          type="tel"
-          required
-          value={phone}
-          onChange={(e) => {
-            setPhone(e.target.value)
-            if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: undefined }))
-          }}
-          placeholder="e.g. 0801 234 5678 or +234 801 234 5678"
-          error={fieldErrors.phone}
-          autoComplete="tel"
+          placeholder="Enter your email or phone number (e.g. 0801 234 5678)"
+          error={fieldErrors.identifier}
+          autoComplete="username"
         />
 
         {/* Password with show/hide toggle */}

@@ -27,9 +27,9 @@ export function CartItemRow({ item }: CartItemRowProps) {
   }
 
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-border/60 last:border-b-0">
+    <div className="flex items-start gap-3 py-2.5 border-b border-border/60 last:border-b-0">
       {/* Thumbnail */}
-      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-dark-surface mt-0.5">
+      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-dark-surface mt-0.5">
         <img
           src={item.imageUrl || '/kingdomdash-backup.jpg'}
           alt={item.name}

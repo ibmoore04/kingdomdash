@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { formatNgn } from '@/utils/formatting'
 import { supabase } from '@/services/supabase/client'
 import { getOrderById } from '@/services/supabase/orders'
+import { getAssignedRiderForOrder, type AssignedRiderInfo } from '@/services/supabase/deliveries'
 import {
   verifyPaystackPayment,
   initializePaystackPayment,
@@ -40,7 +41,6 @@ import type { PaymentRow } from '@/services/paystack/types'
 import { OrderStatusTimeline } from '@/components/customer/OrderStatusTimeline'
 import { DeliveryPinCard } from '@/components/order/delivery-pin-card'
 import { DeliveryLiveMap } from '@/components/order/delivery-live-map'
-import { LiveDeliveryStepper } from '@/components/order/live-delivery-stepper'
 import { WhatsappDispatchBridge } from '@/components/order/whatsapp-dispatch-bridge'
 import { SmartDisputeResolutionModal } from '@/components/customer/smart-dispute-resolution-modal'
 import { CancelOrderModal } from '@/components/customer/cancel-order-modal'
@@ -63,6 +63,7 @@ export default function OrderConfirmationPage() {
 
   const [order, setOrder] = useState<FullOrder | null>(null)
   const [payment, setPayment] = useState<PaymentRow | null>(null)
+  const [assignedRiderState, setAssignedRiderState] = useState<AssignedRiderInfo | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isVerifying, setIsVerifying] = useState(false)
   const [isRetrying, setIsRetrying] = useState(false)
@@ -79,6 +80,18 @@ export default function OrderConfirmationPage() {
   useEffect(() => {
     document.title = 'Order Confirmation — KingdomDash'
   }, [])
+
+  const fetchAssignedRider = useCallback(async () => {
+    if (!orderId) return
+    try {
+      const rider = await getAssignedRiderForOrder(orderId)
+      if (rider) {
+        setAssignedRiderState(rider)
+      }
+    } catch (rErr) {
+      console.warn('[OrderConfirmation] Could not load assigned rider:', rErr)
+    }
+  }, [orderId])
 
   const fetchOrderAndPayment = useCallback(async () => {
     if (!orderId) {
@@ -129,6 +142,9 @@ export default function OrderConfirmationPage() {
             if (payRecord) setPayment(payRecord)
           })
           .catch(() => {})
+
+        // Query assigned courier rider details for live tracking display
+        fetchAssignedRider()
 
         const effectiveTxRef = reference || txRefParam
         const isFlutterwaveCallback =
@@ -223,7 +239,7 @@ export default function OrderConfirmationPage() {
   useEffect(() => {
     if (!orderId) return
 
-    // Supabase Realtime channel for live status updates
+    // Supabase Realtime channel for live status updates & rider assignments
     const channel = supabase
       .channel(`order_tracking_${orderId}`)
       .on(
@@ -238,21 +254,45 @@ export default function OrderConfirmationPage() {
           fetchOrderAndPayment()
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'deliveries',
+          filter: `order_id=eq.${orderId}`,
+        },
+        () => {
+          fetchAssignedRider()
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'delivery_assignments',
+        },
+        () => {
+          fetchAssignedRider()
+        }
+      )
       .subscribe()
 
-    // 6-second adaptive polling fallback (resilient when WebSockets drop on mobile connections)
+    // 4-second adaptive polling fallback (resilient when WebSockets drop on mobile connections)
     const pollInterval = setInterval(() => {
       if (order?.status === 'delivered' || order?.status === 'cancelled') {
         return
       }
       fetchOrderAndPayment()
-    }, 6000)
+      fetchAssignedRider()
+    }, 4000)
 
     return () => {
       supabase.removeChannel(channel)
       clearInterval(pollInterval)
     }
-  }, [orderId, fetchOrderAndPayment, order?.status])
+  }, [orderId, fetchOrderAndPayment, fetchAssignedRider, order?.status])
 
   const handleRetryPayment = async () => {
     if (!order || isRetrying) return
@@ -421,6 +461,34 @@ export default function OrderConfirmationPage() {
       return parseInt(match[1].replace(/,/g, ''), 10) || 0
     }
     return 0
+  })()
+
+  // Resolve assigned rider details (if admin / dispatch assigned a rider to this order)
+  const assignedRider = (() => {
+    if (assignedRiderState?.name) {
+      return assignedRiderState
+    }
+    if (!order) return null
+    const r = (order as unknown as { rider?: { profile?: { full_name?: string; phone?: string }; full_name?: string; phone?: string } | null })?.rider ||
+      (order as unknown as { riders?: { profile?: { full_name?: string; phone?: string }; full_name?: string; phone?: string } | null })?.riders
+    if (r?.profile?.full_name || r?.full_name) {
+      return {
+        name: r.profile?.full_name || r.full_name,
+        phone: r.profile?.phone || r.phone || null,
+      }
+    }
+    const deliveries = (order as unknown as { deliveries?: unknown })?.deliveries
+    const delivery = Array.isArray(deliveries) ? deliveries[0] : deliveries
+    const assignments = (delivery as { delivery_assignments?: unknown })?.delivery_assignments
+    const assignment = Array.isArray(assignments) ? assignments[0] : assignments
+    const assignmentRider = (assignment as { riders?: { profiles?: { full_name?: string; phone?: string } } })?.riders
+    if (assignmentRider?.profiles?.full_name) {
+      return {
+        name: assignmentRider.profiles.full_name,
+        phone: assignmentRider.profiles.phone || null,
+      }
+    }
+    return null
   })()
 
   return (
@@ -748,14 +816,6 @@ export default function OrderConfirmationPage() {
                 </div>
               </div>
 
-              {/* Interactive Multi-Stage Live Fulfillment Stepper */}
-              <LiveDeliveryStepper
-                status={order.status}
-                etaMinutes={22}
-                deliveryPin={order.delivery_pin ?? undefined}
-                orderNumber={order.id.slice(0, 8).toUpperCase()}
-              />
-
               {/* Live Fulfillment Timeline Radar */}
               <div className="rounded-3xl border border-neutral-200/80 bg-white p-5 sm:p-6 shadow-xs">
                 <OrderStatusTimeline
@@ -763,6 +823,7 @@ export default function OrderConfirmationPage() {
                   serviceType={order.service_type}
                   cancellationReason={(order as unknown as { cancellation_reason?: string }).cancellation_reason}
                   refundRequired={(order as unknown as { refund_required?: boolean }).refund_required}
+                  isCashOnDelivery={isCashOrder}
                 />
               </div>
 
@@ -775,6 +836,9 @@ export default function OrderConfirmationPage() {
               {isConfirmed && order.status !== 'cancelled' && (
                 <DeliveryLiveMap
                   status={order.status}
+                  isCashOnDelivery={isCashOrder}
+                  riderName={assignedRider?.name || undefined}
+                  riderPhone={assignedRider?.phone || undefined}
                   vendorName={
                     (order as unknown as { vendors?: { business_name?: string } | null })?.vendors?.business_name ||
                     (order as unknown as { vendor?: { business_name?: string } | null })?.vendor?.business_name ||
@@ -791,6 +855,8 @@ export default function OrderConfirmationPage() {
                   orderNumber={order.id.slice(0, 8).toUpperCase()}
                   customerName={(order as unknown as { customer_name?: string }).customer_name || 'Customer'}
                   deliveryAddress={order.delivery_address || 'Delivery Destination'}
+                  riderName={assignedRider?.name || undefined}
+                  riderPhone={assignedRider?.phone || undefined}
                   vendorName={
                     (order as unknown as { vendors?: { business_name?: string } | null })?.vendors?.business_name ||
                     (order as unknown as { vendor?: { business_name?: string } | null })?.vendor?.business_name ||

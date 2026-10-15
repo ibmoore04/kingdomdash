@@ -48,4 +48,19 @@ describe('DeliveryLiveMap component', () => {
     expect(screen.getByText(/Package Delivered/i)).toBeDefined()
     expect(screen.queryByText(/Call Rider/i)).toBeNull()
   })
+
+  it('displays awaiting courier assignment dock and hides verified courier badge when riderName is undefined', () => {
+    render(
+      <DeliveryLiveMap
+        status="preparing"
+        vendorName="Mama Cass Kitchen"
+        deliveryAddress="Molipa Expressway"
+      />
+    )
+
+    expect(screen.getByText(/Courier Assignment in Progress/i)).toBeDefined()
+    expect(screen.getByText(/Awaiting Rider/i)).toBeDefined()
+    expect(screen.queryByText('Babatunde A.')).toBeNull()
+    expect(screen.queryByText(/Call Rider/i)).toBeNull()
+  })
 })
