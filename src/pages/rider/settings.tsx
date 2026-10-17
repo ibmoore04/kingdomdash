@@ -4,7 +4,6 @@ import { RiderLayout } from '@/components/rider/layout/rider-layout'
 import { useCurrentRider } from '@/hooks/use-current-rider'
 import { useAuthStore } from '@/stores/auth-store'
 import { useUiStore } from '@/stores/ui-store'
-import { supabase } from '@/services/supabase/client'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
@@ -24,9 +23,12 @@ import {
   User,
   KeyRound,
   ExternalLink,
+  MessageSquare,
+  AlertTriangle,
 } from 'lucide-react'
 import { generateWhatsAppLink } from '@/utils/whatsapp'
 import { SoundHapticsSettingsCard } from '@/components/common/sound-haptics-settings-card'
+import { updateRiderContactInfo } from '@/services/rider/rider-service'
 
 export interface RiderSettingsState {
   defaultNavApp: 'google_maps' | 'apple_maps' | 'in_app'
@@ -116,8 +118,14 @@ export default function RiderSettingsPage() {
     }
   }, [rider?.id, storageKey])
 
-  // Phone number state
+  // Contact state (Phone & WhatsApp)
   const [phone, setPhone] = useState(rider?.phone || '')
+  const [whatsappNumber, setWhatsappNumber] = useState(
+    rider?.whatsapp_number || rider?.phone || ''
+  )
+  const [sameAsPhone, setSameAsPhone] = useState(
+    !rider?.whatsapp_number || rider?.whatsapp_number === rider?.phone
+  )
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false)
   const [phoneSaved, setPhoneSaved] = useState(false)
 
@@ -127,8 +135,15 @@ export default function RiderSettingsPage() {
   useEffect(() => {
     if (rider?.phone) {
       setPhone(rider.phone)
+      if (!rider.whatsapp_number || rider.whatsapp_number === rider.phone) {
+        setWhatsappNumber(rider.phone)
+        setSameAsPhone(true)
+      } else {
+        setWhatsappNumber(rider.whatsapp_number)
+        setSameAsPhone(false)
+      }
     }
-  }, [rider?.phone])
+  }, [rider?.phone, rider?.whatsapp_number])
 
   const updateSetting = <K extends keyof RiderSettingsState>(
     key: K,
@@ -157,10 +172,23 @@ export default function RiderSettingsPage() {
 
   const handleSavePhone = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!phone.trim()) {
+    const cleanPhone = phone.trim()
+    const cleanWa = sameAsPhone ? cleanPhone : whatsappNumber.trim()
+
+    if (!cleanPhone || cleanPhone.length < 7) {
       pushToast({
         title: 'Validation Error',
-        message: 'Phone number cannot be empty.',
+        message: 'Please provide a valid operational phone number (minimum 7 digits).',
+        variant: 'warning',
+      })
+      return
+    }
+
+    if (!cleanWa || cleanWa.length < 7) {
+      pushToast({
+        title: 'Validation Error',
+        message:
+          'WhatsApp number is compulsory. If you do not have a dedicated WhatsApp number, keep the checkbox checked to use your usual phone number.',
         variant: 'warning',
       })
       return
@@ -168,31 +196,22 @@ export default function RiderSettingsPage() {
 
     setIsUpdatingPhone(true)
     try {
-      const userId = profile?.id || session?.user?.id
-      if (!userId) {
-        throw new Error('User session not found. Please log in again.')
-      }
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({ phone: phone.trim() })
-        .eq('id', userId)
-
-      if (error) throw error
+      const { success, error } = await updateRiderContactInfo(cleanPhone, cleanWa)
+      if (!success && error) throw error
 
       await refreshRider()
       setPhoneSaved(true)
       setTimeout(() => setPhoneSaved(false), 3000)
 
       pushToast({
-        title: 'Phone Number Updated',
-        message: 'Your dispatch contact phone has been updated.',
+        title: 'Contact Information Updated',
+        message: 'Your operational phone and WhatsApp lines have been saved for deliveries.',
         variant: 'success',
       })
     } catch (err) {
       pushToast({
         title: 'Update Failed',
-        message: err instanceof Error ? err.message : 'Failed to update phone number.',
+        message: err instanceof Error ? err.message : 'Failed to update contact numbers.',
         variant: 'error',
       })
     } finally {
@@ -542,35 +561,105 @@ export default function RiderSettingsPage() {
               </div>
             </div>
 
-            <form onSubmit={handleSavePhone} className="border-t border-border pt-4 space-y-3">
-              <Label htmlFor="rider-phone-input" className="text-body-small font-semibold text-text-primary block">
-                Operational Phone Number
-              </Label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <div className="relative flex-1">
-                  <Phone className="absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden="true" />
-                  <Input
-                    id="rider-phone-input"
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+234 800 000 0000"
-                    className="pl-9"
-                    required
-                  />
+            {/* Compulsory notice if contact info is missing */}
+            {(!rider?.phone || !rider?.whatsapp_number) && (
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-caption text-amber-950 font-medium flex items-start gap-2.5">
+                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
+                <span>
+                  <strong>Compulsory Dispatch Information:</strong> Both your operational phone number and WhatsApp line are required for live trip coordination so customers and KingdomDash dispatch can contact you.
+                </span>
+              </div>
+            )}
+
+            <form onSubmit={handleSavePhone} className="border-t border-border pt-4 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Field 1: Operational Phone */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="rider-phone-input" className="text-body-small font-semibold text-text-primary flex items-center gap-1.5">
+                    <Phone className="h-4 w-4 text-primary" aria-hidden="true" />
+                    <span>Operational Phone (Call Line) *</span>
+                  </Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden="true" />
+                    <Input
+                      id="rider-phone-input"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => {
+                        setPhone(e.target.value)
+                        if (sameAsPhone) setWhatsappNumber(e.target.value)
+                      }}
+                      placeholder="e.g. 08123456789 or +234..."
+                      className="pl-9"
+                      required
+                    />
+                  </div>
+                  <p className="text-[11px] text-text-muted">
+                    Direct voice call line for customer arrival notifications.
+                  </p>
                 </div>
+
+                {/* Field 2: WhatsApp Number */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="rider-whatsapp-input" className="text-body-small font-semibold text-text-primary flex items-center gap-1.5">
+                    <MessageSquare className="h-4 w-4 text-emerald-600" aria-hidden="true" />
+                    <span>WhatsApp Number (Compulsory) *</span>
+                  </Label>
+                  <div className="relative">
+                    <MessageSquare className="absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden="true" />
+                    <Input
+                      id="rider-whatsapp-input"
+                      type="tel"
+                      value={whatsappNumber}
+                      onChange={(e) => setWhatsappNumber(e.target.value)}
+                      placeholder="e.g. 08123456789 or +234..."
+                      disabled={sameAsPhone}
+                      className="pl-9 disabled:bg-slate-100 disabled:text-text-muted"
+                      required
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="checkbox"
+                      id="same-as-phone-checkbox"
+                      checked={sameAsPhone}
+                      onChange={(e) => {
+                        setSameAsPhone(e.target.checked)
+                        if (e.target.checked) setWhatsappNumber(phone)
+                      }}
+                      className="h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                    />
+                    <label
+                      htmlFor="same-as-phone-checkbox"
+                      className="text-caption font-medium text-text-secondary cursor-pointer"
+                    >
+                      Same as operational phone number
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-page-background border border-border p-3 text-caption text-text-muted">
+                <strong>Notice:</strong> If you do not have a dedicated WhatsApp business number, keep the checkbox selected to use your usual phone number for WhatsApp messaging and dispatch coordination.
+              </div>
+
+              <div className="flex justify-end pt-1">
                 <Button
                   type="submit"
                   variant="primary"
-                  disabled={isUpdatingPhone || phone.trim() === (rider?.phone || '')}
-                  className="shrink-0 font-bold text-white bg-primary hover:bg-primary-hover"
+                  disabled={
+                    isUpdatingPhone ||
+                    (!phone.trim() || !whatsappNumber.trim()) ||
+                    (phone.trim() === (rider?.phone || '') &&
+                      (sameAsPhone ? phone.trim() : whatsappNumber.trim()) ===
+                        (rider?.whatsapp_number || rider?.phone || ''))
+                  }
+                  className="font-bold text-white bg-primary hover:bg-primary-hover shadow-sm"
                 >
-                  {isUpdatingPhone ? 'Saving...' : phoneSaved ? 'Saved!' : 'Save Phone'}
+                  <CheckCircle2 className="h-4 w-4 mr-2" aria-hidden="true" />
+                  {isUpdatingPhone ? 'Saving Numbers...' : phoneSaved ? 'Saved!' : 'Save Contact Details'}
                 </Button>
               </div>
-              <p className="text-caption text-text-muted">
-                This number is used by customers and vendors to contact you during active delivery assignments.
-              </p>
             </form>
           </CardContent>
         </Card>

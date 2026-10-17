@@ -10,6 +10,7 @@ import {
 import { getRiderActiveDelivery } from '@/services/rider/custody-service'
 import type { AssignmentInboxOffer, ActiveDeliveryDetails } from '@/types/rider'
 import { AssignmentCard } from '@/components/rider/assignments/assignment-card'
+import { CompulsoryContactBanner } from '@/components/rider/dashboard/compulsory-contact-banner'
 import { Switch } from '@/components/ui/switch'
 import { updateRiderAvailability } from '@/services/rider/rider-service'
 import { Button } from '@/components/ui/button'
@@ -180,6 +181,9 @@ export default function RiderDashboardPage() {
             </Button>
           </div>
         </div>
+
+        {/* ── Compulsory Contact Information Banner ──────────────────────── */}
+        <CompulsoryContactBanner rider={rider} onSuccess={refreshRider} />
 
         {/* ── Duty Switch Hero Card (TEST-ID PRESERVED) ────────────────────── */}
         <div

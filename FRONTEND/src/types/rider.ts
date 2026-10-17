@@ -10,6 +10,7 @@ export interface RiderProfile {
   full_name?: string
   email?: string
   phone?: string
+  whatsapp_number?: string | null
   avatar_url?: string | null
   active_in_flight_count?: number
 }
