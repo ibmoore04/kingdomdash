@@ -23,6 +23,7 @@ import { PageContainer, Section } from '@/components/layout/section'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatNgn } from '@/utils/formatting'
+import { generateReceiptWhatsAppText } from '@/utils/receipt-generator'
 import { supabase } from '@/services/supabase/client'
 import { getOrderById } from '@/services/supabase/orders'
 import { getAssignedRiderForOrder, type AssignedRiderInfo } from '@/services/supabase/deliveries'
@@ -953,7 +954,14 @@ export default function OrderConfirmationPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setIsReceiptModalOpen(true)}
+                    onClick={() => {
+                      const msg = generateReceiptWhatsAppText(order, payment, extractedRiderTip)
+                      const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`
+                      const popup = window.open(waUrl, '_blank')
+                      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+                        window.location.href = waUrl
+                      }
+                    }}
                     className="flex items-center justify-center gap-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 py-2 px-3 text-xs font-bold transition-colors shadow-2xs cursor-pointer"
                   >
                     <Share2 className="h-3.5 w-3.5 text-emerald-700" />

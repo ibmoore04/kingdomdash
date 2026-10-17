@@ -164,6 +164,10 @@ KingdomDash Technologies, Ijebu-Ode, Ogun State`
  */
 export function triggerPrintReceipt(): void {
   if (typeof window !== 'undefined') {
+    document.body.classList.add('is-printing-receipt')
     window.print()
+    setTimeout(() => {
+      document.body.classList.remove('is-printing-receipt')
+    }, 1200)
   }
 }
