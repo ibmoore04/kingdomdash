@@ -14,7 +14,18 @@ export async function getRiderAssignmentInbox(): Promise<{
     if (error) {
       return { data: [], error: new Error(mapRiderRpcError(error)) }
     }
-    return { data: (data || []) as AssignmentInboxOffer[], error: null }
+    const rawOffers = (data || []) as AssignmentInboxOffer[]
+    // Client-side guarantee: Deduplicate offers by order_id or delivery_id so rider never sees double
+    const seen = new Set<string>()
+    const deduped: AssignmentInboxOffer[] = []
+    for (const offer of rawOffers) {
+      const dedupKey = (offer as any).order_id || offer.delivery_id || offer.assignment_id
+      if (dedupKey && !seen.has(dedupKey)) {
+        seen.add(dedupKey)
+        deduped.push(offer)
+      }
+    }
+    return { data: deduped, error: null }
   } catch (err) {
     return {
       data: [],

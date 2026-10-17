@@ -26,7 +26,18 @@ export default function RiderAssignmentsPage() {
         getRiderAssignmentInbox(),
         getRiderActiveDelivery(),
       ])
-      setOffers(inboxRes.data)
+
+      const rawOffers = inboxRes.data || []
+      const seen = new Set<string>()
+      const dedupedOffers: AssignmentInboxOffer[] = []
+      for (const o of rawOffers) {
+        const key = o.order_id || o.delivery_id || o.assignment_id
+        if (key && !seen.has(key)) {
+          seen.add(key)
+          dedupedOffers.push(o)
+        }
+      }
+      setOffers(dedupedOffers)
       setHasActiveDelivery(Boolean(activeRes.data))
     } finally {
       setIsLoading(false)

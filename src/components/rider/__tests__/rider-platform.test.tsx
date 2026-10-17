@@ -84,6 +84,31 @@ describe('Rider Platform UI Components', () => {
       expect(screen.queryByText(/Customer Name/i)).not.toBeInTheDocument()
     })
 
+    it('strips prepended recipient name and phone to clearly show actual destination address', () => {
+      const offerWithPrependedContact: AssignmentInboxOffer = {
+        ...mockOffer,
+        delivery_address: 'Akanbi Ibrahim (08123424005), 14 Stadium Road, Ijebu-Ode, Ogun State',
+        delivery_area: 'Akanbi Ibrahim (08123424005)',
+        estimated_distance_km: 0.0,
+      }
+
+      render(
+        <AssignmentCard
+          offer={offerWithPrependedContact}
+          onAccept={vi.fn()}
+          onReject={vi.fn()}
+        />
+      )
+
+      // Physical address is clearly shown
+      expect(screen.getByText('14 Stadium Road, Ijebu-Ode, Ogun State')).toBeInTheDocument()
+      // Recipient name and phone are NOT displayed in delivery destination
+      expect(screen.queryByText(/Akanbi Ibrahim/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/08123424005/)).not.toBeInTheDocument()
+      // 0.0 km fallback displays meaningful zone distance
+      expect(screen.getByText(/~1.5 km \(Ijebu-Ode Zone\)/)).toBeInTheDocument()
+    })
+
     it('triggers onAccept when Accept Job is clicked', async () => {
       const onAccept = vi.fn().mockResolvedValue(undefined)
       render(

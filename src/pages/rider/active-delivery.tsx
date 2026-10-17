@@ -19,6 +19,7 @@ import { RouteMapView } from '@/components/rider/delivery/route-map-view'
 import { OperationalIssueModal } from '@/components/rider/delivery/operational-issue-modal'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { formatRiderDestinationAddress } from '@/components/rider/assignments/assignment-card'
 import {
   Bike,
   Store,
@@ -386,7 +387,9 @@ export default function RiderActiveDeliveryPage() {
 
           <div>
             <p className="font-semibold text-text-primary">{activeDelivery.customer_name}</p>
-            <p className="text-body-small text-text-secondary mt-0.5">{activeDelivery.delivery_address}</p>
+            <p className="text-body-small text-text-secondary mt-0.5">
+              {formatRiderDestinationAddress(activeDelivery.delivery_address)}
+            </p>
           </div>
 
           {activeDelivery.customer_phone && (

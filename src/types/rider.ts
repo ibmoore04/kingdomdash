@@ -17,11 +17,13 @@ export interface RiderProfile {
 export interface AssignmentInboxOffer {
   assignment_id: string
   delivery_id: string
+  order_id?: string
   service_type: 'food' | 'grocery' | 'courier' | 'custom' | 'personal_shopper'
   pickup_address: string
   pickup_latitude: number | null
   pickup_longitude: number | null
-  delivery_area: string // Generalized neighborhood only (server-projected)
+  delivery_area: string // Generalized neighborhood or street address
+  delivery_address?: string
   estimated_distance_km: number
   vendor_name: string
   special_instructions_preview: string | null

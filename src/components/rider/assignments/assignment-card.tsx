@@ -11,6 +11,27 @@ interface AssignmentCardProps {
   isProcessing?: boolean
 }
 
+/**
+ * Clean up recipient phone/name prefix and format destination address cleanly for rider
+ */
+export function formatRiderDestinationAddress(
+  deliveryAddress?: string | null,
+  deliveryArea?: string | null
+): string {
+  const raw = (deliveryAddress && deliveryAddress.trim()) || (deliveryArea && deliveryArea.trim()) || ''
+  if (!raw) return 'Ijebu-Ode Delivery Zone, Ogun State'
+
+  // If the raw string is just "Name (Phone)", e.g. from older split_part(..., ',', 1)
+  const isOnlyContact = /^[^,(]+\([0-9+\s-]+\)$/.test(raw)
+  if (isOnlyContact) {
+    return 'Ijebu-Ode Delivery Zone, Ogun State'
+  }
+
+  // Strip leading "Name (Phone), " or "Recipient (08012345678), "
+  const stripped = raw.replace(/^[^,(]+\([0-9+\s-]+\)[,\s]*/i, '').trim()
+  return stripped || 'Ijebu-Ode Delivery Zone, Ogun State'
+}
+
 export function AssignmentCard({
   offer,
   onAccept,
@@ -21,6 +42,11 @@ export function AssignmentCard({
   const [secondsLeft, setSecondsLeft] = useState(60)
   const [actionPending, setActionPending] = useState<'accept' | 'reject' | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  const destinationAddress = formatRiderDestinationAddress(
+    offer.delivery_address,
+    offer.delivery_area
+  )
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -99,25 +125,32 @@ export function AssignmentCard({
       <div className="mt-4 space-y-2.5 rounded-xl border border-border bg-page-background/60 p-3.5 text-body-small">
         <div className="flex items-start gap-2.5">
           <Store className="h-4 w-4 shrink-0 text-primary mt-0.5" aria-hidden="true" />
-          <div>
+          <div className="min-w-0 flex-1">
             <span className="text-caption font-medium text-text-muted">Pickup Location</span>
-            <p className="font-semibold text-text-primary">{offer.pickup_address}</p>
+            <p className="font-semibold text-text-primary break-words">{offer.pickup_address || 'Vendor Store Location'}</p>
           </div>
         </div>
 
         <div className="flex items-start gap-2.5">
           <MapPin className="h-4 w-4 shrink-0 text-error mt-0.5" aria-hidden="true" />
-          <div>
-            <span className="text-caption font-medium text-text-muted">Destination Area</span>
-            <p className="font-semibold text-text-primary">
-              {offer.delivery_area} <span className="text-caption text-text-muted">(Exact address after accept)</span>
+          <div className="min-w-0 flex-1">
+            <span className="text-caption font-medium text-text-muted">Delivery Destination</span>
+            <p className="font-semibold text-text-primary break-words">
+              {destinationAddress}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5 pt-1 text-caption text-text-secondary border-t border-border/60">
           <Navigation className="h-3.5 w-3.5 text-text-muted" aria-hidden="true" />
-          <span>Estimated Trip: <strong>{offer.estimated_distance_km.toFixed(1)} km</strong></span>
+          <span>
+            Estimated Trip:{' '}
+            <strong>
+              {offer.estimated_distance_km && offer.estimated_distance_km > 0
+                ? `${offer.estimated_distance_km.toFixed(1)} km`
+                : '~1.5 km (Ijebu-Ode Zone)'}
+            </strong>
+          </span>
           {offer.special_instructions_preview && (
             <span className="ml-auto rounded bg-primary/10 px-2 py-0.5 font-medium text-primary">
               {offer.special_instructions_preview}

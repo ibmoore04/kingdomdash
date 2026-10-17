@@ -98,6 +98,40 @@ describe('Rider Service Layer Integration', () => {
       expect((res.data[0] as any).customer_name).toBeUndefined()
     })
 
+    it('deduplicates duplicate assignments for the same delivery or order', async () => {
+      const duplicateInbox = [
+        {
+          assignment_id: 'assign-1',
+          delivery_id: 'del-100',
+          order_id: 'ord-55',
+          service_type: 'food',
+          pickup_address: 'Chicken & Co, Ijebu-Ode',
+          delivery_area: '14 Stadium Road',
+          estimated_distance_km: 2.1,
+          vendor_name: 'Chicken & Co',
+          status: 'assigned',
+          assigned_at: '2026-10-17T12:00:00Z',
+        },
+        {
+          assignment_id: 'assign-2',
+          delivery_id: 'del-100',
+          order_id: 'ord-55',
+          service_type: 'food',
+          pickup_address: 'Chicken & Co, Ijebu-Ode',
+          delivery_area: '14 Stadium Road',
+          estimated_distance_km: 2.1,
+          vendor_name: 'Chicken & Co',
+          status: 'assigned',
+          assigned_at: '2026-10-17T12:00:01Z',
+        },
+      ]
+      vi.mocked(supabase.rpc).mockResolvedValueOnce({ data: duplicateInbox, error: null } as any)
+
+      const res = await getRiderAssignmentInbox()
+      expect(res.data).toHaveLength(1)
+      expect(res.data[0].delivery_id).toBe('del-100')
+    })
+
     it('acceptDeliveryAssignment calls accept_delivery_assignment RPC', async () => {
       vi.mocked(supabase.rpc).mockResolvedValueOnce({ data: null, error: null } as any)
 
