@@ -1174,6 +1174,7 @@ export default function CheckoutPage() {
               subtotal={subtotal}
               deliveryFee={effectiveDeliveryFee || 0}
               serviceFee={serviceFee}
+              riderTip={riderTip}
               distanceKm={estimatedDistanceKm}
               pricingTier={pricingTier}
               isLaunchPreview={false}
@@ -1208,7 +1209,13 @@ export default function CheckoutPage() {
                 </>
               ) : (
                 <>
-                  <span>Pay with Paystack</span>
+                  <span>
+                    {selectedPaymentMethod === 'paystack'
+                      ? 'Pay with Paystack'
+                      : selectedPaymentMethod === 'flutterwave'
+                      ? 'Pay with Flutterwave'
+                      : 'Place Cash Order'}
+                  </span>
                   <ArrowRight className="h-4 w-4 stroke-[2.5]" />
                 </>
               )}

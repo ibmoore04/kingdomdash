@@ -31,6 +31,7 @@ vi.mock('@/services/supabase/client', () => {
             select: vi.fn(() => ({
               eq: vi.fn(() => ({
                 single: vi.fn(() => Promise.resolve(mocks.mockProfileResult)),
+                maybeSingle: vi.fn(() => Promise.resolve(mocks.mockProfileResult)),
               })),
             })),
           }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Utensils,
   ShoppingBag,
@@ -12,6 +12,7 @@ import {
   XCircle,
   Building2,
   ChevronRight,
+  RotateCcw,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -19,6 +20,9 @@ import { formatNgn } from '@/utils/formatting'
 import { DeliveryPinCard } from '@/components/order/delivery-pin-card'
 import { DeliveryRadar } from '@/components/order/delivery-radar'
 import { DeliveryLiveMap } from '@/components/order/delivery-live-map'
+import { useCartStore, type CartItem, type CartVendor } from '@/stores/cart-store'
+import { useAuthStore } from '@/stores/auth-store'
+import { useToast } from '@/hooks/use-toast'
 
 export interface CustomerOrderCardProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,6 +33,8 @@ export interface CustomerOrderCardProps {
   onReviewClick?: (order: any) => void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onCancelClick?: (order: any) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onReorderClick?: (order: any) => void
 }
 
 export const CustomerOrderCard: React.FC<CustomerOrderCardProps> = ({
@@ -36,7 +42,13 @@ export const CustomerOrderCard: React.FC<CustomerOrderCardProps> = ({
   existingReview,
   onReviewClick,
   onCancelClick,
+  onReorderClick,
 }) => {
+  const navigate = useNavigate()
+  const { pushToast } = useToast()
+  const { session, profile } = useAuthStore()
+  const [isReordering, setIsReordering] = useState(false)
+
   const isPending =
     order.status === 'pending' ||
     order.status === 'payment_pending' ||
@@ -58,6 +70,69 @@ export const CustomerOrderCard: React.FC<CustomerOrderCardProps> = ({
     order.status === 'in_transit'
 
   const [showRadar, setShowRadar] = useState(isActive)
+
+  const handleReorder = async () => {
+    if (onReorderClick) {
+      onReorderClick(order)
+      return
+    }
+    if (!order.order_items || order.order_items.length === 0) return
+    setIsReordering(true)
+    try {
+      const vendorId = order.vendor_id || order.vendors?.id || 'vendor-unknown'
+      const vendorName = order.vendors?.business_name || 'Favorite Kitchen'
+      const serviceType = order.service_type || 'food'
+
+      const cartVendor: CartVendor = {
+        id: vendorId,
+        name: vendorName,
+        serviceType,
+        address: order.pickup_address || 'Ijebu-Ode, Ogun State',
+      }
+
+      const cartItems: CartItem[] = order.order_items.map((item: any) => ({
+        productId: item.product_id || item.id,
+        name: item.product_name,
+        price: item.unit_price,
+        quantity: Math.max(1, item.quantity),
+        vendorId,
+        serviceType,
+        imageUrl: null,
+      }))
+
+      const cartStore = useCartStore.getState()
+      cartStore.clearCart()
+
+      useCartStore.setState({
+        items: cartItems,
+        vendor: cartVendor,
+      })
+
+      const activeUser = cartStore.activeUserId || session?.user?.id || profile?.id || null
+      const { saveCartToStorage, syncCartToDatabase } = await import('@/stores/cart-store')
+      saveCartToStorage(activeUser, cartItems, cartVendor)
+      void syncCartToDatabase(activeUser, cartItems, cartVendor)
+
+      pushToast({
+        variant: 'success',
+        title: 'Order Repopulated!',
+        message: `${cartItems.length} items loaded into your cart. Taking you to checkout...`,
+      })
+
+      setTimeout(() => {
+        navigate('/checkout')
+      }, 300)
+    } catch (err) {
+      console.error('1-Click Reorder failed:', err)
+      pushToast({
+        variant: 'error',
+        title: 'Reorder Notice',
+        message: 'Could not reload this order into cart. Please choose items manually.',
+      })
+    } finally {
+      setIsReordering(false)
+    }
+  }
 
   // Service Badge metadata
   const renderServiceBadge = (type?: string) => {
@@ -403,6 +478,21 @@ export const CustomerOrderCard: React.FC<CustomerOrderCardProps> = ({
                   <span>Rate Order</span>
                 </Button>
               )
+            )}
+
+            {/* 1-Click Reorder Button for Delivered Orders */}
+            {isDelivered && (order.order_items?.length ?? 0) > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleReorder}
+                disabled={isReordering}
+                className="gap-1.5 text-xs font-bold text-primary border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary shadow-2xs"
+              >
+                <RotateCcw className={`h-3.5 w-3.5 ${isReordering ? 'animate-spin' : ''}`} />
+                <span>{isReordering ? 'Loading...' : 'Order Again'}</span>
+              </Button>
             )}
 
             {/* Primary Action Button (Pay Now or Track) */}

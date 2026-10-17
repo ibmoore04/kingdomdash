@@ -39,6 +39,7 @@ import { CustomerCorporateTab } from '@/components/customer/customer-corporate-t
 import { OrderReviewModal } from '@/components/customer/order-review-modal'
 import { CustomerOrderCard } from '@/components/customer/customer-order-card'
 import { CancelOrderModal } from '@/components/customer/cancel-order-modal'
+import { QuickReorderBar } from '@/components/customer/quick-reorder-bar'
 import { OrderCardSkeleton } from '@/components/ui/skeletons'
 import { getOrderReview, fetchCustomerReviews } from '@/services/supabase/reviews'
 
@@ -291,6 +292,18 @@ export default function CustomerDashboardPage() {
     }
     return true
   })
+
+  const activeInTransitOrder = orders.find((o) =>
+    [
+      'payment_confirmed',
+      'preparing',
+      'ready',
+      'ready_for_pickup',
+      'picked_up',
+      'in_transit',
+      'delivering',
+    ].includes(o.status)
+  )
 
   // Profile editable state
   const [reviewingOrder, setReviewingOrder] = useState<CustomerOrderSummary | null>(null)
@@ -611,6 +624,86 @@ export default function CustomerDashboardPage() {
                   </div>
                 </div>
 
+                {/* Active Order Hero Tracker Banner */}
+                {activeInTransitOrder && (
+                  <div
+                    data-testid="active-order-hero-tracker"
+                    className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-white to-primary/5 p-5 sm:p-6 shadow-xs transition-all hover:shadow-md"
+                  >
+                    <div className="absolute top-0 right-0 -mt-6 -mr-6 h-32 w-32 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
+
+                    <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-2.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-xs font-bold text-white shadow-xs">
+                            <span className="relative flex h-2 w-2">
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-80" />
+                              <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
+                            </span>
+                            <span>Live Order In Progress</span>
+                          </span>
+                          <span className="font-mono text-xs font-bold text-neutral-700 bg-neutral-200/70 px-2 py-0.5 rounded-md">
+                            #{activeInTransitOrder.id.slice(0, 8).toUpperCase()}
+                          </span>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-800 border border-emerald-200">
+                            <Clock className="h-3 w-3 text-emerald-600" />
+                            <span>ETA ~15-25 mins</span>
+                          </span>
+                        </div>
+
+                        <div>
+                          <h3 className="text-base sm:text-lg font-black text-neutral-900 tracking-tight">
+                            {activeInTransitOrder.vendors?.business_name ||
+                              (activeInTransitOrder.service_type === 'courier'
+                                ? 'Express Courier Dispatch'
+                                : 'KingdomDash Store')}
+                          </h3>
+                          <p className="text-xs text-neutral-600 line-clamp-1 mt-0.5">
+                            Delivering to:{' '}
+                            <span className="font-semibold text-neutral-800">
+                              {activeInTransitOrder.delivery_address || 'Ijebu-Ode Destination'}
+                            </span>
+                          </p>
+                        </div>
+
+                        {activeInTransitOrder.order_items && activeInTransitOrder.order_items.length > 0 && (
+                          <p className="text-xs text-neutral-500 line-clamp-1">
+                            {activeInTransitOrder.order_items.slice(0, 2).map((item) => `${item.quantity}× ${item.product_name}`).join(', ')}
+                            {activeInTransitOrder.order_items.length > 2
+                              ? ` +${activeInTransitOrder.order_items.length - 2} more`
+                              : ''}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 shrink-0">
+                        {activeInTransitOrder.delivery_pin && (
+                          <div className="flex flex-col items-center justify-center rounded-2xl bg-white px-3.5 py-1.5 border border-neutral-200 shadow-2xs">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400">
+                              Security PIN
+                            </span>
+                            <span className="font-mono text-xs font-black text-primary tracking-widest">
+                              ••••••
+                            </span>
+                          </div>
+                        )}
+
+                        <Button
+                          asChild
+                          variant="primary"
+                          size="sm"
+                          className="font-bold text-white bg-primary hover:bg-primary-hover h-10 px-4 rounded-xl gap-2 shadow-xs"
+                        >
+                          <Link to={`/order/${activeInTransitOrder.id}/confirmation`}>
+                            <span>Track on Live Radar</span>
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Filter Tabs — responsive edge-to-edge scroll on mobile with shrink-0 pills */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-0.5 border-b border-border -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
                   {[
@@ -659,6 +752,11 @@ export default function CustomerDashboardPage() {
                     </button>
                   ))}
                 </div>
+
+                {/* 1-Click Past Order Quick Reorder Bar */}
+                {(orderFilter === 'all' || orderFilter === 'completed') && !isLoadingOrders && (
+                  <QuickReorderBar />
+                )}
 
                 {/* Loading state */}
                 {isLoadingOrders && orders.length === 0 && (

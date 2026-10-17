@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, MapPin, ShieldCheck, Tag } from 'lucide-react'
+import { ChevronDown, MapPin, ShieldCheck, Tag, Heart } from 'lucide-react'
 import { formatNgn } from '@/utils/formatting'
 import { cn } from '@/lib/cn'
 
@@ -7,6 +7,7 @@ export interface CostBreakdownAccordionProps {
   subtotal: number
   deliveryFee?: number
   serviceFee?: number
+  riderTip?: number
   distanceKm?: number | null
   pricingTier?: number | null
   isLaunchPreview?: boolean
@@ -17,13 +18,14 @@ export function CostBreakdownAccordion({
   subtotal,
   deliveryFee = 0,
   serviceFee = 0,
+  riderTip = 0,
   distanceKm,
   pricingTier,
   isLaunchPreview = true,
   className,
 }: CostBreakdownAccordionProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const total = subtotal + deliveryFee + serviceFee
+  const total = subtotal + deliveryFee + serviceFee + riderTip
 
   return (
     <div
@@ -115,6 +117,24 @@ export function CostBreakdownAccordion({
               Covers 24/7 customer resolution desk and dispatch GPS coordination.
             </p>
           </div>
+
+          {/* Rider Appreciation Tip */}
+          {riderTip > 0 && (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-emerald-700">
+                <span className="inline-flex items-center gap-1.5">
+                  <Heart className="h-3.5 w-3.5 fill-rose-500 text-rose-500 shrink-0" />
+                  <span className="font-semibold">Rider Appreciation Tip</span>
+                </span>
+                <span className="font-semibold font-mono text-emerald-800">
+                  {formatNgn(riderTip)}
+                </span>
+              </div>
+              <p className="text-[11px] text-emerald-600/90 pl-5">
+                100% credited to your dispatch courier upon safe package delivery.
+              </p>
+            </div>
+          )}
 
           {/* Total Row */}
           <div className="pt-2.5 border-t border-neutral-200/80 flex items-center justify-between text-sm font-bold text-neutral-900">

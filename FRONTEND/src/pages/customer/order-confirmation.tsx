@@ -818,15 +818,15 @@ export default function OrderConfirmationPage() {
               </div>
 
               {/* Live Fulfillment Timeline Radar */}
-              <div className="rounded-3xl border border-neutral-200/80 bg-white p-5 sm:p-6 shadow-xs">
-                <OrderStatusTimeline
-                  status={order.status}
-                  serviceType={order.service_type}
-                  cancellationReason={(order as unknown as { cancellation_reason?: string }).cancellation_reason}
-                  refundRequired={(order as unknown as { refund_required?: boolean }).refund_required}
-                  isCashOnDelivery={isCashOrder}
-                />
-              </div>
+              <OrderStatusTimeline
+                status={order.status}
+                serviceType={order.service_type}
+                cancellationReason={(order as unknown as { cancellation_reason?: string }).cancellation_reason}
+                refundRequired={(order as unknown as { refund_required?: boolean }).refund_required}
+                isCashOnDelivery={isCashOrder}
+                estimatedMinutes={(order as unknown as { estimated_minutes?: number }).estimated_minutes || 18}
+                distanceKm={(order as unknown as { distance_km?: number }).distance_km || 3.2}
+              />
 
               {/* Delivery Confirmation PIN (Security Pass) - ONLY shown when confirmed/paid */}
               {isConfirmed && order.delivery_pin && order.status !== 'delivered' && order.status !== 'cancelled' && (

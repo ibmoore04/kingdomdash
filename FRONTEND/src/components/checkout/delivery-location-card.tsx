@@ -20,6 +20,14 @@ export interface DeliveryLocationCardProps {
   onShowPermissionGuide?: () => void
 }
 
+export const CAMPUS_LANDMARKS = [
+  { name: 'TASUED Main Gate', coords: { latitude: 6.7932, longitude: 3.9167 }, landmark: 'Main Campus Security Gate' },
+  { name: 'CEPEP Complex', coords: { latitude: 6.7981, longitude: 3.9124 }, landmark: 'CEPEP Lecture Hall' },
+  { name: 'Molipa Expressway', coords: { latitude: 6.8122, longitude: 3.9215 }, landmark: 'Molipa Commercial Junction' },
+  { name: 'New Market (Oja Tuntun)', coords: { latitude: 6.8201, longitude: 3.9250 }, landmark: 'Oja Tuntun Entrance' },
+  { name: 'OGD Hall', coords: { latitude: 6.7955, longitude: 3.9142 }, landmark: 'OGD Event Center' },
+]
+
 export function DeliveryLocationCard({
   addresses,
   selectedAddress,
@@ -181,9 +189,65 @@ export function DeliveryLocationCard({
             </div>
           </div>
         )}
+        {/* Quick Campus Landmark Chips */}
+        <div className="mt-2.5">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-1.5 flex items-center gap-1">
+            <MapPin className="h-3 w-3 text-primary" />
+            <span>Campus Landmarks:</span>
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {CAMPUS_LANDMARKS.map((spot) => {
+              const isSelected =
+                selectedAddress?.address_line_1?.toLowerCase().includes(spot.name.toLowerCase()) ||
+                selectedAddress?.label?.toLowerCase() === spot.name.toLowerCase()
+
+              return (
+                <button
+                  key={spot.name}
+                  type="button"
+                  onClick={() => {
+                    const existing = addresses.find(
+                      (a) =>
+                        a.address_line_1?.toLowerCase().includes(spot.name.toLowerCase()) ||
+                        a.label?.toLowerCase() === spot.name.toLowerCase()
+                    )
+                    if (existing) {
+                      onSelectAddress(existing)
+                    } else {
+                      const campusAddr: Address = {
+                        id: `campus-${spot.name.toLowerCase().replace(/\s+/g, '-')}`,
+                        profile_id: 'guest',
+                        label: spot.name,
+                        recipient_name: 'Campus Recipient',
+                        phone: '+2348000000000',
+                        address_line_1: spot.name,
+                        address_line_2: spot.landmark,
+                        city: 'Ijebu-Ode',
+                        state: 'Ogun State',
+                        postal_code: '120101',
+                        latitude: spot.coords.latitude,
+                        longitude: spot.coords.longitude,
+                        service_area_id: null,
+                        is_default: false,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                      }
+                      onSelectAddress(campusAddr)
+                    }
+                  }}
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-primary text-white shadow-2xs'
+                      : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200/80 hover:text-neutral-900 border border-neutral-200/60'
+                  }`}
+                >
+                  <span>{spot.name}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
       </div>
-
-
 
       {/* Detecting Location Banner */}
       {isDetectingLocation && (

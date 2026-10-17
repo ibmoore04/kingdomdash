@@ -127,12 +127,14 @@ async function startProfileFetch(
 
       if (error) {
         lastError = new Error(error.message)
+        break
       }
     } catch (err) {
       if (currentGeneration !== fetchGeneration) {
         return
       }
       lastError = err instanceof Error ? err : new Error('Failed to fetch profile')
+      break
     }
 
     // Wait briefly before retrying to allow handle_new_user() trigger to finish writing profile

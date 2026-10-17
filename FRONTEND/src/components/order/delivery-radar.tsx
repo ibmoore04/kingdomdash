@@ -18,6 +18,8 @@ export interface DeliveryRadarProps {
   refundRequired?: boolean
   className?: string
   isCashOnDelivery?: boolean
+  estimatedMinutes?: number
+  distanceKm?: number | null
 }
 
 interface RadarStep {
@@ -34,6 +36,8 @@ export function DeliveryRadar({
   refundRequired,
   className,
   isCashOnDelivery = false,
+  estimatedMinutes,
+  distanceKm,
 }: DeliveryRadarProps) {
   const isCourier = serviceType === 'courier'
   const isGrocery = serviceType === 'grocery'
@@ -196,17 +200,18 @@ export function DeliveryRadar({
     <div
       data-testid="order-timeline"
       className={cn(
-        'relative overflow-hidden rounded-3xl border border-neutral-200 bg-white p-6 shadow-xs',
+        'relative overflow-hidden rounded-3xl border border-neutral-200 bg-white p-5 sm:p-6 shadow-xs',
         className
       )}
     >
-      {/* Top Header Row */}
+      {/* Top Header Row with Multi-ring Beacon */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-100 pb-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-3 w-3">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
+              <span className="absolute -inset-1 rounded-full bg-primary/20 animate-pulse" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-primary shadow-[0_0_8px_rgba(229,9,20,0.6)]" />
             </span>
             <h2 className="text-base font-bold text-neutral-900">
               {isCourier ? 'Courier Dispatch Delivery' : 'Live Fulfillment Radar'}
@@ -217,14 +222,32 @@ export function DeliveryRadar({
           </p>
         </div>
 
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3.5 py-1 text-xs font-bold text-primary capitalize border border-primary/20">
-          <Sparkles className="h-3 w-3" aria-hidden="true" />
-          <span>
-            {isCashOnDelivery && (status === 'pending' || status === 'payment_pending')
-              ? 'Cash on Delivery'
-              : status.replace(/_/g, ' ')}
+        <div className="flex items-center gap-2">
+          {/* Dynamic ETA Pill when in progress */}
+          {(estimatedMinutes !== undefined || distanceKm) && activeIndex >= 0 && activeIndex < steps.length - 1 && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-neutral-100 shadow-2xs">
+              <Clock className="h-3.5 w-3.5 text-primary animate-pulse" aria-hidden="true" />
+              <span>ETA ~{estimatedMinutes || 18} mins</span>
+              {distanceKm && (
+                <>
+                  <span className="text-neutral-500">•</span>
+                  <span className="text-neutral-300 font-bold">
+                    {distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm.toFixed(1)} km`}
+                  </span>
+                </>
+              )}
+            </span>
+          )}
+
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3.5 py-1 text-xs font-bold text-primary capitalize border border-primary/20">
+            <Sparkles className="h-3 w-3" aria-hidden="true" />
+            <span>
+              {isCashOnDelivery && (status === 'pending' || status === 'payment_pending')
+                ? 'Cash on Delivery'
+                : status.replace(/_/g, ' ')}
+            </span>
           </span>
-        </span>
+        </div>
       </div>
 
       {/* Live Status Pill */}
@@ -241,12 +264,23 @@ export function DeliveryRadar({
       <div className="relative pt-2 pb-1">
         {/* Connecting Progress Bar (hidden on mobile, visible on sm+) */}
         <div
-          className="absolute top-7 left-10 right-10 hidden sm:block h-1 bg-neutral-200 rounded-full overflow-hidden"
+          className="absolute top-7 left-10 right-10 hidden sm:block h-1.5 bg-neutral-100 rounded-full overflow-hidden"
           aria-hidden="true"
         >
           <div
-            className="h-full bg-gradient-to-r from-emerald-500 via-primary to-primary transition-all duration-700 ease-out"
+            className="h-full bg-gradient-to-r from-emerald-500 via-primary to-primary transition-all duration-700 ease-out shadow-xs"
             style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+
+        {/* Connecting Progress Bar for Mobile (vertical spine) */}
+        <div
+          className="absolute top-6 bottom-8 left-[21px] w-0.5 bg-neutral-100 sm:hidden"
+          aria-hidden="true"
+        >
+          <div
+            className="w-full bg-gradient-to-b from-emerald-500 via-primary to-primary transition-all duration-700 ease-out"
+            style={{ height: `${progressPercentage}%` }}
           />
         </div>
 
@@ -271,7 +305,7 @@ export function DeliveryRadar({
                     isCompleted && 'bg-emerald-600 ring-4 ring-emerald-500/20 shadow-emerald-500/20',
                     isCurrent &&
                       'bg-primary ring-4 ring-primary/25 shadow-[0_0_15px_rgba(229,9,20,0.35)] scale-110 animate-pulse',
-                    isUpcoming && 'bg-neutral-200 text-neutral-400'
+                    isUpcoming && 'bg-neutral-100 text-neutral-400 border border-neutral-200'
                   )}
                 >
                   <Icon className="h-5 w-5" aria-hidden="true" />

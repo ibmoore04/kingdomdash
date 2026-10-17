@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageCircle, Phone, HelpCircle, Shield } from 'lucide-react';
+import { MessageCircle, Phone, HelpCircle, Shield, CheckCircle2, Bike } from 'lucide-react';
 
 export interface WhatsappDispatchBridgeProps {
   orderNumber: string;
@@ -64,22 +64,29 @@ export const WhatsappDispatchBridge: React.FC<WhatsappDispatchBridgeProps> = ({
           </div>
         </div>
 
-        <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
           <Shield className="w-3 h-3 text-[#25D366]" /> End-to-End Encrypted
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         {/* Chat with Rider OR Awaiting Assignment State */}
         {riderName ? (
-          <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-neutral-50 border border-neutral-200/80 flex flex-col justify-between space-y-3">
+          <div className="p-4 rounded-2xl bg-neutral-50/80 border border-neutral-200/80 flex flex-col justify-between space-y-3.5 transition-all">
             <div>
-              <div className="flex items-center justify-between text-xs text-neutral-500 mb-1">
+              <div className="flex items-center justify-between text-xs text-neutral-500 mb-1.5">
                 <span>Assigned Courier</span>
-                <span className="font-semibold text-emerald-600">On Active Route</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                  Verified Rider
+                </span>
               </div>
               <div className="text-sm font-bold text-neutral-900">{riderName}</div>
               {riderPhone && <div className="text-xs text-neutral-500 font-mono">{riderPhone}</div>}
+              <div className="flex items-center gap-1.5 text-xs text-neutral-500 mt-1">
+                <Bike className="w-3.5 h-3.5 text-neutral-400" />
+                <span>Express Motorcycle Dispatch</span>
+              </div>
             </div>
 
             <div className="flex items-center gap-2 pt-1">
@@ -95,7 +102,7 @@ export const WhatsappDispatchBridge: React.FC<WhatsappDispatchBridgeProps> = ({
               {riderPhone && (
                 <a
                   href={`tel:${riderPhone}`}
-                  className="w-11 h-11 rounded-xl bg-white border border-neutral-200 hover:bg-neutral-100 active:scale-[0.98] text-neutral-700 flex items-center justify-center transition-all shrink-0 cursor-pointer"
+                  className="w-11 h-11 rounded-xl bg-white border border-neutral-200 hover:bg-neutral-100 active:scale-[0.98] text-neutral-700 flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-2xs"
                   title="Call courier directly"
                 >
                   <Phone className="w-4 h-4" />
@@ -104,9 +111,9 @@ export const WhatsappDispatchBridge: React.FC<WhatsappDispatchBridgeProps> = ({
             </div>
           </div>
         ) : (
-          <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-neutral-50 border border-neutral-200/80 flex flex-col justify-between space-y-3">
+          <div className="p-4 rounded-2xl bg-neutral-50/80 border border-neutral-200/80 flex flex-col justify-between space-y-3.5">
             <div>
-              <div className="flex items-center justify-between text-xs text-neutral-500 mb-1">
+              <div className="flex items-center justify-between text-xs text-neutral-500 mb-1.5">
                 <span>Assigned Courier</span>
                 <span className="font-semibold text-amber-600">Awaiting Dispatch</span>
               </div>
@@ -127,14 +134,17 @@ export const WhatsappDispatchBridge: React.FC<WhatsappDispatchBridgeProps> = ({
         )}
 
         {/* Chat with Support Dispatch */}
-        <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-neutral-50 border border-neutral-200/80 flex flex-col justify-between space-y-3">
+        <div className="p-4 rounded-2xl bg-neutral-50/80 border border-neutral-200/80 flex flex-col justify-between space-y-3.5">
           <div>
-            <div className="flex items-center justify-between text-xs text-neutral-500 mb-1">
+            <div className="flex items-center justify-between text-xs text-neutral-500 mb-1.5">
               <span>Central Dispatch</span>
-              <span className="font-semibold text-primary">Live Operations</span>
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                Live Desk
+              </span>
             </div>
             <div className="text-sm font-bold text-neutral-900">KingdomDash Support Desk</div>
-            <div className="text-xs text-neutral-500">24/7 Ijebu-Ode Fleet Dispatchers</div>
+            <div className="text-xs text-neutral-500 mt-0.5">24/7 Ijebu-Ode Fleet Dispatchers</div>
           </div>
 
           <div className="flex items-center gap-2 pt-1">
@@ -149,7 +159,7 @@ export const WhatsappDispatchBridge: React.FC<WhatsappDispatchBridgeProps> = ({
             </a>
             <a
               href={`tel:${supportPhone}`}
-              className="w-11 h-11 rounded-xl bg-white border border-neutral-200 hover:bg-neutral-100 active:scale-[0.98] text-neutral-700 flex items-center justify-center transition-all shrink-0 cursor-pointer"
+              className="w-11 h-11 rounded-xl bg-white border border-neutral-200 hover:bg-neutral-100 active:scale-[0.98] text-neutral-700 flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-2xs"
               title="Call support hotline"
             >
               <Phone className="w-4 h-4" />
