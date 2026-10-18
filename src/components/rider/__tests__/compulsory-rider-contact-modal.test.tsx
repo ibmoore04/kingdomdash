@@ -51,6 +51,18 @@ describe('CompulsoryRiderContactModal', () => {
     expect(screen.queryByTestId('compulsory-rider-contact-modal')).not.toBeInTheDocument()
   })
 
+  it('does NOT render when rider already has phone registered, even if whatsapp is empty', () => {
+    const riderWithOnlyPhone: RiderProfile = {
+      ...verifiedRiderWithoutPhone,
+      phone: '08123456789',
+      whatsapp_number: '',
+    }
+
+    render(<CompulsoryRiderContactModal rider={riderWithOnlyPhone} />)
+
+    expect(screen.queryByTestId('compulsory-rider-contact-modal')).not.toBeInTheDocument()
+  })
+
   it('renders compulsory modal immediately when phone is missing', () => {
     render(<CompulsoryRiderContactModal rider={verifiedRiderWithoutPhone} />)
 
@@ -102,6 +114,7 @@ describe('CompulsoryRiderContactModal', () => {
         '08099887766'
       )
       expect(onSavedMock).toHaveBeenCalled()
+      expect(screen.queryByTestId('compulsory-rider-contact-modal')).not.toBeInTheDocument()
     })
   })
 

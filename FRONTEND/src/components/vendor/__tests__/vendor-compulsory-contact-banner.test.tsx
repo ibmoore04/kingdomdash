@@ -80,6 +80,7 @@ describe('VendorCompulsoryContactBanner', () => {
         '08099881122'
       )
       expect(onSavedMock).toHaveBeenCalled()
+      expect(screen.queryByTestId('compulsory-vendor-contact-banner')).not.toBeInTheDocument()
     })
   })
 })

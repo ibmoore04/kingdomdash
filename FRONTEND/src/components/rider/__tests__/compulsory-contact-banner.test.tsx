@@ -60,6 +60,22 @@ describe('CompulsoryContactBanner', () => {
     expect(screen.queryByTestId('compulsory-rider-contact-banner')).not.toBeInTheDocument()
   })
 
+  it('does NOT render when rider already has phone registered, even if whatsapp is empty', () => {
+    const riderWithOnlyPhone: RiderProfile = {
+      ...verifiedRiderWithoutPhone,
+      phone: '08123456789',
+      whatsapp_number: '',
+    }
+
+    render(
+      <MemoryRouter>
+        <CompulsoryContactBanner rider={riderWithOnlyPhone} />
+      </MemoryRouter>
+    )
+
+    expect(screen.queryByTestId('compulsory-rider-contact-banner')).not.toBeInTheDocument()
+  })
+
   it('renders compulsory banner when verified rider lacks phone or whatsapp', () => {
     render(
       <MemoryRouter>
@@ -118,6 +134,7 @@ describe('CompulsoryContactBanner', () => {
         '08099887766'
       )
       expect(onSuccess).toHaveBeenCalled()
+      expect(screen.queryByTestId('compulsory-rider-contact-banner')).not.toBeInTheDocument()
     })
   })
 })

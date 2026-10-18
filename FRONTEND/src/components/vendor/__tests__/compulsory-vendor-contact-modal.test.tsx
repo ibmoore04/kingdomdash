@@ -115,6 +115,7 @@ describe('CompulsoryVendorContactModal', () => {
         '08011223344'
       )
       expect(onSavedMock).toHaveBeenCalled()
+      expect(screen.queryByTestId('compulsory-vendor-contact-modal')).not.toBeInTheDocument()
     })
   })
 })

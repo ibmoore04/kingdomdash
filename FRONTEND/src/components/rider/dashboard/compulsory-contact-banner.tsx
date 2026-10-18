@@ -38,6 +38,7 @@ export function CompulsoryContactBanner({
   const [sameAsPhone, setSameAsPhone] = useState(
     !rider?.whatsapp_number || rider?.whatsapp_number === rider?.phone
   )
+  const [justSaved, setJustSaved] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -54,15 +55,14 @@ export function CompulsoryContactBanner({
     }
   }, [rider?.phone, rider?.whatsapp_number])
 
-  // Check if contact info is incomplete
-  const hasPhone = Boolean(rider?.phone && rider.phone.trim().length >= 7)
-  const hasWhatsapp = Boolean(
-    rider?.whatsapp_number && rider.whatsapp_number.trim().length >= 7
+  // Check if phone number is registered
+  const hasPhone = Boolean(
+    (rider?.phone && rider.phone.trim().length >= 7) ||
+    (rider?.whatsapp_number && rider.whatsapp_number.trim().length >= 7)
   )
-  const isIncomplete = !hasPhone || !hasWhatsapp
 
-  // Only show for approved/verified riders with missing phone or whatsapp
-  if (!rider || !rider.is_verified || !isIncomplete) {
+  // If they had their number registered or just submitted, the compulsory card MUST LEAVE!
+  if (justSaved || !rider || !rider.is_verified || hasPhone) {
     return null
   }
 
@@ -105,6 +105,8 @@ export function CompulsoryContactBanner({
       if (!success && error) {
         throw error
       }
+
+      setJustSaved(true)
 
       pushToast({
         title: 'Contact Information Saved',

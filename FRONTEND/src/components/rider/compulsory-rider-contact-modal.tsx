@@ -23,10 +23,14 @@ export function CompulsoryRiderContactModal({
   onSaved,
 }: CompulsoryRiderContactModalProps) {
   const isVerified = Boolean(rider && rider.is_verified)
-  const hasPhone = Boolean(rider?.phone && rider.phone.trim().length >= 7)
+  const hasPhone = Boolean(
+    (rider?.phone && rider.phone.trim().length >= 7) ||
+    (rider?.whatsapp_number && rider.whatsapp_number.trim().length >= 7)
+  )
+  const [justSaved, setJustSaved] = useState(false)
 
-  // Compulsory prompt triggers immediately when rider has no phone number registered
-  const isCompulsoryOpen = Boolean(isVerified && !hasPhone)
+  // Compulsory prompt triggers immediately ONLY when rider has no phone registered
+  const isCompulsoryOpen = Boolean(!justSaved && isVerified && !hasPhone)
 
   const [phoneNumber, setPhoneNumber] = useState(rider?.phone || '')
   const [whatsappNumber, setWhatsappNumber] = useState(rider?.whatsapp_number || rider?.phone || '')
@@ -108,6 +112,7 @@ export function CompulsoryRiderContactModal({
         throw error
       }
 
+      setJustSaved(true)
       setSuccessMsg('Phone and WhatsApp numbers successfully registered! Updating console...')
       if (onSaved) {
         await onSaved()

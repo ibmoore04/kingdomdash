@@ -23,10 +23,15 @@ export function CompulsoryVendorContactModal({
   onSaved,
 }: CompulsoryVendorContactModalProps) {
   const isVendorActive = Boolean(vendor && vendor.is_active !== false)
-  const hasPhone = Boolean(vendor?.phone && vendor.phone.trim().length >= 7)
+  const hasPhone = Boolean(
+    (vendor?.phone && vendor.phone.trim().length >= 7) ||
+    ((vendor as unknown as { whatsapp_number?: string | null })?.whatsapp_number &&
+      (vendor as unknown as { whatsapp_number?: string | null }).whatsapp_number!.trim().length >= 7)
+  )
+  const [justSaved, setJustSaved] = useState(false)
 
-  // Compulsory prompt triggers immediately when vendor has no phone number registered
-  const isCompulsoryOpen = Boolean(isVendorActive && !hasPhone)
+  // Compulsory prompt triggers immediately ONLY when vendor has no phone registered
+  const isCompulsoryOpen = Boolean(!justSaved && isVendorActive && !hasPhone)
 
   const [phone, setPhone] = useState(vendor?.phone || '')
   const [whatsapp, setWhatsapp] = useState(
@@ -110,6 +115,7 @@ export function CompulsoryVendorContactModal({
         throw new Error(error)
       }
 
+      setJustSaved(true)
       setSuccessMsg('Store contact numbers successfully registered! Updating storefront...')
       if (onSaved) {
         await onSaved()

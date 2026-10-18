@@ -561,13 +561,25 @@ export default function RiderSettingsPage() {
               </div>
             </div>
 
-            {/* Compulsory notice if contact info is missing */}
-            {(!rider?.phone || !rider?.whatsapp_number) && (
+            {/* Compulsory notice ONLY if contact phone is missing; leaves once registered */}
+            {!rider?.phone && !rider?.whatsapp_number ? (
               <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-caption text-amber-950 font-medium flex items-start gap-2.5">
                 <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
                 <span>
-                  <strong>Compulsory Dispatch Information:</strong> Both your operational phone number and WhatsApp line are required for live trip coordination so customers and KingdomDash dispatch can contact you.
+                  <strong>Compulsory Dispatch Information:</strong> An operational phone number is required for live trip coordination so customers and KingdomDash dispatch can contact you.
                 </span>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-caption text-emerald-950 font-medium flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" aria-hidden="true" />
+                  <span>
+                    <strong>Contact Number Active:</strong> Your operational phone number ({rider?.phone || rider?.whatsapp_number}) is registered and active for dispatch orders.
+                  </span>
+                </div>
+                <Badge className="bg-emerald-600 text-white text-[10px] uppercase font-bold tracking-wider">
+                  Active
+                </Badge>
               </div>
             )}
 
@@ -603,7 +615,7 @@ export default function RiderSettingsPage() {
                 <div className="space-y-1.5">
                   <Label htmlFor="rider-whatsapp-input" className="text-body-small font-semibold text-text-primary flex items-center gap-1.5">
                     <MessageSquare className="h-4 w-4 text-emerald-600" aria-hidden="true" />
-                    <span>WhatsApp Number (Compulsory) *</span>
+                    <span>WhatsApp Contact Line</span>
                   </Label>
                   <div className="relative">
                     <MessageSquare className="absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden="true" />

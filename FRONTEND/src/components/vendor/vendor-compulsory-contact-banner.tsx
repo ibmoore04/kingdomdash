@@ -15,8 +15,13 @@ export function VendorCompulsoryContactBanner({
   onSaved,
 }: VendorCompulsoryContactBannerProps) {
   const isVendorActive = Boolean(vendor && vendor.is_active !== false)
-  const hasPhone = Boolean(vendor?.phone && vendor.phone.trim().length >= 7)
+  const hasPhone = Boolean(
+    (vendor?.phone && vendor.phone.trim().length >= 7) ||
+    ((vendor as unknown as { whatsapp_number?: string | null })?.whatsapp_number &&
+      (vendor as unknown as { whatsapp_number?: string | null }).whatsapp_number!.trim().length >= 7)
+  )
 
+  const [justSaved, setJustSaved] = useState(false)
   const isMissingContact = Boolean(isVendorActive && !hasPhone)
 
   const [phone, setPhone] = useState(vendor?.phone || '')
@@ -24,7 +29,8 @@ export function VendorCompulsoryContactBanner({
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
-  if (!isMissingContact) return null
+  // If vendor has their number registered or just submitted, the compulsory card MUST LEAVE!
+  if (justSaved || !isMissingContact) return null
 
   const handleQuickSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,6 +50,7 @@ export function VendorCompulsoryContactBanner({
       if (!success && error) {
         throw new Error(error)
       }
+      setJustSaved(true)
       setSuccessMsg('Store operational phone registered!')
       if (onSaved) {
         await onSaved()
