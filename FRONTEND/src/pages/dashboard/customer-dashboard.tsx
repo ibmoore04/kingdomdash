@@ -704,6 +704,9 @@ export default function CustomerDashboardPage() {
                   </div>
                 )}
 
+                {/* 1-Click Quick Reorder Bar */}
+                <QuickReorderBar />
+
                 {/* Filter Tabs — responsive edge-to-edge scroll on mobile with shrink-0 pills */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-0.5 border-b border-border -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
                   {[
