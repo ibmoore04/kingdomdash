@@ -101,6 +101,7 @@ export interface Database {
           business_description: string | null
           business_address: string
           phone: string
+          whatsapp_number?: string | null
           email: string
           logo_url: string | null
           cover_image_url: string | null
@@ -122,6 +123,7 @@ export interface Database {
           business_description?: string | null
           business_address: string
           phone: string
+          whatsapp_number?: string | null
           email: string
           logo_url?: string | null
           cover_image_url?: string | null
@@ -143,6 +145,7 @@ export interface Database {
           business_description?: string | null
           business_address?: string
           phone?: string
+          whatsapp_number?: string | null
           email?: string
           logo_url?: string | null
           cover_image_url?: string | null

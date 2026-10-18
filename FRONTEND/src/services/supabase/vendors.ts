@@ -107,6 +107,7 @@ export async function updateVendorProfile(
     operating_hours: normalizedHours,
     logo_url: updates.logo_url,
     cover_image_url: updates.cover_image_url,
+    ...(updates.whatsapp_number !== undefined ? { whatsapp_number: updates.whatsapp_number } : {}),
     ...(updates.business_name !== undefined ? { business_name: updates.business_name } : {}),
     ...(updates.latitude !== undefined ? { latitude: updates.latitude } : {}),
     ...(updates.longitude !== undefined ? { longitude: updates.longitude } : {}),
@@ -145,3 +146,62 @@ export async function updateVendorProfile(
 
   return directResponse
 }
+
+export async function updateVendorContactInfo(
+  vendorId: string,
+  phone: string,
+  whatsappNumber?: string | null
+): Promise<{ success: boolean; data?: unknown; error?: string | null }> {
+  const cleanPhone = phone.trim()
+  const cleanWhatsapp = (whatsappNumber || '').trim() || cleanPhone
+
+  // Try RPC first
+  try {
+    const { data, error } = await (supabase as any).rpc('update_vendor_contact_info', {
+      p_vendor_id: vendorId,
+      p_phone: cleanPhone,
+      p_whatsapp_number: cleanWhatsapp,
+    })
+
+    if (!error) {
+      return { success: true, data }
+    }
+  } catch {
+    // Fall back to direct table update
+  }
+
+  // Fallback: update vendor table and profile directly
+  const { data: updatedVendor, error: vendorError } = await updateVendorProfile(vendorId, {
+    phone: cleanPhone,
+    whatsapp_number: cleanWhatsapp,
+  } as unknown as VendorUpdate)
+
+  if (vendorError) {
+    const msg =
+      vendorError instanceof Error
+        ? vendorError.message
+        : (vendorError as { message?: string }).message || 'Failed to update vendor phone'
+    return { success: false, error: msg }
+  }
+
+  // Sync to profiles table as well
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (user?.id) {
+      await (supabase as any)
+        .from('profiles')
+        .update({
+          phone: cleanPhone,
+          whatsapp_number: cleanWhatsapp,
+        })
+        .eq('id', user.id)
+    }
+  } catch {
+    // Best-effort profile sync
+  }
+
+  return { success: true, data: updatedVendor }
+}
+

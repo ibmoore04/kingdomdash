@@ -4,6 +4,7 @@ import { RiderHeader } from './rider-header'
 import { RiderSidebar } from './rider-sidebar'
 import { RiderBottomNav } from './rider-bottom-nav'
 import { RiderPendingView } from '../shared/rider-pending-view'
+import { CompulsoryRiderContactModal } from '../compulsory-rider-contact-modal'
 import { updateRiderAvailability } from '@/services/rider/rider-service'
 import { WifiOff, RefreshCw } from 'lucide-react'
 
@@ -108,6 +109,9 @@ export function RiderLayout({
         activeTripCount={activeTripCount}
         inboxCount={inboxCount}
       />
+
+      {/* ── Compulsory Contact Enforcement Modal ─────────────────────────────── */}
+      <CompulsoryRiderContactModal rider={rider} onSaved={refreshRider} />
     </div>
   )
 }

@@ -30,6 +30,8 @@ import { VendorSupportTab } from '@/components/vendor/vendor-support-tab'
 import { ProductFormModal } from '@/components/vendor/product-form-modal'
 import { CategoryFormModal } from '@/components/vendor/category-form-modal'
 import { DeleteConfirmDialog } from '@/components/vendor/delete-confirm-dialog'
+import { CompulsoryVendorContactModal } from '@/components/vendor/compulsory-vendor-contact-modal'
+import { VendorCompulsoryContactBanner } from '@/components/vendor/vendor-compulsory-contact-banner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/auth-store'
@@ -543,6 +545,9 @@ export default function VendorDashboardPage() {
         {/* Main Scrollable View */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-28 lg:pb-8">
           <div className="mx-auto max-w-6xl">
+            {/* Immediate Compulsory Contact Warning Banner */}
+            <VendorCompulsoryContactBanner vendor={vendor} onSaved={refreshVendor} />
+
             {activeTab === 'overview' && (
               <VendorOverviewTab
                 vendor={vendor}
@@ -833,6 +838,9 @@ export default function VendorDashboardPage() {
             : handleConfirmDeleteProduct
         }
       />
+
+      {/* Immediate Compulsory Store Phone Registration Modal */}
+      <CompulsoryVendorContactModal vendor={vendor} onSaved={refreshVendor} />
     </div>
   )
 }
