@@ -30,22 +30,22 @@ export function CostBreakdownAccordion({
   return (
     <div
       data-testid="cost-breakdown-accordion"
-      className={cn('rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-2xs', className)}
+      className={cn('rounded-2xl border border-neutral-200/90 bg-white overflow-hidden shadow-2xs transition-all', className)}
     >
       {/* Header / Toggle Button */}
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-expanded={isOpen}
-        className="w-full flex items-center justify-between p-3.5 sm:px-4 text-left hover:bg-neutral-50/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="w-full flex items-center justify-between p-3.5 sm:px-4 text-left bg-gradient-to-r from-neutral-50/40 via-white to-neutral-50/40 hover:bg-neutral-50/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
         <div className="flex items-center gap-2">
           <Tag className="h-4 w-4 text-primary" aria-hidden="true" />
-          <span className="text-xs font-bold text-neutral-900">
+          <span className="text-xs font-bold text-neutral-900 tracking-tight">
             Transparent Pricing &amp; Fees
           </span>
           {isLaunchPreview && (
-            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200 shadow-2xs">
               Zero Fees
             </span>
           )}
