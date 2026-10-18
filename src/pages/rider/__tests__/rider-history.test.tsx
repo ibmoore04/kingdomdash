@@ -16,6 +16,7 @@ const mockRider = {
   is_verified: true,
   is_active: true,
   full_name: 'David Adebayo',
+  phone: '+2348012345678',
 }
 
 vi.mock('@/hooks/use-current-rider', () => ({

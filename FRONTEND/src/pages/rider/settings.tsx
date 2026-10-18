@@ -587,10 +587,13 @@ export default function RiderSettingsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Field 1: Operational Phone */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="rider-phone-input" className="text-body-small font-semibold text-text-primary flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5">
                     <Phone className="h-4 w-4 text-primary" aria-hidden="true" />
-                    <span>Operational Phone (Call Line) *</span>
-                  </Label>
+                    <Label htmlFor="rider-phone-input" className="text-body-small font-semibold text-text-primary">
+                      Operational Phone Number
+                    </Label>
+                    <span className="text-primary text-xs font-bold" aria-hidden="true">*</span>
+                  </div>
                   <div className="relative">
                     <Phone className="absolute left-3 top-3 h-4 w-4 text-text-muted" aria-hidden="true" />
                     <Input

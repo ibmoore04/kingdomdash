@@ -470,7 +470,7 @@ describe('CheckoutPage', () => {
 
     // Wait until pricing resolves and submit button becomes enabled
     await waitFor(() => {
-      const btn = screen.getByRole('button', { name: /Continue to Payment Place Order/i })
+      const btn = screen.getByRole('button', { name: /Continue to Payment|Place Order/i })
       expect(btn.hasAttribute('disabled')).toBe(false)
     })
 

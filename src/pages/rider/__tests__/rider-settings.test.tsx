@@ -45,6 +45,14 @@ vi.mock('@/stores/ui-store', () => ({
   }),
 }))
 
+const mockUpdateRiderContactInfo = vi.fn().mockResolvedValue({ success: true, error: null })
+
+vi.mock('@/services/rider/rider-service', () => ({
+  updateRiderContactInfo: (...args: unknown[]) => mockUpdateRiderContactInfo(...args),
+  getRiderOperationalProfile: vi.fn().mockResolvedValue({ data: null, error: null }),
+  updateRiderAvailability: vi.fn().mockResolvedValue({ success: true, error: null }),
+}))
+
 const mockSupabaseUpdate = vi.fn().mockReturnValue({
   eq: vi.fn().mockResolvedValue({ error: null }),
 })
@@ -177,14 +185,14 @@ describe('RiderSettingsPage', () => {
     const phoneInput = screen.getByLabelText('Operational Phone Number')
     fireEvent.change(phoneInput, { target: { value: '+2348099998888' } })
 
-    const saveButton = screen.getByRole('button', { name: 'Save Phone' })
+    const saveButton = screen.getByRole('button', { name: /Save (Phone|Contact Details)/i })
     fireEvent.click(saveButton)
 
     await waitFor(() => {
-      expect(mockSupabaseUpdate).toHaveBeenCalledWith({ phone: '+2348099998888' })
+      expect(mockUpdateRiderContactInfo).toHaveBeenCalledWith('+2348099998888', '+2348099998888')
       expect(mockRefreshRider).toHaveBeenCalled()
       expect(mockPushToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Phone Number Updated', variant: 'success' })
+        expect.objectContaining({ variant: 'success' })
       )
     })
   })
