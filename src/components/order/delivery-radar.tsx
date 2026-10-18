@@ -200,38 +200,48 @@ export function DeliveryRadar({
     <div
       data-testid="order-timeline"
       className={cn(
-        'relative overflow-hidden rounded-3xl border border-neutral-200 bg-white p-5 sm:p-6 shadow-xs',
+        'relative overflow-hidden rounded-3xl border border-neutral-200/90 bg-gradient-to-b from-white via-white to-neutral-50/60 p-5 sm:p-6 shadow-sm transition-all duration-300',
         className
       )}
     >
+      {/* Decorative ambient glowing radar circles */}
+      <div
+        className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute -left-16 -bottom-16 h-48 w-48 rounded-full bg-emerald-500/5 blur-3xl"
+        aria-hidden="true"
+      />
+
       {/* Top Header Row with Multi-ring Beacon */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-100 pb-4">
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b border-neutral-100 pb-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="relative flex h-3 w-3">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-              <span className="absolute -inset-1 rounded-full bg-primary/20 animate-pulse" />
-              <span className="relative inline-flex h-3 w-3 rounded-full bg-primary shadow-[0_0_8px_rgba(229,9,20,0.6)]" />
+            <span className="relative flex h-3.5 w-3.5 items-center justify-center">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+              <span className="absolute -inset-1 rounded-full bg-primary/25 animate-pulse" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_10px_rgba(229,9,20,0.8)]" />
             </span>
-            <h2 className="text-base font-bold text-neutral-900">
+            <h2 className="text-base sm:text-lg font-extrabold text-neutral-900 tracking-tight">
               {isCourier ? 'Courier Dispatch Delivery' : 'Live Fulfillment Radar'}
             </h2>
           </div>
-          <p className="mt-0.5 text-xs text-neutral-500">
-            Real-time delivery progress in Ijebu-Ode
+          <p className="mt-0.5 text-xs text-neutral-500 font-medium">
+            Real-time delivery progress &amp; order telemetry in Ijebu-Ode
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           {/* Dynamic ETA Pill when in progress */}
           {(estimatedMinutes !== undefined || distanceKm) && activeIndex >= 0 && activeIndex < steps.length - 1 && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-neutral-100 shadow-2xs">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm border border-neutral-800">
               <Clock className="h-3.5 w-3.5 text-primary animate-pulse" aria-hidden="true" />
               <span>ETA ~{estimatedMinutes || 18} mins</span>
               {distanceKm && (
                 <>
                   <span className="text-neutral-500">•</span>
-                  <span className="text-neutral-300 font-bold">
+                  <span className="text-emerald-400 font-extrabold">
                     {distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm.toFixed(1)} km`}
                   </span>
                 </>
@@ -239,7 +249,7 @@ export function DeliveryRadar({
             </span>
           )}
 
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3.5 py-1 text-xs font-bold text-primary capitalize border border-primary/20">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3.5 py-1.5 text-xs font-extrabold text-primary capitalize border border-primary/20 shadow-2xs">
             <Sparkles className="h-3 w-3" aria-hidden="true" />
             <span>
               {isCashOnDelivery && (status === 'pending' || status === 'payment_pending')
@@ -250,12 +260,12 @@ export function DeliveryRadar({
         </div>
       </div>
 
-      {/* Live Status Pill */}
-      <div className="my-5 rounded-2xl bg-neutral-50 border border-neutral-100 p-3.5 flex items-center gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Clock className="h-4 w-4" aria-hidden="true" />
+      {/* Live Status Banner */}
+      <div className="relative z-10 my-4 sm:my-5 rounded-2xl bg-neutral-50/90 border border-neutral-100 p-4 flex items-center gap-3.5 shadow-2xs">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/15 shadow-2xs">
+          <Clock className="h-4 w-4 animate-pulse" aria-hidden="true" />
         </div>
-        <p className="text-xs font-semibold text-neutral-800 leading-snug">
+        <p className="text-xs sm:text-sm font-semibold text-neutral-800 leading-snug">
           {getLiveMessage()}
         </p>
       </div>
