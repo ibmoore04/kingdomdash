@@ -13,6 +13,7 @@ import {
   ShoppingBag,
   Coins,
   Moon,
+  X,
 } from 'lucide-react'
 import {
   isLateNightHours,
@@ -158,6 +159,16 @@ export default function FoodPage() {
                   aria-label="Search restaurants or dishes"
                   className="w-full text-xs sm:text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none bg-transparent"
                 />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="p-1 text-neutral-400 hover:text-neutral-600 transition-colors shrink-0"
+                    aria-label="Clear search query"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </div>
               <Button
                 type="submit"

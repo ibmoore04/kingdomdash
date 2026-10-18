@@ -11,6 +11,7 @@ import {
   Beef,
   GlassWater,
   Layers,
+  X,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PageContainer } from '@/components/layout/section'
@@ -136,6 +137,16 @@ export default function GroceriesPage() {
                   aria-label="Search produce, staples, marts in Ijebu-Ode"
                   className="w-full text-xs sm:text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none bg-transparent"
                 />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="p-1 text-neutral-400 hover:text-neutral-600 transition-colors shrink-0"
+                    aria-label="Clear search query"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </div>
               <Button
                 type="submit"

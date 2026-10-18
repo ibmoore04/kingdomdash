@@ -157,7 +157,7 @@ export function VendorCard({
       data-testid="vendor-card"
       className={cn(
         'group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-xs',
-        'transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl',
+        'transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-xl hover:ring-2 hover:ring-primary/10',
         className
       )}
     >
@@ -315,7 +315,7 @@ export function VendorCard({
           >
             <Link to={defaultTo} className="flex items-center justify-center gap-2 text-white">
               <span>{serviceType === 'grocery' ? 'Shop Items' : 'View Menu'}</span>
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 text-white" aria-hidden="true" />
+              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1.5 text-white" aria-hidden="true" />
             </Link>
           </Button>
         </div>
