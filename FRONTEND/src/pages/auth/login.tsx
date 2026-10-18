@@ -105,137 +105,153 @@ export default function LoginPage() {
   // ── End frozen logic ────────────────────────────────────────────────────────
 
   return (
-    <div className="relative w-full min-h-screen lg:h-screen flex flex-col lg:flex-row bg-white overflow-hidden">
-      {/* ════════════════════════════════════════════════════════════════════
-          LEFT 50% — Cinematic Brand Showcase (lg+ screens / MacBook)
-      ════════════════════════════════════════════════════════════════════ */}
-      <div className="relative hidden lg:flex lg:w-1/2 h-full flex-col justify-between p-10 xl:p-14 bg-neutral-950 overflow-hidden text-white select-none shrink-0">
-        {/* Background Image restricted to Left 50% */}
-        <div
-          className="absolute inset-0 bg-cover -z-10"
-          style={{
-            backgroundImage: "url('/kingdomDash-realLogin.jpg')",
-            backgroundPosition: 'center 40%',
-            backgroundRepeat: 'no-repeat',
-          }}
-          aria-hidden="true"
-        />
+    <div className="relative w-full min-h-svh overflow-hidden" style={{ maxHeight: '100svh' }}>
+      {/* ── Background — fixed to viewport ────────────────────────────────── */}
+      <div
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: "url('/kingdomDash-realLogin.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 40%',
+          backgroundRepeat: 'no-repeat',
+        }}
+        aria-hidden="true"
+      />
+      {/* ── Cinematic overlays ─────────────────────────────────────────────── */}
+      <div
+        className="fixed inset-0 -z-10 pointer-events-none"
+        aria-hidden="true"
+        style={{
+          background:
+            'linear-gradient(to right, rgba(8,6,7,0.85) 0%, rgba(8,6,7,0.65) 45%, rgba(8,6,7,0.3) 75%, rgba(8,6,7,0.15) 100%)',
+        }}
+      />
+      <div
+        className="fixed bottom-0 left-0 w-1/2 h-64 -z-10 pointer-events-none"
+        aria-hidden="true"
+        style={{
+          background:
+            'radial-gradient(ellipse at 0% 100%, rgba(229,9,20,0.25) 0%, transparent 70%)',
+        }}
+      />
 
-        {/* Cinematic Scrim Overlays */}
-        <div
-          className="absolute inset-0 -z-10 pointer-events-none"
-          aria-hidden="true"
-          style={{
-            background:
-              'linear-gradient(180deg, rgba(8,6,7,0.75) 0%, rgba(8,6,7,0.45) 35%, rgba(8,6,7,0.85) 75%, rgba(8,6,7,0.98) 100%)',
-          }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-full h-80 -z-10 pointer-events-none"
-          aria-hidden="true"
-          style={{
-            background:
-              'radial-gradient(ellipse at 15% 100%, rgba(229,9,20,0.28) 0%, transparent 70%)',
-          }}
-        />
+      {/* ── Page grid ──────────────────────────────────────────────────────── */}
+      <div className="relative z-10 mx-auto flex min-h-dvh h-dvh w-full max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
 
-        {/* Top: Brand lockup */}
-        <Link to="/" className="inline-flex items-center gap-3 z-10 w-fit group">
-          <img
-            src="/KingdomDash-emblem-clean.png"
-            alt="KingdomDash logo"
-            className="h-9 w-auto rounded-md object-contain group-hover:scale-105 transition-transform"
-          />
-          <div className="leading-none">
-            <span className="text-white text-h4 font-bold tracking-tight">KINGDOM</span>
-            <span className="text-[#E50914] text-h4 font-bold tracking-tight">DASH</span>
-            <p className="text-white/60 text-[10px] font-bold tracking-wider uppercase mt-0.5">
-              SWIFT IN MOTION.
-            </p>
+        {/* ════════════════════════════════════════════════════════════════════
+            LEFT — KingdomDash brand experience (hidden on mobile)
+        ════════════════════════════════════════════════════════════════════ */}
+        <div className="hidden lg:flex flex-col justify-between w-full max-w-xl h-full py-8 pr-8">
+
+          {/* Brand lockup */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <img
+              src="/KingdomDash-emblem-clean.png"
+              alt="KingdomDash logo"
+              className="h-9 w-auto rounded-sm object-contain"
+            />
+            <div className="leading-none">
+              <span className="text-white text-h4 font-bold tracking-tight">KINGDOM</span>
+              <span className="text-[#E50914] text-h4 font-bold tracking-tight">DASH</span>
+              <p className="text-white/50 text-eyebrow mt-0.5">SWIFT IN MOTION.</p>
+            </div>
           </div>
-        </Link>
 
-        {/* Bottom: Hero Message, Service Badges & Location */}
-        <div className="z-10 space-y-5 pt-8">
-          <div>
+          {/* Hero message */}
+          <div className="flex flex-col justify-end flex-1 pb-2">
             <h1
-              className="font-bold leading-tight tracking-tight text-white"
-              style={{ fontSize: 'clamp(2rem, 3.2vw, 3rem)' }}
+              className="font-bold leading-none tracking-tight"
+              style={{ fontSize: 'clamp(2.2rem,3.8vw,3.6rem)' }}
             >
-              Delivering what
-              <span className="block">
-                matters <span className="text-[#E50914]">most</span>.
+              <span className="text-white block">Delivering what</span>
+              <span className="text-white block">
+                matters{' '}
+                <span className="text-[#E50914]">most</span>
+                <span className="text-white">.</span>
               </span>
             </h1>
-            <p className="mt-2.5 text-white/75 text-body-small max-w-md leading-relaxed">
-              Food. Groceries. Courier. All delivered fast, safe and reliable across Ijebu-Ode and beyond.
+
+            <p className="mt-3 text-white/70 text-body-small max-w-xs leading-relaxed">
+              Food. Groceries. Courier. All delivered fast,
+              safe and reliable across Ijebu-Ode and beyond.
             </p>
-          </div>
 
-          {/* Service Highlights */}
-          <div className="space-y-2 max-w-md">
-            {SERVICES.map(({ icon: Icon, title, desc }) => (
-              <div
-                key={title}
-                className="flex items-center gap-3 rounded-xl px-3.5 py-2"
-                style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(8px)',
-                }}
-              >
+            {/* Service highlights */}
+            <div className="mt-5 space-y-2">
+              {SERVICES.map(({ icon: Icon, title, desc }) => (
                 <div
-                  className="flex-shrink-0 flex items-center justify-center rounded-lg h-7 w-7"
-                  style={{ background: 'rgba(229,9,20,0.2)', border: '1px solid rgba(229,9,20,0.35)' }}
+                  key={title}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2"
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    backdropFilter: 'blur(8px)',
+                  }}
                 >
-                  <Icon className="h-3.5 w-3.5 text-[#E50914]" aria-hidden="true" />
+                  <div
+                    className="flex-shrink-0 flex items-center justify-center rounded-lg h-8 w-8"
+                    style={{ background: 'rgba(229,9,20,0.18)', border: '1px solid rgba(229,9,20,0.3)' }}
+                  >
+                    <Icon className="h-3.5 w-3.5 text-[#E50914]" aria-hidden="true" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-white text-label font-semibold leading-tight truncate">{title}</p>
+                    <p className="text-white/55 text-caption leading-snug truncate">{desc}</p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-white text-xs font-semibold leading-tight truncate">{title}</p>
-                  <p className="text-white/60 text-[11px] leading-snug truncate">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          {/* Location Badge */}
-          <div
-            className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 self-start"
-            style={{
-              background: 'rgba(10,10,10,0.65)',
-              border: '1px solid rgba(255,255,255,0.14)',
-              backdropFilter: 'blur(10px)',
-            }}
-          >
-            <MapPin className="h-3.5 w-3.5 text-[#E50914] flex-shrink-0" aria-hidden="true" />
-            <span className="text-xs text-white/80">
-              Proudly serving <span className="text-[#E50914] font-semibold">Ijebu-Ode, Ogun State</span>
-            </span>
+            {/* Location badge */}
+            <div
+              className="mt-5 inline-flex items-center gap-2 rounded-full px-4 py-2 self-start"
+              style={{
+                background: 'rgba(10,10,10,0.55)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <MapPin className="h-3.5 w-3.5 text-[#E50914] flex-shrink-0" aria-hidden="true" />
+              <span className="text-caption text-white/80">
+                Proudly serving{' '}
+                <span className="text-[#E50914] font-semibold">Ijebu-Ode, Ogun State</span>
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ════════════════════════════════════════════════════════════════════
-          RIGHT 50% — Pristine Authentication Canvas (Desktop & Mobile)
-      ════════════════════════════════════════════════════════════════════ */}
-      <main className="w-full lg:w-1/2 min-h-screen lg:h-screen flex flex-col justify-center items-center px-6 sm:px-10 lg:px-12 xl:px-16 py-8 sm:py-12 bg-white overflow-y-auto">
-        <div className="w-full max-w-[420px] mx-auto my-auto space-y-6">
-          {/* Mobile brand (visible only on small screens) */}
-          <div className="flex items-center gap-2 mb-2 lg:hidden">
-            <Link to="/" className="inline-flex items-center gap-2">
+        {/* ════════════════════════════════════════════════════════════════════
+            RIGHT — White login card
+            overflow-y-auto on column: card content scrolls internally if
+            viewport is very short; outer page never scrolls.
+        ════════════════════════════════════════════════════════════════════ */}
+        <main className="flex flex-1 items-center justify-center lg:justify-end py-6 overflow-y-auto">
+
+          {/* Card */}
+          <div
+            className="w-full bg-white my-auto shadow-2xl"
+            style={{
+              maxWidth: '480px',
+              borderRadius: '28px',
+              padding: 'clamp(1.5rem,3vw,2.25rem)',
+              boxShadow:
+                '0 4px 6px rgba(0,0,0,0.04), 0 10px 20px rgba(0,0,0,0.08), 0 30px 60px rgba(0,0,0,0.18)',
+            }}
+          >
+
+            {/* Mobile brand (visible only on small screens) */}
+            <div className="flex items-center gap-2 mb-5 lg:hidden">
               <img src="/KingdomDash-emblem-clean.png" alt="KingdomDash" className="h-7 w-auto rounded-sm object-contain" />
               <div className="leading-none">
                 <span className="text-[#111111] text-label font-bold tracking-tight">KINGDOM</span>
                 <span className="text-[#E50914] text-label font-bold tracking-tight">DASH</span>
               </div>
-            </Link>
-          </div>
+            </div>
 
-          {/* Heading */}
-          <div>
+            {/* Heading */}
             <h2
               className="font-bold leading-none tracking-tight text-[#111111] whitespace-nowrap"
-              style={{ fontSize: 'clamp(1.75rem,2.8vw,2.2rem)' }}
+              style={{ fontSize: 'clamp(1.75rem,3vw,2.2rem)' }}
             >
               Welcome{' '}
               <span className="text-[#E50914]">back.</span>
@@ -243,7 +259,6 @@ export default function LoginPage() {
             <p className="mt-2 text-body-small text-[#6b7280]">
               Sign in to continue your KingdomDash experience.
             </p>
-          </div>
 
             {/* ── Error alert & Inactive Account Notice ─────────────────────────────── */}
             {new URLSearchParams(location.search).get('error') === 'inactive' ? (
@@ -471,5 +486,6 @@ export default function LoginPage() {
           </div>
         </main>
       </div>
-    )
+    </div>
+  )
 }
