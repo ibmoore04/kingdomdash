@@ -454,9 +454,6 @@ export default function CustomerDashboardPage() {
               </div>
             </div>
           </Link>
-          <Badge variant="primary" className="text-caption hidden md:inline-flex capitalize shrink-0 ml-1">
-            {NAV_ITEMS.find((n) => n.id === activeTab)?.label || 'Orders'}
-          </Badge>
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
@@ -467,8 +464,10 @@ export default function CustomerDashboardPage() {
             onClick={() => handleSelectTab('notifications')}
             title="Notifications"
             aria-label="Notifications"
-            className={`text-text-muted hover:text-text-primary h-8 w-8 sm:h-9 sm:w-9 ${
-              activeTab === 'notifications' ? 'bg-surface-muted text-primary' : ''
+            className={`relative text-text-muted hover:text-text-primary h-9 w-9 rounded-xl transition-colors ${
+              activeTab === 'notifications'
+                ? 'bg-primary/10 text-primary font-bold ring-1 ring-primary/20'
+                : 'hover:bg-neutral-100'
             }`}
           >
             <Bell className="h-4 w-4" aria-hidden="true" />
@@ -478,7 +477,7 @@ export default function CustomerDashboardPage() {
             asChild
             variant="outline"
             size="sm"
-            className="gap-1.5 h-8 px-2 sm:px-3 text-xs font-semibold text-text-secondary hover:text-primary shrink-0"
+            className="gap-1.5 h-8 px-2.5 sm:px-3 text-xs font-semibold text-text-secondary hover:text-primary shrink-0 rounded-xl"
           >
             <Link to="/" title="Back to Public Website">
               <Globe className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
@@ -486,48 +485,56 @@ export default function CustomerDashboardPage() {
             </Link>
           </Button>
 
+          {profile?.full_name && (
+            <button
+              type="button"
+              onClick={() => handleSelectTab('profile')}
+              className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-neutral-100 hover:bg-neutral-200/80 text-xs font-semibold text-neutral-700 transition-colors cursor-pointer"
+              title="Go to profile"
+            >
+              <User className="h-3.5 w-3.5 text-neutral-500" />
+              <span className="max-w-[100px] truncate">{profile.full_name.split(' ')[0]}</span>
+            </button>
+          )}
+
           <Button
             variant="ghost"
             size="sm"
             onClick={() => signOut()}
-            className="text-text-muted hover:text-primary gap-1.5 h-8 px-2 sm:px-3 text-xs font-semibold shrink-0"
+            className="text-text-muted hover:text-rose-600 hover:bg-rose-50 gap-1.5 h-8 px-2 sm:px-3 text-xs font-semibold rounded-xl shrink-0"
             title="Sign Out"
             aria-label="Sign Out"
           >
             <LogOut className="h-4 w-4" aria-hidden="true" />
             <span className="hidden sm:inline">Sign Out</span>
           </Button>
-
-          <Button asChild variant="primary" size="sm" className="hidden sm:inline-flex gap-1.5 h-8 text-xs font-bold text-white bg-primary hover:bg-primary-hover">
-            <Link to="/food" className="text-white">
-              Order Food
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
-          </Button>
         </div>
       </header>
 
       {/* Desktop Horizontal Tab Bar */}
-      <nav aria-label="Customer dashboard tabs" className="hidden lg:flex items-center gap-1 border-b border-border bg-white px-6 py-2 shrink-0 z-10">
-        {NAV_ITEMS.map(({ id, icon: Icon, label }) => {
+      <nav
+        aria-label="Customer dashboard tabs"
+        className="hidden lg:flex items-center gap-1.5 border-b border-border bg-white px-6 py-2.5 shrink-0 z-10 overflow-x-auto scrollbar-none"
+      >
+        {NAV_ITEMS.filter((item) => item.id !== 'notifications').map(({ id, icon: Icon, label }) => {
           const isActive = activeTab === id
           return (
             <button
               key={id}
               type="button"
               onClick={() => handleSelectTab(id)}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all ${
+              className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-primary text-white shadow-xs'
-                  : 'text-text-secondary hover:bg-page-background hover:text-text-primary'
+                  ? 'bg-neutral-900 text-white shadow-xs'
+                  : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
               }`}
             >
-              <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-white' : 'text-neutral-400'}`} aria-hidden="true" />
               <span>{label}</span>
               {id === 'orders' && pendingOrdersCount > 0 && (
                 <span
                   className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                    isActive ? 'bg-white text-primary' : 'bg-amber-100 text-amber-800'
+                    isActive ? 'bg-primary text-white' : 'bg-amber-100 text-amber-800'
                   }`}
                 >
                   {pendingOrdersCount}
@@ -756,10 +763,6 @@ export default function CustomerDashboardPage() {
                   ))}
                 </div>
 
-                {/* 1-Click Past Order Quick Reorder Bar */}
-                {(orderFilter === 'all' || orderFilter === 'completed') && !isLoadingOrders && (
-                  <QuickReorderBar />
-                )}
 
                 {/* Loading state */}
                 {isLoadingOrders && orders.length === 0 && (
