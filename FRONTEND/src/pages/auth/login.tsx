@@ -157,8 +157,8 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Hero message */}
-          <div className="flex flex-col justify-end flex-1 pb-2">
+          {/* Hero message - centered & lifted to align symmetrically with right-hand card */}
+          <div className="flex flex-col justify-center flex-1 my-auto -mt-4 lg:-mt-8 pb-4">
             <h1
               className="font-bold leading-none tracking-tight"
               style={{ fontSize: 'clamp(2.2rem,3.8vw,3.6rem)' }}
