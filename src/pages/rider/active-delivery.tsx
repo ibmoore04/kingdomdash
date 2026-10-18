@@ -31,6 +31,7 @@ import {
   RefreshCw,
   Inbox,
 } from 'lucide-react'
+import { playDispatchAlertChime, triggerHapticFeedback } from '@/utils/audio-chime'
 
 import { supabase } from '@/services/supabase/client'
 
@@ -62,7 +63,14 @@ export default function RiderActiveDeliveryPage() {
       } else {
         setActiveDelivery(null)
       }
-      setPendingOffersCount(inboxData?.length || 0)
+      const newCount = inboxData?.length || 0
+      setPendingOffersCount((prev) => {
+        if (newCount > prev && newCount > 0) {
+          void playDispatchAlertChime()
+          triggerHapticFeedback('warning')
+        }
+        return newCount
+      })
     } finally {
       setIsLoading(false)
     }
