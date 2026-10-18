@@ -104,55 +104,59 @@ export const AdminDashboardPage: React.FC = () => {
   return (
     <div className="space-y-5 sm:space-y-6 animate-fadeIn pb-12 min-w-0 max-w-full overflow-x-hidden">
       {/* ── COMPACT OPERATIONAL CONTROL BAR ───────────────────────────── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-3.5 sm:p-4 rounded-2xl bg-white border border-border shadow-xs">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3.5 p-3.5 sm:p-4 rounded-2xl bg-white border border-border shadow-xs">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
             Live Dispatch Telemetry
           </span>
-          <span className="text-xs text-text-muted hidden md:inline">
+          <span className="text-xs text-text-muted hidden sm:inline">
             Ijebu-Ode Operational Grid
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-          {/* Date Filter */}
-          <AnalyticsDatePicker
-            preset={datePreset}
-            onRangeChange={handleDateChange}
-            startDate={customRange.startDate}
-            endDate={customRange.endDate}
-          />
+        <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 sm:gap-2.5 min-w-0">
+          {/* Date Filter & Refresh Container */}
+          <div className="flex items-center gap-2 shrink-0">
+            <AnalyticsDatePicker
+              preset={datePreset}
+              onRangeChange={handleDateChange}
+              startDate={customRange.startDate}
+              endDate={customRange.endDate}
+            />
 
-          {/* Refresh Button */}
-          <button
-            type="button"
-            onClick={loadAnalytics}
-            disabled={loading}
-            title={`Last refreshed at ${lastRefreshed.toLocaleTimeString()}`}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-primary' : ''}`} />
-          </button>
+            {/* Refresh Button */}
+            <button
+              type="button"
+              onClick={loadAnalytics}
+              disabled={loading}
+              title={`Last refreshed at ${lastRefreshed.toLocaleTimeString()}`}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-primary' : ''}`} />
+            </button>
+          </div>
 
-          {/* Quick Onboarding Triggers */}
-          <button
-            type="button"
-            onClick={() => setIsVendorModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold bg-primary text-white hover:bg-primary-hover transition-colors shadow-xs cursor-pointer min-h-[36px]"
-          >
-            <Store className="w-3.5 h-3.5" />
-            <span>+ Vendor</span>
-          </button>
+          {/* Quick Onboarding Triggers - Grouped so they never break onto separate lines */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsVendorModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold bg-primary text-white hover:bg-primary-hover transition-colors shadow-xs cursor-pointer min-h-[36px]"
+            >
+              <Store className="w-3.5 h-3.5" />
+              <span>+ Vendor</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setIsRiderModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold bg-neutral-900 text-white hover:bg-neutral-800 transition-colors border border-neutral-800 shadow-xs cursor-pointer min-h-[36px]"
-          >
-            <Bike className="w-3.5 h-3.5" />
-            <span>+ Rider</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setIsRiderModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold bg-neutral-900 text-white hover:bg-neutral-800 transition-colors border border-neutral-800 shadow-xs cursor-pointer min-h-[36px]"
+            >
+              <Bike className="w-3.5 h-3.5" />
+              <span>+ Rider</span>
+            </button>
+          </div>
         </div>
       </div>
 

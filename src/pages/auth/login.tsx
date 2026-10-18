@@ -112,7 +112,7 @@ export default function LoginPage() {
         style={{
           backgroundImage: "url('/kingdomDash-realLogin.jpg')",
           backgroundSize: 'cover',
-          backgroundPosition: 'left center',
+          backgroundPosition: 'center 40%',
           backgroundRepeat: 'no-repeat',
         }}
         aria-hidden="true"
@@ -123,7 +123,7 @@ export default function LoginPage() {
         aria-hidden="true"
         style={{
           background:
-            'linear-gradient(to right, rgba(8,6,7,0.82) 0%, rgba(8,6,7,0.55) 38%, rgba(8,6,7,0.18) 62%, rgba(8,6,7,0.05) 100%)',
+            'linear-gradient(to right, rgba(8,6,7,0.85) 0%, rgba(8,6,7,0.65) 45%, rgba(8,6,7,0.3) 75%, rgba(8,6,7,0.15) 100%)',
         }}
       />
       <div
@@ -131,17 +131,17 @@ export default function LoginPage() {
         aria-hidden="true"
         style={{
           background:
-            'radial-gradient(ellipse at 0% 100%, rgba(229,9,20,0.22) 0%, transparent 70%)',
+            'radial-gradient(ellipse at 0% 100%, rgba(229,9,20,0.25) 0%, transparent 70%)',
         }}
       />
 
       {/* ── Page grid ──────────────────────────────────────────────────────── */}
-      <div className="relative z-10 flex min-h-dvh h-dvh w-full">
+      <div className="relative z-10 mx-auto flex min-h-dvh h-dvh w-full max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
 
         {/* ════════════════════════════════════════════════════════════════════
             LEFT — KingdomDash brand experience (hidden on mobile)
         ════════════════════════════════════════════════════════════════════ */}
-        <div className="hidden lg:flex flex-col justify-between w-[52%] px-10 xl:px-14 py-8">
+        <div className="hidden lg:flex flex-col justify-between w-full max-w-xl h-full py-8 pr-8">
 
           {/* Brand lockup */}
           <div className="flex items-center gap-3 flex-shrink-0">
@@ -225,13 +225,13 @@ export default function LoginPage() {
             overflow-y-auto on column: card content scrolls internally if
             viewport is very short; outer page never scrolls.
         ════════════════════════════════════════════════════════════════════ */}
-        <main className="flex flex-1 items-center justify-center lg:justify-end px-4 sm:px-8 lg:px-8 xl:px-12 py-6 overflow-y-auto">
+        <main className="flex flex-1 items-center justify-center lg:justify-end py-6 overflow-y-auto">
 
           {/* Card */}
           <div
-            className="w-full bg-white my-auto"
+            className="w-full bg-white my-auto shadow-2xl"
             style={{
-              maxWidth: '520px',
+              maxWidth: '480px',
               borderRadius: '28px',
               padding: 'clamp(1.5rem,3vw,2.25rem)',
               boxShadow:

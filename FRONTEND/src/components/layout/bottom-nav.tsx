@@ -181,7 +181,7 @@ export function BottomNav() {
         className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-white/95 backdrop-blur-md shadow-lg lg:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        <div className="mx-auto grid h-16 max-w-md grid-cols-5 items-center px-1">
+        <div className="w-full flex h-16 items-center justify-around px-2 sm:px-6 md:px-10">
           {/* Primary Nav Links */}
           {primaryNavItems.map(({ label, to, icon: Icon }) => (
             <NavLink
@@ -190,7 +190,7 @@ export function BottomNav() {
               end={to === '/'}
               className={({ isActive }) =>
                 cn(
-                  'group relative flex min-h-[48px] flex-col items-center justify-center rounded-xl py-1 text-center transition-all',
+                  'group relative flex flex-1 min-h-[48px] flex-col items-center justify-center rounded-xl py-1 text-center transition-all',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                   isActive
                     ? 'text-primary font-bold'
@@ -231,7 +231,7 @@ export function BottomNav() {
             aria-controls="mobile-more-menu"
             onClick={() => setIsMoreOpen((prev) => !prev)}
             className={cn(
-              'group relative flex min-h-[48px] flex-col items-center justify-center rounded-xl py-1 text-center transition-all',
+              'group relative flex flex-1 min-h-[48px] flex-col items-center justify-center rounded-xl py-1 text-center transition-all',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
               isMoreOpen || isMoreActive
                 ? 'text-primary font-bold'

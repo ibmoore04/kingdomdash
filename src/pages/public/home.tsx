@@ -174,9 +174,9 @@ export default function HomePage() {
       {/* ─── 1. STREAMLINED HERO SECTION ─────────────────────────────────── */}
       <section className="relative overflow-hidden bg-gradient-to-b from-neutral-50/70 via-white to-white pt-8 pb-12 sm:pt-12 sm:pb-16 lg:pt-14 lg:pb-20">
         <PageContainer>
-          <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
+          <div className="grid items-center gap-8 md:grid-cols-12 md:gap-8 lg:gap-12">
             {/* Left Column: Headlines & Actions */}
-            <div className="lg:col-span-7 space-y-5 sm:space-y-6">
+            <div className="md:col-span-7 space-y-5 sm:space-y-6">
               {/* Tagline Badge */}
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1.5 text-xs font-bold text-primary">
                 <Flame className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
@@ -290,8 +290,8 @@ export default function HomePage() {
             </div>
 
             {/* Right Column: Visual Showcase */}
-            <div className="lg:col-span-5 relative flex items-center justify-center">
-              <div className="relative w-full max-w-sm lg:max-w-none">
+            <div className="md:col-span-5 relative flex items-center justify-center">
+              <div className="relative w-full max-w-sm md:max-w-none">
                 <div className="relative overflow-hidden rounded-3xl border border-neutral-200/90 bg-white shadow-lg aspect-square">
                   <img
                     src="/images/hero-jollof.jpg"
