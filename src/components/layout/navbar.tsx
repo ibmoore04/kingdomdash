@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { ShoppingBag, User, LogOut, LayoutDashboard, LogIn, UserPlus, Gift, Search } from 'lucide-react'
+import { ShoppingBag, User, LogOut, LayoutDashboard, LogIn, UserPlus, Gift, Search, Crown } from 'lucide-react'
 import { NavLink, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,6 +10,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Logo } from '@/components/layout/logo'
 import { OmniboxSearchModal } from '@/components/shared/omnibox-search-modal'
+import { KingdomAvatar } from '@/components/common/kingdom-avatar'
+import { AvatarPickerModal } from '@/components/common/avatar-picker-modal'
 import { useCartStore } from '@/stores/cart-store'
 import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/cn'
@@ -34,6 +36,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [isCartBouncing, setIsCartBouncing] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
   const prevCountRef = useRef(itemCount)
 
   // Global Ctrl+K / Cmd+K keyboard shortcut
@@ -168,30 +171,55 @@ export function Navbar() {
                 <button
                   type="button"
                   aria-label="User account menu"
-                  className="flex h-10 items-center gap-1.5 rounded-lg border border-border bg-neutral-50 hover:bg-neutral-100 px-2.5 sm:px-3 py-2 text-body-small font-semibold text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="flex h-10 items-center gap-2 rounded-xl border border-border bg-neutral-50 hover:bg-neutral-100 pl-1.5 pr-2.5 sm:pr-3 py-1 text-body-small font-semibold text-text-primary transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-2xs hover:border-amber-400/40"
                 >
-                  <User className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <KingdomAvatar
+                    size="sm"
+                    userId={profile?.id}
+                    name={profile?.full_name}
+                    avatarUrl={profile?.avatar_url}
+                    role={profile?.role}
+                    showBadge={false}
+                    showBorder={true}
+                  />
                   <span className="hidden sm:inline">{profile?.full_name?.split(' ')[0] || 'Account'}</span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <div className="border-b border-border/80 px-3 py-2">
-                  <p className="text-body-small font-bold text-text-primary truncate">
-                    {profile?.full_name || 'My Account'}
-                  </p>
-                  <p className="text-[11px] text-text-muted capitalize">
-                    {profile?.role || 'Customer'}
-                  </p>
+              <DropdownMenuContent align="end" className="w-56 p-1">
+                <div className="flex items-center gap-2.5 border-b border-border/80 p-2.5 mb-1 bg-neutral-50/70 rounded-lg">
+                  <KingdomAvatar
+                    size="md"
+                    userId={profile?.id}
+                    name={profile?.full_name}
+                    avatarUrl={profile?.avatar_url}
+                    role={profile?.role}
+                    showBadge={true}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-body-small font-bold text-text-primary truncate">
+                      {profile?.full_name || 'My Account'}
+                    </p>
+                    <p className="text-[11px] text-text-muted capitalize">
+                      {profile?.role || 'Customer'}
+                    </p>
+                  </div>
                 </div>
                 <DropdownMenuItem asChild>
-                  <Link to={dashboardUrl} className="flex w-full items-center gap-2">
+                  <Link to={dashboardUrl} className="flex w-full items-center gap-2 cursor-pointer">
                     <LayoutDashboard className="h-4 w-4 text-primary" />
                     <span>Dashboard</span>
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setIsAvatarModalOpen(true)}
+                  className="flex w-full items-center gap-2 cursor-pointer"
+                >
+                  <Crown className="h-4 w-4 text-amber-500" />
+                  <span>Choose Character</span>
+                </DropdownMenuItem>
                 {(!profile?.role || profile?.role === 'customer') && (
                   <DropdownMenuItem asChild>
-                    <Link to="/dashboard?tab=rewards" className="flex w-full items-center gap-2">
+                    <Link to="/dashboard?tab=rewards" className="flex w-full items-center gap-2 cursor-pointer">
                       <Gift className="h-4 w-4 text-amber-600" />
                       <span>Rewards &amp; Passes</span>
                     </Link>
@@ -199,7 +227,7 @@ export function Navbar() {
                 )}
                 <DropdownMenuItem
                   onClick={() => signOut()}
-                  className="flex w-full items-center gap-2 text-primary focus:bg-primary-soft focus:text-primary"
+                  className="flex w-full items-center gap-2 text-primary focus:bg-primary-soft focus:text-primary cursor-pointer"
                 >
                   <LogOut className="h-4 w-4" />
                   <span>Sign Out</span>
@@ -253,6 +281,12 @@ export function Navbar() {
       <OmniboxSearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
+      />
+
+      {/* KingdomDash Character Avatar Picker */}
+      <AvatarPickerModal
+        open={isAvatarModalOpen}
+        onOpenChange={setIsAvatarModalOpen}
       />
     </header>
   )

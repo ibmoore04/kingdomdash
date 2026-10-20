@@ -23,6 +23,10 @@ import {
   MoreHorizontal,
   X,
   ChevronRight,
+  Camera,
+  Sparkles,
+  Copy,
+  Check,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth-store'
@@ -42,6 +46,8 @@ import { CancelOrderModal } from '@/components/customer/cancel-order-modal'
 import { QuickReorderBar } from '@/components/customer/quick-reorder-bar'
 import { OrderCardSkeleton } from '@/components/ui/skeletons'
 import { getOrderReview, fetchCustomerReviews } from '@/services/supabase/reviews'
+import { KingdomAvatar } from '@/components/common/kingdom-avatar'
+import { AvatarPickerModal } from '@/components/common/avatar-picker-modal'
 
 type CustomerTab = 'orders' | 'corporate' | 'addresses' | 'profile' | 'rewards' | 'notifications' | 'settings' | 'support'
 
@@ -117,7 +123,30 @@ function getInitialCustomerTab(searchParams: URLSearchParams): CustomerTab {
   } catch {
     // Ignore storage issues in restricted environments
   }
-  return 'orders'
+  return 'profile'
+}
+
+function getTabTitle(tab: CustomerTab): string {
+  switch (tab) {
+    case 'profile':
+      return 'Profile & Account Settings'
+    case 'orders':
+      return 'My Orders'
+    case 'corporate':
+      return 'Corporate Dispatch Portal'
+    case 'addresses':
+      return 'Saved Addresses'
+    case 'rewards':
+      return 'Rewards & Loyalty'
+    case 'notifications':
+      return 'Notifications & System Alerts'
+    case 'support':
+      return 'Support & Help Desk'
+    case 'settings':
+      return 'Preferences & Settings'
+    default:
+      return 'Customer Dashboard'
+  }
 }
 
 export default function CustomerDashboardPage() {
@@ -310,6 +339,19 @@ export default function CustomerDashboardPage() {
   const [reviewsVersion, setReviewsVersion] = useState(0)
   const [profileName, setProfileName] = useState(profile?.full_name || '')
   const [profilePhone, setProfilePhone] = useState(profile?.phone || '')
+  const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState(false)
+  const [hasCopiedRef, setHasCopiedRef] = useState(false)
+  const [profileCity, setProfileCity] = useState((profile as any)?.city || 'Ijebu-Ode, Ogun State')
+  const [profileCountry, setProfileCountry] = useState((profile as any)?.country || 'Nigeria')
+  const [profileCoverage, setProfileCoverage] = useState((profile as any)?.delivery_coverage || 'Ijebu-Ode Metropolis & Campuses')
+  const customerRefCode = `https://kingdomdash.com/order?ref=${profile?.id?.slice(0, 8) || 'kdash'}`
+
+  const handleCopyRef = () => {
+    navigator.clipboard.writeText(customerRefCode)
+    setHasCopiedRef(true)
+    setTimeout(() => setHasCopiedRef(false), 2500)
+  }
+
   const [isSavingProfile, setIsSavingProfile] = useState(false)
   const [profileFeedback, setProfileFeedback] = useState<{
     type: 'success' | 'error'
@@ -433,30 +475,43 @@ export default function CustomerDashboardPage() {
     [setSearchParams]
   )
 
+  const totalOrdersCount = orders.length
+  const deliveredOrdersCount = orders.filter((o) => o.status === 'delivered').length
+  const activeOrdersCount = orders.filter((o) =>
+    ['payment_confirmed', 'preparing', 'ready', 'ready_for_pickup', 'in_transit', 'delivering'].includes(o.status)
+  ).length
+
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-page-background">
-      {/* Header */}
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-white px-4 sm:px-6 z-20">
+    <div className="min-h-screen bg-[#F4F6F9] flex flex-col">
+      {/* 1. Full-Width Top Header */}
+      <header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center justify-between border-b border-neutral-200/90 bg-white/95 backdrop-blur-md px-4 sm:px-8">
+        {/* Brand Logo & Section Title */}
         <div className="flex items-center gap-3 min-w-0">
-          <Link to="/" className="flex items-center gap-2.5 overflow-hidden group">
+          <Link to="/" className="flex items-center gap-2.5 group">
             <img
               src="/KingdomDash-logo.jpg"
               alt="KingdomDash"
-              className="h-9 w-auto rounded-lg object-contain shadow-xs shrink-0"
+              className="h-8 w-auto rounded-lg object-contain shadow-xs shrink-0"
             />
-            <div className="truncate">
+            <div className="flex flex-col">
               <h1 className="sr-only">Customer Dashboard</h1>
-              <div className="font-bold text-text-primary tracking-wide text-sm leading-tight group-hover:text-primary transition-colors">
+              <div className="font-extrabold text-neutral-900 tracking-wide text-xs leading-tight group-hover:text-primary transition-colors">
                 KINGDOM<span className="text-primary">DASH</span>
               </div>
-              <div className="text-[10px] text-primary font-bold uppercase tracking-wider leading-tight">
-                Customer
+              <div className="text-[9px] text-primary font-bold uppercase tracking-wider leading-none">
+                Customer Dashboard
               </div>
             </div>
           </Link>
+          <div className="hidden md:block h-4 w-px bg-neutral-200 mx-1" />
+          <div className="hidden md:block text-sm font-bold text-neutral-700 truncate">
+            {activeTab === 'profile' ? 'Profile & Account Settings' : getTabTitle(activeTab)}
+          </div>
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        {/* Right Header Actions */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Notifications Button */}
           <Button
             type="button"
             variant="ghost"
@@ -464,20 +519,25 @@ export default function CustomerDashboardPage() {
             onClick={() => handleSelectTab('notifications')}
             title="Notifications"
             aria-label="Notifications"
-            className={`relative text-text-muted hover:text-text-primary h-9 w-9 rounded-xl transition-colors ${
+            className={`relative text-neutral-600 hover:text-neutral-900 h-9 w-9 rounded-xl transition-colors ${
               activeTab === 'notifications'
                 ? 'bg-primary/10 text-primary font-bold ring-1 ring-primary/20'
                 : 'hover:bg-neutral-100'
             }`}
           >
             <Bell className="h-4 w-4" aria-hidden="true" />
+            <span className="absolute top-2 right-2 flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
+            </span>
           </Button>
 
+          {/* Public Website Link */}
           <Button
             asChild
             variant="outline"
             size="sm"
-            className="gap-1.5 h-8 px-2.5 sm:px-3 text-xs font-semibold text-text-secondary hover:text-primary shrink-0 rounded-xl"
+            className="gap-1.5 h-8 px-2.5 sm:px-3 text-xs font-semibold text-neutral-700 hover:text-primary rounded-xl"
           >
             <Link to="/" title="Back to Public Website">
               <Globe className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
@@ -485,23 +545,32 @@ export default function CustomerDashboardPage() {
             </Link>
           </Button>
 
+          {/* Profile Avatar Capsule */}
           {profile?.full_name && (
             <button
               type="button"
               onClick={() => handleSelectTab('profile')}
-              className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-neutral-100 hover:bg-neutral-200/80 text-xs font-semibold text-neutral-700 transition-colors cursor-pointer"
+              className="hidden md:inline-flex items-center gap-2 px-2.5 py-1 rounded-xl hover:bg-neutral-100 text-xs font-semibold text-neutral-800 transition-colors cursor-pointer border border-transparent hover:border-neutral-200"
               title="Go to profile"
             >
-              <User className="h-3.5 w-3.5 text-neutral-500" />
-              <span className="max-w-[100px] truncate">{profile.full_name.split(' ')[0]}</span>
+              <KingdomAvatar
+                avatarUrl={profile.avatar_url}
+                name={profile.full_name}
+                size="sm"
+                role="customer"
+                showBadge={false}
+                className="h-7 w-7 ring-1 ring-neutral-200"
+              />
+              <span className="max-w-[120px] truncate font-bold text-neutral-900">{profile.full_name.split(' ')[0]}</span>
             </button>
           )}
 
+          {/* Direct Sign out button */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => signOut()}
-            className="text-text-muted hover:text-rose-600 hover:bg-rose-50 gap-1.5 h-8 px-2 sm:px-3 text-xs font-semibold rounded-xl shrink-0"
+            className="text-neutral-500 hover:text-rose-600 hover:bg-rose-50 gap-1.5 h-8 px-2 sm:px-3 text-xs font-semibold rounded-xl shrink-0"
             title="Sign Out"
             aria-label="Sign Out"
           >
@@ -511,125 +580,483 @@ export default function CustomerDashboardPage() {
         </div>
       </header>
 
-      {/* Desktop Horizontal Tab Bar */}
-      <nav
-        aria-label="Customer dashboard tabs"
-        className="hidden lg:flex items-center gap-1.5 border-b border-border bg-white px-6 py-2.5 shrink-0 z-10 overflow-x-auto scrollbar-none"
-      >
-        {NAV_ITEMS.filter((item) => item.id !== 'notifications').map(({ id, icon: Icon, label }) => {
-          const isActive = activeTab === id
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => handleSelectTab(id)}
-              className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-                isActive
-                  ? 'bg-neutral-900 text-white shadow-xs'
-                  : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
-              }`}
-            >
-              <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-white' : 'text-neutral-400'}`} aria-hidden="true" />
-              <span>{label}</span>
-              {id === 'orders' && pendingOrdersCount > 0 && (
-                <span
-                  className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                    isActive ? 'bg-primary text-white' : 'bg-amber-100 text-amber-800'
-                  }`}
-                >
-                  {pendingOrdersCount}
-                </span>
-              )}
-            </button>
-          )
-        })}
-      </nav>
+      {/* 2. Full-Width Geometric Crimson KingdomDash Cover Banner (Edge-to-Edge) */}
+      <div className="relative h-44 sm:h-52 lg:h-60 w-full overflow-hidden bg-gradient-to-r from-[#700818] via-[#9B1124] to-[#45030C] shadow-inner shrink-0">
+        <svg
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-85"
+          viewBox="0 0 1200 320"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <linearGradient id="facet1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#9B1124" />
+              <stop offset="100%" stopColor="#6B0616" />
+            </linearGradient>
+            <linearGradient id="facet2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#C41E3A" />
+              <stop offset="100%" stopColor="#800A1A" />
+            </linearGradient>
+            <linearGradient id="facet3" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#E11D48" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#9B1124" stopOpacity="0.9" />
+            </linearGradient>
+          </defs>
+          <polygon points="0,0 360,0 240,320 0,320" fill="url(#facet1)" />
+          <polygon points="360,0 760,0 560,320 240,320" fill="url(#facet2)" />
+          <polygon points="760,0 1200,0 980,320 560,320" fill="#750816" />
+          <polygon points="980,320 1200,0 1200,320" fill="#4A040E" />
+          <polygon points="240,320 560,320 420,130" fill="url(#facet3)" />
+          <polygon points="560,320 980,320 780,120" fill="#B91C1C" fillOpacity="0.45" />
+          <polygon points="360,0 580,150 760,0" fill="#F87171" fillOpacity="0.25" />
+          <polygon points="140,0 420,130 240,320" fill="#4A040E" fillOpacity="0.4" />
+        </svg>
+        <div className="absolute inset-0 bg-radial-gradient from-white/10 to-transparent pointer-events-none" />
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col overflow-hidden min-h-0">
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 space-y-6">
-          {/* Pending Application Banner */}
-          {pendingApplication && (
-            <div className="mx-auto max-w-4xl rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-sm">
-              <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 mt-0.5">
-                  {pendingApplication.type === 'rider' ? (
-                    <Bike className="h-5 w-5" aria-hidden="true" />
-                  ) : (
-                    <Store className="h-5 w-5" aria-hidden="true" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h2 className="text-body-large font-bold text-text-primary">
-                      {pendingApplication.type === 'rider'
-                        ? 'Rider Application Under Review'
-                        : 'Vendor Application Under Review'}
-                    </h2>
-                    <Badge variant="warning" className="gap-1 text-caption">
-                      <Clock className="h-3 w-3 animate-pulse" />
-                      Pending Review
-                    </Badge>
-                  </div>
-                  <p className="text-body-small text-text-secondary">
+        <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-start justify-between pt-5 sm:pt-6">
+          <div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-white/15 text-white/90 backdrop-blur-md border border-white/20 uppercase tracking-wider">
+              Customer Portal
+            </span>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white mt-1.5 sm:mt-2 tracking-tight drop-shadow-xs">
+              {activeTab === 'profile' ? 'Profile & Account Settings' : getTabTitle(activeTab)}
+            </p>
+          </div>
+
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setIsAvatarPickerOpen(true)}
+            className="gap-2 bg-black/35 hover:bg-black/55 text-white border-white/25 backdrop-blur-md rounded-xl text-xs font-semibold transition-all shadow-sm hover:scale-102 cursor-pointer shrink-0"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+            <span>Change Character</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* 3. Main Content Area (Cards overlay the red cover banner by -mt-10 sm:-mt-14) */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 sm:-mt-14 lg:-mt-16 pb-24 relative z-10">
+        {/* Pending Application Banner */}
+        {pendingApplication && (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-white/95 backdrop-blur-md p-5 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 mt-0.5">
+                {pendingApplication.type === 'rider' ? (
+                  <Bike className="h-5 w-5" aria-hidden="true" />
+                ) : (
+                  <Store className="h-5 w-5" aria-hidden="true" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="text-body-large font-bold text-text-primary">
                     {pendingApplication.type === 'rider'
-                      ? 'Your application to deliver with KingdomDash is awaiting verification. You can continue shopping as a customer in the meantime.'
-                      : 'Your application to sell on KingdomDash is currently under review by our operations team.'}
-                  </p>
-                  <div className="mt-4">
-                    <Button asChild variant="outline" size="sm" className="gap-1.5 bg-white">
-                      <Link
-                        to={
-                          pendingApplication.type === 'rider'
-                            ? '/onboarding/rider-pending'
-                            : '/onboarding/vendor-pending'
-                        }
-                      >
-                        View Application Status
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </Link>
-                    </Button>
-                  </div>
+                      ? 'Rider Application Under Review'
+                      : 'Vendor Application Under Review'}
+                  </h2>
+                  <Badge variant="warning" className="gap-1 text-caption">
+                    <Clock className="h-3 w-3 animate-pulse" />
+                    Pending Review
+                  </Badge>
+                </div>
+                <p className="text-body-small text-text-secondary">
+                  {pendingApplication.type === 'rider'
+                    ? 'Your application to deliver with KingdomDash is awaiting verification. You can continue shopping as a customer in the meantime.'
+                    : 'Your application to sell on KingdomDash is currently under review by our operations team.'}
+                </p>
+                <div className="mt-4">
+                  <Button asChild variant="outline" size="sm" className="gap-1.5 bg-white">
+                    <Link
+                      to={
+                        pendingApplication.type === 'rider'
+                          ? '/onboarding/rider-pending'
+                          : '/onboarding/vendor-pending'
+                      }
+                    >
+                      View Application Status
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          <div className="mx-auto max-w-4xl">
-            {/* Tab: Orders */}
-            {activeTab === 'orders' && (
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-h3 font-bold text-text-primary">My Orders</h2>
-                      {pendingOrdersCount > 0 && (
-                        <span className="px-2 py-0.5 rounded-full text-caption font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                          {pendingOrdersCount} Awaiting Payment
-                        </span>
-                      )}
+        {/* 12-Column Grid Aligning Sidebar with Profile Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Card 1: Desktop Navigation Sidebar Card (Sticky/Static on scroll) */}
+          <aside aria-label="Customer dashboard sidebar" className="hidden lg:flex flex-col lg:col-span-3 bg-white rounded-2xl border border-neutral-200/90 shadow-md p-3.5 space-y-3 lg:sticky lg:top-20 lg:self-start z-20 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-none">
+            <nav aria-label="Customer navigation menu" className="space-y-1">
+              {NAV_ITEMS.map(({ id, icon: Icon, label }) => {
+                const isActive = activeTab === id
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => handleSelectTab(id)}
+                    className={`w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-primary text-white shadow-xs'
+                        : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/80 font-medium'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-neutral-500'}`} aria-hidden="true" />
+                      <span>{label}</span>
                     </div>
-                    <p className="text-body-small text-text-secondary">
-                      Track current meal and grocery deliveries, complete pending payments, or reorder past favorites.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={loadCustomerOrders}
-                      disabled={isLoadingOrders}
-                      className="gap-1.5 text-text-secondary h-9 text-xs"
-                    >
-                      <RefreshCw className={`w-3.5 h-3.5 ${isLoadingOrders ? 'animate-spin text-primary' : ''}`} />
-                      <span>Refresh</span>
-                    </Button>
-                    <Button asChild variant="primary" size="sm" className="font-bold text-white bg-primary hover:bg-primary-hover h-9 text-xs">
-                      <Link to="/food" className="text-white">Order Food</Link>
-                    </Button>
+                    {id === 'orders' && pendingOrdersCount > 0 && (
+                      <span
+                        className={`h-5 min-w-[20px] px-1.5 flex items-center justify-center rounded-full text-[10px] font-black ${
+                          isActive ? 'bg-white text-primary' : 'bg-primary text-white'
+                        }`}
+                      >
+                        {pendingOrdersCount}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </nav>
+
+            <div className="pt-3 border-t border-neutral-100 space-y-1 bg-neutral-50/50 rounded-xl p-2">
+              <Link
+                to="/"
+                title="Return to public storefront"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-neutral-600 hover:text-primary hover:bg-neutral-100 transition-colors"
+              >
+                <Globe className="h-4 w-4 text-primary" aria-hidden="true" />
+                <span>Public Portal</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => signOut()}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-neutral-600 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+              >
+                <LogOut className="h-4 w-4 text-rose-500" aria-hidden="true" />
+                <span>Log Out</span>
+              </button>
+            </div>
+          </aside>
+
+          {/* Active Tab: Profile (Card 2: Identity + Card 3: Settings Form) */}
+          {activeTab === 'profile' && (
+            <>
+              {/* Card 2: Profile Identity Card */}
+              <div className="lg:col-span-4 bg-white rounded-2xl border border-neutral-200/90 shadow-md p-6 sm:p-7 flex flex-col items-center text-center space-y-4">
+                {/* Circular Avatar with Camera/Sparkle */}
+                <div
+                  className="relative group cursor-pointer"
+                  onClick={() => setIsAvatarPickerOpen(true)}
+                  title="Click to customize your character avatar"
+                >
+                  <KingdomAvatar
+                    size="2xl"
+                    userId={profile?.id}
+                    name={profile?.full_name}
+                    avatarUrl={profile?.avatar_url}
+                    role={profile?.role}
+                    showBadge={false}
+                    className="ring-4 ring-white shadow-xl hover:scale-105 transition-transform"
+                  />
+                  <button
+                    type="button"
+                    aria-label="Change character avatar"
+                    className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white shadow-md border-2 border-white hover:bg-primary-hover transition-transform cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setIsAvatarPickerOpen(true)
+                    }}
+                  >
+                    <Camera className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                {/* Name & Persona */}
+                <div className="w-full">
+                  <h2 className="text-lg font-bold text-neutral-900 leading-tight">
+                    {profile?.full_name || 'Customer Test'}
+                  </h2>
+                  <p className="text-xs text-neutral-500 font-medium truncate max-w-[220px] mx-auto mt-1">
+                    {profile?.email || 'customer@kingdomdash.com'}
+                  </p>
+                  <div className="mt-2">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200/70">
+                      <Sparkles className="h-3 w-3 text-amber-500" />
+                      Royal Persona • Ijebu-Ode
+                    </span>
                   </div>
                 </div>
+
+                {/* Bordered Metrics Rows */}
+                <div className="w-full divide-y divide-neutral-100 border-y border-neutral-100 text-xs">
+                  <div className="py-3 flex items-center justify-between text-neutral-600">
+                    <span className="font-medium">Total Orders Placed</span>
+                    <span className="font-bold text-neutral-900 text-sm">{totalOrdersCount}</span>
+                  </div>
+                  <div className="py-3 flex items-center justify-between text-neutral-600">
+                    <span className="font-medium">Completed Deliveries</span>
+                    <span className="font-bold text-emerald-600 text-sm">{deliveredOrdersCount}</span>
+                  </div>
+                  <div className="py-3 flex items-center justify-between text-neutral-600">
+                    <span className="font-medium">Active In Motion</span>
+                    <span className="font-bold text-neutral-700 text-sm">{activeOrdersCount}</span>
+                  </div>
+                </div>
+
+                {/* Direct Order Button */}
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="w-full rounded-xl border-neutral-200 hover:border-primary/50 text-neutral-800 hover:text-primary font-bold text-xs h-10 shadow-2xs"
+                >
+                  <Link to="/food" className="flex items-center justify-center gap-2">
+                    <ShoppingBag className="h-3.5 w-3.5 text-primary" />
+                    <span>Order Food &amp; Groceries</span>
+                  </Link>
+                </Button>
+
+                {/* Shareable Link Box */}
+                <div className="w-full pt-1">
+                  <div className="flex items-center rounded-xl border border-neutral-200 bg-neutral-50/80 px-3 py-2 text-xs">
+                    <span className="truncate text-neutral-500 font-mono text-[11px] flex-1 text-left">
+                      {customerRefCode}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleCopyRef}
+                      title="Copy referral link"
+                      className="ml-2 p-1 text-neutral-500 hover:text-primary transition-colors cursor-pointer shrink-0"
+                    >
+                      {hasCopiedRef ? (
+                        <Check className="h-3.5 w-3.5 text-emerald-600" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  </div>
+                  {hasCopiedRef && (
+                    <span className="text-[10px] text-emerald-600 font-bold mt-1 block">
+                      Copied to clipboard!
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Card 3: Account Settings Form Card */}
+              <div className="lg:col-span-5 bg-white rounded-2xl border border-neutral-200/90 shadow-md overflow-hidden">
+                {/* Horizontal Navigation Tabs */}
+                <div className="flex items-center border-b border-neutral-200 px-6 sm:px-8 bg-white overflow-x-auto scrollbar-none">
+                  <button
+                    type="button"
+                    className="py-4 px-2 text-xs font-bold border-b-2 border-primary text-primary transition-colors whitespace-nowrap cursor-pointer"
+                  >
+                    Account Settings
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectTab('addresses')}
+                    className="py-4 px-4 text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors whitespace-nowrap cursor-pointer"
+                  >
+                    Saved Addresses
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectTab('orders')}
+                    className="py-4 px-4 text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors whitespace-nowrap cursor-pointer"
+                  >
+                    Order History
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectTab('settings')}
+                    className="py-4 px-4 text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors whitespace-nowrap cursor-pointer"
+                  >
+                    Preferences
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectTab('notifications')}
+                    className="py-4 px-4 text-xs font-semibold text-neutral-500 hover:text-neutral-900 transition-colors whitespace-nowrap cursor-pointer"
+                  >
+                    Notifications
+                  </button>
+                </div>
+
+                {/* Account Form Body */}
+                <form onSubmit={handleSaveProfile} className="p-6 sm:p-8 space-y-5">
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="profile-full-name" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
+                        Full Name <span className="text-rose-600">*</span>
+                      </Label>
+                      <Input
+                        id="profile-full-name"
+                        type="text"
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                        placeholder="Customer Test"
+                        required
+                        className="rounded-xl bg-white border-neutral-200 focus:border-primary text-neutral-900 text-xs h-10 px-3.5 shadow-2xs font-medium"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="profile-phone" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
+                        Contact Phone Number
+                      </Label>
+                      <Input
+                        id="profile-phone"
+                        type="tel"
+                        value={profilePhone}
+                        onChange={(e) => setProfilePhone(e.target.value)}
+                        placeholder="+234 801 234 5678"
+                        className="rounded-xl bg-white border-neutral-200 focus:border-primary text-neutral-900 text-xs h-10 px-3.5 shadow-2xs font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="profile-email" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
+                        Registered Email Address
+                      </Label>
+                      <Input
+                        id="profile-email"
+                        type="email"
+                        value={profile?.email || ''}
+                        disabled
+                        className="rounded-xl bg-neutral-50 border-neutral-200 text-neutral-500 text-xs h-10 px-3.5 shadow-2xs font-medium cursor-not-allowed"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="profile-city" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
+                        City / Campus
+                      </Label>
+                      <Input
+                        id="profile-city"
+                        type="text"
+                        value={profileCity}
+                        onChange={(e) => setProfileCity(e.target.value)}
+                        placeholder="Ijebu-Ode, Ogun State"
+                        className="rounded-xl bg-white border-neutral-200 focus:border-primary text-neutral-900 text-xs h-10 px-3.5 shadow-2xs font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="profile-country" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
+                        Country
+                      </Label>
+                      <Input
+                        id="profile-country"
+                        type="text"
+                        value={profileCountry}
+                        onChange={(e) => setProfileCountry(e.target.value)}
+                        placeholder="Nigeria"
+                        className="rounded-xl bg-white border-neutral-200 focus:border-primary text-neutral-900 text-xs h-10 px-3.5 shadow-2xs font-medium"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="profile-service-area" className="text-xs font-bold uppercase tracking-wider text-neutral-700">
+                        Delivery Coverage
+                      </Label>
+                      <Input
+                        id="profile-service-area"
+                        type="text"
+                        value={profileCoverage}
+                        onChange={(e) => setProfileCoverage(e.target.value)}
+                        placeholder="Ijebu-Ode Metropolis & Campuses"
+                        className="rounded-xl bg-white border-neutral-200 focus:border-primary text-neutral-900 text-xs h-10 px-3.5 shadow-2xs font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {profileFeedback && (
+                    <div
+                      className={`p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                        profileFeedback.type === 'success'
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                          : 'bg-rose-50 text-rose-800 border border-rose-200'
+                      }`}
+                      role="alert"
+                    >
+                      {profileFeedback.type === 'success' ? (
+                        <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0" />
+                      ) : (
+                        <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+                      )}
+                      <span>{profileFeedback.message}</span>
+                    </div>
+                  )}
+
+                  <div className="pt-2">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      disabled={isSavingProfile}
+                      aria-label="Save Changes"
+                      className="bg-primary hover:bg-primary-hover text-white font-bold px-7 h-10 rounded-xl shadow-xs transition-all gap-2 cursor-pointer"
+                    >
+                      {isSavingProfile ? (
+                        <>
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin mr-2" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4" />
+                          <span>Save Changes</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </>
+          )}
+
+          {/* Active Tab: Other Views (Takes 9 columns on desktop) */}
+          {activeTab !== 'profile' && (
+            <div className="lg:col-span-9 space-y-6">
+              {activeTab === 'orders' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl border border-neutral-200/90 shadow-md p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div className="flex items-center gap-2 flex-wrap">
+        <h2 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">My Orders</h2>
+        {pendingOrdersCount > 0 && (
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+            {pendingOrdersCount} Awaiting Payment
+          </span>
+        )}
+      </div>
+      <p className="text-xs sm:text-sm text-neutral-500 mt-1">
+        Track current meal and grocery deliveries, complete pending payments, or reorder past favorites.
+      </p>
+    </div>
+    <div className="flex items-center gap-2.5 shrink-0">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={loadCustomerOrders}
+        disabled={isLoadingOrders}
+        className="gap-1.5 text-neutral-700 h-9 text-xs rounded-xl"
+      >
+        <RefreshCw className={`w-3.5 h-3.5 ${isLoadingOrders ? 'animate-spin text-primary' : ''}`} />
+        <span>Refresh</span>
+      </Button>
+      <Button asChild variant="primary" size="sm" className="font-bold text-white bg-primary hover:bg-primary-hover h-9 text-xs rounded-xl shadow-xs">
+        <Link to="/food" className="text-white">Order Food</Link>
+      </Button>
+    </div>
+  </div>
 
                 {/* Active Order Hero Tracker Banner */}
                 {activeInTransitOrder && (
@@ -858,27 +1285,26 @@ export default function CustomerDashboardPage() {
               </div>
             )}
 
-            {/* Tab: Addresses */}
-            {activeTab === 'addresses' && (
+              {activeTab === 'addresses' && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-h3 font-bold text-text-primary">Saved Addresses</h2>
-                    <p className="text-body-small text-text-secondary">
-                      Manage your home, office, and delivery pickup locations.
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSelectTab('settings')}
-                    className="gap-1.5"
-                  >
-                    <Plus className="h-4 w-4" aria-hidden="true" />
-                    Edit in Settings
-                  </Button>
-                </div>
+                <div className="bg-white rounded-2xl border border-neutral-200/90 shadow-md p-5 sm:p-6 flex items-center justify-between gap-4">
+    <div>
+      <h2 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">Saved Addresses</h2>
+      <p className="text-xs sm:text-sm text-neutral-500 mt-1">
+        Manage your home, office, and delivery pickup locations.
+      </p>
+    </div>
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={() => handleSelectTab('settings')}
+      className="gap-1.5 rounded-xl text-xs h-9"
+    >
+      <Plus className="h-4 w-4" aria-hidden="true" />
+      Edit in Settings
+    </Button>
+  </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="p-5 rounded-2xl border border-primary/30 bg-primary-soft/10 shadow-xs relative">
@@ -900,133 +1326,7 @@ export default function CustomerDashboardPage() {
               </div>
             )}
 
-            {/* Tab: Profile */}
-            {activeTab === 'profile' && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-h3 font-bold text-text-primary">Customer Profile</h2>
-                  <p className="text-body-small text-text-secondary">
-                    Manage your personal details and contact information.
-                  </p>
-                </div>
-
-                {profileFeedback && (
-                  <div
-                    className={`rounded-xl border p-4 text-body-small flex items-center gap-3 ${
-                      profileFeedback.type === 'success'
-                        ? 'border-status-success/20 bg-status-success/10 text-status-success'
-                        : 'border-status-error/20 bg-status-error/10 text-status-error'
-                    }`}
-                    role="alert"
-                  >
-                    {profileFeedback.type === 'success' ? (
-                      <CheckCircle className="h-5 w-5 shrink-0" />
-                    ) : (
-                      <AlertCircle className="h-5 w-5 shrink-0" />
-                    )}
-                    <span>{profileFeedback.message}</span>
-                  </div>
-                )}
-
-                {/* Identity Summary Card */}
-                <div className="p-6 rounded-2xl border border-border bg-white shadow-xs">
-                  <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-primary text-white font-bold text-h3 flex items-center justify-center shrink-0">
-                      {(profile?.full_name || 'C').charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-body-large font-bold text-text-primary truncate">
-                        {profile?.full_name || 'Valued Customer'}
-                      </h3>
-                      <p className="text-body-small text-text-secondary truncate">{profile?.email}</p>
-                      <Badge variant="success" className="mt-1.5">
-                        Active Customer
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Editable Profile Form */}
-                <div className="p-6 rounded-2xl border border-border bg-white shadow-xs">
-                  <h3 className="text-body-large font-bold text-text-primary border-b border-border pb-4 mb-5">
-                    Edit Personal Information
-                  </h3>
-
-                  <form onSubmit={handleSaveProfile} className="space-y-5">
-                    <div className="grid gap-5 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="profile-full-name" className="font-semibold text-text-primary">
-                          Full Name <span className="text-status-error">*</span>
-                        </Label>
-                        <Input
-                          id="profile-full-name"
-                          type="text"
-                          value={profileName}
-                          onChange={(e) => setProfileName(e.target.value)}
-                          placeholder="Your full name"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="profile-phone" className="font-semibold text-text-primary">
-                          Contact Phone Number
-                        </Label>
-                        <Input
-                          id="profile-phone"
-                          type="tel"
-                          value={profilePhone}
-                          onChange={(e) => setProfilePhone(e.target.value)}
-                          placeholder="+234 801 234 5678"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="profile-email" className="font-semibold text-text-primary">
-                        Registered Email Address
-                      </Label>
-                      <Input
-                        id="profile-email"
-                        type="email"
-                        value={profile?.email || ''}
-                        disabled
-                        className="bg-light-surface text-text-muted"
-                      />
-                      <p className="text-caption text-text-muted">
-                        Email is managed via your secure account credentials.
-                      </p>
-                    </div>
-
-                    <div className="pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleSelectTab('settings')}
-                        className="gap-1.5 text-text-muted hover:text-text-primary"
-                      >
-                        <Settings className="h-4 w-4" aria-hidden="true" />
-                        Manage Preferences in Settings
-                      </Button>
-
-                      <Button
-                        type="submit"
-                        variant="primary"
-                        size="sm"
-                        disabled={isSavingProfile}
-                        className="gap-2 w-full sm:w-auto font-bold text-white bg-primary hover:bg-primary-hover"
-                      >
-                        <Save className="h-4 w-4" aria-hidden="true" />
-                        {isSavingProfile ? 'Saving Changes…' : 'Save Changes'}
-                      </Button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
-
-            {/* Tab: Corporate Dispatch Portal */}
+              {/* Tab: Corporate Dispatch Portal */}
             {activeTab === 'corporate' && (
               <CustomerCorporateTab />
             )}
@@ -1053,9 +1353,10 @@ export default function CustomerDashboardPage() {
             {activeTab === 'settings' && (
               <CustomerSettingsTab />
             )}
-          </div>
-        </main>
-      </div>
+            </div>
+          )}
+        </div>
+      </main>
 
       {/* Backdrop overlay for Mobile More Menu */}
       {isMoreOpen && (
@@ -1200,6 +1501,12 @@ export default function CustomerDashboardPage() {
           <span className="truncate max-w-[54px]">More</span>
         </button>
       </nav>
+
+      {/* Royal Character Avatar Picker Modal */}
+      <AvatarPickerModal
+        open={isAvatarPickerOpen}
+        onOpenChange={setIsAvatarPickerOpen}
+      />
     </div>
   )
 }

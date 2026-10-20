@@ -10,13 +10,13 @@ import {
   LogOut,
   Star,
   HelpCircle,
-  Bike,
   ShieldCheck,
 } from 'lucide-react'
 import { NavLink, Link } from 'react-router-dom'
 import type { RiderProfile } from '@/types/rider'
 import { Badge } from '@/components/ui/badge'
 import { useAuthStore } from '@/stores/auth-store'
+import { KingdomAvatar } from '@/components/common/kingdom-avatar'
 
 interface RiderSidebarProps {
   rider: RiderProfile | null
@@ -117,16 +117,15 @@ export function RiderSidebar({
       {/* ── Rider Profile & Duty Status Card (FIXED) ─────────────────────────── */}
       <div className="p-3 mx-3 my-2.5 rounded-2xl bg-page-background border border-border/80 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold shrink-0 border border-primary/20">
-            {rider?.avatar_url ? (
-              <img
-                src={rider.avatar_url}
-                alt={rider.full_name || 'Rider'}
-                className="h-full w-full rounded-xl object-cover"
-              />
-            ) : (
-              <Bike className="h-5 w-5" />
-            )}
+          <div className="relative flex shrink-0">
+            <KingdomAvatar
+              size="md"
+              userId={rider?.id}
+              name={rider?.full_name}
+              avatarUrl={rider?.avatar_url}
+              role="rider"
+              showBadge={true}
+            />
             {/* Live duty indicator dot */}
             <span
               className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white ${

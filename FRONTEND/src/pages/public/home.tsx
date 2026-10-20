@@ -25,6 +25,7 @@ import { LocationPermissionModal } from '@/components/common/location-permission
 import { getCurrentBrowserCoordinates } from '@/utils/geo'
 import { getGeocodingProvider } from '@/services/geocoding'
 import { PromoHeroCarousel } from '@/components/shared/promo-hero-carousel'
+import { HeroFoodCarousel } from '@/components/home/hero-food-carousel'
 import { QuickReorderBar } from '@/components/customer/quick-reorder-bar'
 import { appConfig } from '@/config/app.config'
 import { useSeo } from '@/hooks/use-seo'
@@ -289,48 +290,9 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right Column: Visual Showcase */}
-            <div className="md:col-span-5 relative flex items-center justify-center">
-              <div className="relative w-full max-w-sm md:max-w-none">
-                <div className="relative overflow-hidden rounded-3xl border border-neutral-200/90 bg-white shadow-lg aspect-square">
-                  <img
-                    src="/images/hero-jollof.jpg"
-                    alt="Nigerian Smoky Jollof Rice Combo with grilled chicken and plantain"
-                    className="h-full w-full object-cover object-center"
-                    loading="eager"
-                  />
-                </div>
-
-                {/* Floating "Today's Pick" Pill/Card */}
-                <div className="absolute -bottom-4 right-2 sm:right-4 w-60 sm:w-68 rounded-2xl border border-neutral-200 bg-white/95 p-3.5 shadow-lg backdrop-blur-md space-y-2 animate-fade-up">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
-                      <Flame className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
-                      <span>Today&apos;s Pick</span>
-                    </div>
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-extrabold text-primary">
-                      HOT
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-neutral-900">Jollof Rice Combo</h3>
-                    <p className="text-[11px] text-neutral-500 line-clamp-1">
-                      Party Jollof with grilled chicken &amp; dodo
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-0.5">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-xs sm:text-sm font-extrabold text-neutral-900">₦5,500</span>
-                      <span className="text-[11px] text-neutral-400 line-through">₦6,500</span>
-                    </div>
-                    <Button asChild size="sm" variant="primary" className="h-7 rounded-lg px-2.5 text-xs font-bold text-white bg-primary hover:bg-primary-hover">
-                      <Link to="/food" className="text-white">Order Now</Link>
-                    </Button>
-                  </div>
-                </div>
-              </div>
+            {/* Right Column: Dynamic Animated Vendor Food Showcase */}
+            <div className="md:col-span-5 relative flex items-center justify-center pb-8 sm:pb-0">
+              <HeroFoodCarousel />
             </div>
           </div>
         </PageContainer>

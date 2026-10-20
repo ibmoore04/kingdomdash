@@ -56,10 +56,18 @@ export function QuickReorderBar() {
       try {
         const { data, error } = await getOrdersByCustomer(customerId)
         if (isMounted && !error && Array.isArray(data)) {
-          // Take top 4 most recent orders that have items
-          const valid = (data as PastOrder[])
-            .filter((o) => o.order_items && o.order_items.length > 0)
-            .slice(0, 4)
+          // Take top 4 most recent orders that have items, deduplicated by vendor
+          const seenVendors = new Set<string>()
+          const valid: PastOrder[] = []
+          for (const o of data as PastOrder[]) {
+            if (!o.order_items || o.order_items.length === 0) continue
+            const vendorKey = o.vendor_id || o.vendors?.id || o.vendors?.business_name || o.id
+            if (!seenVendors.has(vendorKey)) {
+              seenVendors.add(vendorKey)
+              valid.push(o)
+            }
+            if (valid.length >= 4) break
+          }
           setPastOrders(valid)
         }
       } catch {

@@ -9,6 +9,7 @@ import {
   Save,
   Phone,
   Mail,
+  Settings,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
@@ -236,11 +237,17 @@ export function CustomerSettingsTab() {
 
   return (
     <div className="space-y-8 max-w-4xl pb-16">
-      <div>
-        <h2 className="text-h3 font-bold text-text-primary">Account & Preferences</h2>
-        <p className="text-body-small text-text-secondary mt-1">
-          Manage your contact information, delivery drop-off instructions, and order notification alerts.
-        </p>
+      {/* Header Elevated Card */}
+      <div className="bg-white rounded-2xl border border-neutral-200/90 shadow-md p-5 sm:p-6 mb-6 flex items-center gap-3.5">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <Settings className="h-6 w-6" aria-hidden="true" />
+        </div>
+        <div>
+          <h2 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">Account & Preferences</h2>
+          <p className="text-xs sm:text-sm text-neutral-500 mt-0.5">
+            Manage your contact information, delivery drop-off instructions, and order notification alerts.
+          </p>
+        </div>
       </div>
 
       {/* 1. Contact Information */}
