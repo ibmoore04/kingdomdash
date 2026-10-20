@@ -11,6 +11,8 @@ import { getRiderActiveDelivery } from '@/services/rider/custody-service'
 import type { AssignmentInboxOffer } from '@/types/rider'
 import { AssignmentInboxList } from '@/components/rider/assignments/assignment-inbox-list'
 import { supabase } from '@/services/supabase/client'
+import { Inbox } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 export default function RiderAssignmentsPage() {
   const navigate = useNavigate()
@@ -96,11 +98,29 @@ export default function RiderAssignmentsPage() {
       inboxCount={offers.length}
     >
       <div className="space-y-4">
-        <div>
-          <h1 className="text-h3 font-bold text-text-primary">Dispatch Offers</h1>
-          <p className="text-body-small text-text-secondary">
-            Review and accept pending delivery invitations in your coverage zone.
-          </p>
+        <div className="bg-white rounded-2xl border border-neutral-200/90 shadow-md p-5 sm:p-6 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Inbox className="h-6 w-6" aria-hidden="true" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">Dispatch Offers</h1>
+                {offers.length > 0 ? (
+                  <Badge variant="primary" className="font-semibold text-caption">
+                    {offers.length} New Offer{offers.length > 1 ? 's' : ''}
+                  </Badge>
+                ) : (
+                  <Badge variant="default" className="font-semibold text-caption text-text-muted">
+                    Radar Active
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs sm:text-sm text-neutral-500 mt-0.5">
+                Review and accept pending delivery invitations in your coverage zone.
+              </p>
+            </div>
+          </div>
         </div>
 
         <AssignmentInboxList

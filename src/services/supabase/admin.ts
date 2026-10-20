@@ -48,6 +48,7 @@ export async function getAdminAnalytics(
 export async function getUsers(params?: {
   search?: string
   role?: string
+  isActive?: boolean
   page?: number
   limit?: number
 }) {
@@ -64,6 +65,10 @@ export async function getUsers(params?: {
     query = query.eq('role', params.role)
   }
 
+  if (params?.isActive !== undefined) {
+    query = query.eq('is_active', params.isActive)
+  }
+
   if (params?.search && params.search.trim()) {
     const clean = sanitizePostgrestSearch(params.search)
     if (clean) {
@@ -72,7 +77,86 @@ export async function getUsers(params?: {
     }
   }
 
-  return query.order('created_at', { ascending: false }).range(from, to)
+  const res = await query.order('created_at', { ascending: false }).range(from, to)
+  if (!res.data || res.data.length === 0) {
+    return res
+  }
+
+  // Identify profiles where phone is absent or empty string
+  const missingPhoneUserIds = res.data
+    .filter((u: any) => !u.phone || !String(u.phone).trim())
+    .map((u: any) => u.id)
+
+  if (missingPhoneUserIds.length > 0) {
+    try {
+      const [addressesRes, riderAppsRes, vendorAppsRes, ridersRes] = await Promise.all([
+        db
+          .from('addresses')
+          .select('profile_id, phone')
+          .in('profile_id', missingPhoneUserIds)
+          .not('phone', 'is', null)
+          .order('created_at', { ascending: false }),
+        db
+          .from('rider_applications')
+          .select('profile_id, phone')
+          .in('profile_id', missingPhoneUserIds)
+          .not('phone', 'is', null)
+          .order('submitted_at', { ascending: false }),
+        db
+          .from('vendor_applications')
+          .select('profile_id, phone')
+          .in('profile_id', missingPhoneUserIds)
+          .not('phone', 'is', null)
+          .order('submitted_at', { ascending: false }),
+        db
+          .from('riders')
+          .select('profile_id, phone')
+          .in('profile_id', missingPhoneUserIds)
+          .not('phone', 'is', null),
+      ])
+
+      const fallbackMap = new Map<string, string>()
+
+      const registerFallbacks = (list: any[] | null) => {
+        if (!list) return
+        for (const item of list) {
+          const pId = item.profile_id
+          const pPhone = item.phone ? String(item.phone).trim() : ''
+          if (pId && pPhone && !fallbackMap.has(pId)) {
+            fallbackMap.set(pId, pPhone)
+          }
+        }
+      }
+
+      registerFallbacks(addressesRes.data)
+      registerFallbacks(riderAppsRes.data)
+      registerFallbacks(vendorAppsRes.data)
+      registerFallbacks(ridersRes.data)
+
+      for (const row of res.data) {
+        if ((!row.phone || !String(row.phone).trim()) && fallbackMap.has(row.id)) {
+          const resolvedPhone = fallbackMap.get(row.id)!
+          row.phone = resolvedPhone
+          // Asynchronously self-heal profiles table without blocking admin view
+          db.from('profiles').update({ phone: resolvedPhone }).eq('id', row.id).then(() => {})
+        }
+      }
+    } catch (err) {
+      console.warn('[getUsers] Phone fallback resolution error:', err)
+    }
+  }
+
+  // Standardize both phone and phone_number fields across all rows
+  res.data = res.data.map((u: any) => {
+    const canonicalPhone = u.phone || u.phone_number || null
+    return {
+      ...u,
+      phone: canonicalPhone,
+      phone_number: canonicalPhone,
+    }
+  })
+
+  return res
 }
 
 export async function toggleUserActive(userId: string, isActive: boolean) {

@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react'
-import { LogOut, Settings, Bell, Globe, MapPin } from 'lucide-react'
+import { LogOut, Bell, Globe, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuthStore } from '@/stores/auth-store'
 import type { RiderProfile } from '@/types/rider'
-import { AvailabilitySwitch } from '../dashboard/availability-switch'
 import { getUnreadNotificationCount, subscribeToMyNotifications } from '@/services/supabase/notifications'
+import { KingdomAvatar } from '@/components/common/kingdom-avatar'
 
 interface RiderHeaderProps {
   rider: RiderProfile | null
-  onToggleAvailability: (next: boolean) => Promise<void>
+  onToggleAvailability?: (next: boolean) => Promise<void>
 }
 
-export function RiderHeader({ rider, onToggleAvailability }: RiderHeaderProps) {
+export function RiderHeader({ rider }: RiderHeaderProps) {
   const { profile, signOut } = useAuthStore()
   const [unreadCount, setUnreadCount] = useState<number>(0)
 
@@ -46,120 +46,116 @@ export function RiderHeader({ rider, onToggleAvailability }: RiderHeaderProps) {
   }, [profile?.id])
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-white/95 backdrop-blur-md px-3.5 sm:px-6 shadow-xs shrink-0">
-      {/* ── Left Side: Mobile Brand / Desktop Zone Indicator ─────────────── */}
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-        {/* Mobile-only logo */}
-        <Link to="/rider/dashboard" className="flex items-center gap-2.5 lg:hidden shrink-0">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 p-1 shrink-0">
-            <img
-              src="/KingdomDash-emblem-clean.png"
-              alt="KingdomDash"
-              className="h-full w-full object-contain"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none'
-              }}
-            />
-          </div>
-          <div className="min-w-0">
-            <span className="text-sm font-bold text-text-primary block leading-tight truncate">
-              Kingdom<span className="text-primary">Dash</span>
-            </span>
-            <span className="text-[10px] font-bold text-primary block uppercase tracking-wider leading-none">
-              Rider
-            </span>
+    <header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center justify-between border-b border-neutral-200/90 bg-white/95 backdrop-blur-md px-3 sm:px-6 lg:px-8">
+      {/* ── Left Side: Brand Logo & Section Title ─────────────────────────── */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <Link to="/rider/dashboard" className="flex items-center gap-1.5 sm:gap-2.5 group shrink-0">
+          <img
+            src="/KingdomDash-logo.jpg"
+            alt="KingdomDash"
+            className="h-7 sm:h-8 w-auto rounded-lg object-contain shadow-xs shrink-0"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none'
+            }}
+          />
+          <div className="flex flex-col shrink-0">
+            <div className="font-extrabold text-neutral-900 tracking-wide text-xs leading-tight group-hover:text-primary transition-colors whitespace-nowrap">
+              KINGDOM<span className="text-primary">DASH</span>
+            </div>
+            <div className="hidden sm:block text-[9px] text-primary font-bold uppercase tracking-wider leading-none whitespace-nowrap">
+              Rider Dispatch
+            </div>
           </div>
         </Link>
 
-        {/* Desktop Location / Fleet badge */}
-        <div className="hidden lg:flex items-center gap-2.5">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-page-background border border-border/80 text-text-secondary text-caption font-semibold">
-            <MapPin className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
-            <span>Ijebu-Ode Fleet Hub</span>
-          </div>
+        {/* Fleet Hub & Vehicle Badge — only on large desktop screens to prevent tablet header overflow */}
+        <div className="hidden xl:block h-4 w-px bg-neutral-200 mx-1 shrink-0" />
+        <div className="hidden xl:flex items-center gap-2 text-xs font-semibold text-neutral-600 whitespace-nowrap shrink-0">
+          <MapPin className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
+          <span>Ijebu-Ode Fleet Hub</span>
           {rider && (
-            <Badge variant="info" className="capitalize text-[11px] font-semibold">
+            <Badge variant="info" className="capitalize text-[10px] font-semibold whitespace-nowrap">
               {rider.vehicle_type}
             </Badge>
           )}
         </div>
       </div>
 
-      {/* ── Right Side: Availability Switch + Actions ─────────────────────── */}
-      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        {rider && (
-          <AvailabilitySwitch
-            isAvailable={rider.is_available}
-            isVerified={rider.is_verified}
-            isActive={rider.is_active}
-            inFlightCount={rider.active_in_flight_count || 0}
-            onToggle={onToggleAvailability}
-            compact
-          />
+      {/* ── Right Side: Navigation & Profile Actions ───────────────────────── */}
+      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        {/* Notifications Button */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          asChild
+          className="relative text-neutral-600 hover:text-neutral-900 h-8 w-8 sm:h-9 sm:w-9 rounded-xl transition-colors hover:bg-neutral-100 shrink-0"
+        >
+          <Link
+            to="/rider/notifications"
+            title={
+              unreadCount > 0
+                ? `${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}`
+                : 'Rider Notifications'
+            }
+            aria-label="Notifications"
+          >
+            <Bell className="h-4 w-4" aria-hidden="true" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
+              </span>
+            )}
+          </Link>
+        </Button>
+
+        {/* Public Website Link (Desktop & Tablet only, hidden on mobile to prevent squishing header actions) */}
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          className="hidden md:inline-flex gap-1.5 h-8 px-2.5 lg:px-3 text-xs font-semibold text-neutral-700 hover:text-primary rounded-xl shrink-0"
+        >
+          <Link to="/" title="Back to Public Website">
+            <Globe className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
+            <span className="hidden lg:inline whitespace-nowrap">Website</span>
+          </Link>
+        </Button>
+
+        {/* Profile Avatar Capsule */}
+        {rider?.full_name && (
+          <Link
+            to="/rider/profile"
+            className="inline-flex items-center gap-1.5 sm:gap-2 p-1 sm:px-2.5 sm:py-1 rounded-xl hover:bg-neutral-100 text-xs font-semibold text-neutral-800 transition-colors cursor-pointer border border-transparent hover:border-neutral-200 shrink-0"
+            title={`Rider Profile: ${rider.full_name}`}
+          >
+            <KingdomAvatar
+              avatarUrl={rider.avatar_url}
+              name={rider.full_name}
+              size="sm"
+              role="rider"
+              showBadge={false}
+              className="h-7 w-7 ring-1 ring-neutral-200 shrink-0"
+            />
+            <span className="hidden lg:inline max-w-[100px] truncate font-bold text-neutral-900">
+              {rider.full_name.split(' ')[0]}
+            </span>
+          </Link>
         )}
 
-        <div className="flex items-center gap-1 sm:gap-2 sm:border-l sm:border-border sm:pl-3">
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="hidden sm:inline-flex h-8 px-2.5 sm:px-3 text-xs font-semibold text-text-secondary hover:text-primary gap-1.5 shrink-0 rounded-xl"
-          >
-            <Link to="/" title="Back to Public Website">
-              <Globe className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
-              <span>Website</span>
-            </Link>
-          </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            asChild
-            className="relative text-text-muted hover:text-text-primary shrink-0 rounded-xl h-9 w-9"
-          >
-            <Link
-              to="/rider/notifications"
-              title={
-                unreadCount > 0
-                  ? `${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}`
-                  : 'Rider Notifications'
-              }
-              aria-label="Notifications"
-            >
-              <Bell className="h-4.5 w-4.5" aria-hidden="true" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </Link>
-          </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            asChild
-            className="hidden sm:inline-flex text-text-muted hover:text-text-primary rounded-xl h-9 w-9"
-          >
-            <Link to="/rider/settings" title="Rider Settings" aria-label="Settings">
-              <Settings className="h-4.5 w-4.5" aria-hidden="true" />
-            </Link>
-          </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => signOut()}
-            title="Sign out of Rider Portal"
-            className="hidden sm:inline-flex text-text-muted hover:text-error hover:bg-error/10 rounded-xl h-9 w-9"
-            aria-label="Sign out"
-          >
-            <LogOut className="h-4.5 w-4.5" aria-hidden="true" />
-          </Button>
-        </div>
+        {/* Direct Sign out button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => signOut()}
+          className="text-neutral-500 hover:text-rose-600 hover:bg-rose-50 gap-1.5 h-8 w-8 sm:w-auto px-0 sm:px-2.5 lg:px-3 text-xs font-semibold rounded-xl shrink-0 flex items-center justify-center"
+          title="Sign Out"
+          aria-label="Sign Out"
+        >
+          <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="hidden lg:inline whitespace-nowrap">Sign Out</span>
+        </Button>
       </div>
     </header>
   )

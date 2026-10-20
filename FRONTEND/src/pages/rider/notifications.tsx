@@ -175,24 +175,29 @@ export default function RiderNotificationsPage() {
   return (
     <RiderLayout>
       <div className="space-y-5 max-w-4xl mx-auto pb-12 w-full min-w-0 overflow-x-hidden">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border/80 pb-4">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-h3 font-bold text-text-primary">Notifications</h1>
-              {unreadCount > 0 ? (
-                <Badge variant="warning" className="font-semibold text-caption">
-                  {unreadCount} Unread
-                </Badge>
-              ) : (
-                <Badge variant="default" className="font-semibold text-caption text-text-muted">
-                  All caught up
-                </Badge>
-              )}
+        {/* Header Elevated Card */}
+        <div className="bg-white rounded-2xl border border-neutral-200/90 shadow-md p-5 sm:p-6 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="min-w-0 flex items-center gap-3.5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Bell className="h-6 w-6" aria-hidden="true" />
             </div>
-            <p className="text-body-small text-text-secondary mt-1">
-              Dispatch requests, route alerts, earning credits, and fleet announcements.
-            </p>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">Notifications</h1>
+                {unreadCount > 0 ? (
+                  <Badge variant="warning" className="font-semibold text-caption">
+                    {unreadCount} Unread
+                  </Badge>
+                ) : (
+                  <Badge variant="default" className="font-semibold text-caption text-text-muted">
+                    All caught up
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs sm:text-sm text-neutral-500 mt-0.5">
+                Dispatch requests, route alerts, earning credits, and fleet announcements.
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -202,7 +207,7 @@ export default function RiderNotificationsPage() {
               size="sm"
               onClick={handleMarkAllAsRead}
               disabled={unreadCount === 0 || isLoading}
-              className="gap-1.5 text-caption h-8"
+              className="gap-1.5 text-xs font-semibold h-9 rounded-xl"
             >
               <CheckCheck className="h-4 w-4" aria-hidden="true" />
               Mark all read
@@ -215,7 +220,7 @@ export default function RiderNotificationsPage() {
               onClick={loadNotifications}
               disabled={isLoading}
               title="Refresh notifications"
-              className="text-text-muted hover:text-text-primary h-8 w-8"
+              className="text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 h-9 w-9 rounded-xl"
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} aria-hidden="true" />
             </Button>

@@ -149,6 +149,29 @@ function getTabTitle(tab: CustomerTab): string {
   }
 }
 
+function getTabSubtitle(tab: CustomerTab): string {
+  switch (tab) {
+    case 'profile':
+      return 'Authoritative profile details, security credentials, and royal character identity.'
+    case 'orders':
+      return 'Track live meal preparation, supermarket shopping carts, and courier delivery dispatches.'
+    case 'corporate':
+      return 'Manage bulk company deliveries, recurring fleet runs, and corporate billing statements.'
+    case 'addresses':
+      return 'Saved delivery destinations, residential landmarks, and verified GPS drop-off pins.'
+    case 'rewards':
+      return 'Earn KingdomDash loyalty points, unlock discount tiers, and redeem delivery vouchers.'
+    case 'notifications':
+      return 'Real-time order milestone alerts, priority status pings, and administrative announcements.'
+    case 'support':
+      return 'Direct 24/7 priority customer support, live courier resolution, and ticket history.'
+    case 'settings':
+      return 'Notification preferences, privacy safeguards, and account configuration.'
+    default:
+      return 'Welcome to your KingdomDash customer management console and order hub.'
+  }
+}
+
 export default function CustomerDashboardPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { profile, signOut } = useAuthStore()
@@ -581,7 +604,7 @@ export default function CustomerDashboardPage() {
       </header>
 
       {/* 2. Full-Width Geometric Crimson KingdomDash Cover Banner (Edge-to-Edge) */}
-      <div className="relative h-44 sm:h-52 lg:h-60 w-full overflow-hidden bg-gradient-to-r from-[#700818] via-[#9B1124] to-[#45030C] shadow-inner shrink-0">
+      <div className="relative min-h-[12rem] sm:min-h-[14rem] lg:min-h-[15.5rem] w-full overflow-hidden bg-gradient-to-r from-[#5a0513] via-[#850d1e] to-[#38020a] shadow-inner shrink-0">
         <svg
           className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-85"
           viewBox="0 0 1200 320"
@@ -612,13 +635,31 @@ export default function CustomerDashboardPage() {
         </svg>
         <div className="absolute inset-0 bg-radial-gradient from-white/10 to-transparent pointer-events-none" />
 
-        <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-start justify-between pt-5 sm:pt-6">
-          <div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-white/15 text-white/90 backdrop-blur-md border border-white/20 uppercase tracking-wider">
-              Customer Portal
-            </span>
-            <p className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white mt-1.5 sm:mt-2 tracking-tight drop-shadow-xs">
+        <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-start justify-between gap-4 pt-5 sm:pt-6">
+          <div className="space-y-1.5 max-w-2xl">
+            {/* Sleek Top Pill Badge */}
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold bg-white/15 text-white backdrop-blur-md border border-white/25 uppercase tracking-widest shadow-2xs">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+                </span>
+                <span>Customer Portal</span>
+              </span>
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono font-semibold text-rose-200/90 tracking-wider">
+                <span className="text-white/40">•</span>
+                <span>Swift in Motion</span>
+              </span>
+            </div>
+
+            {/* Cinematic Gradient Title with High-Contrast Drop Shadow */}
+            <h1 className="text-2xl sm:text-3xl lg:text-[2.25rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-rose-100 tracking-tight drop-shadow-[0_2px_14px_rgba(0,0,0,0.6)] leading-tight">
               {activeTab === 'profile' ? 'Profile & Account Settings' : getTabTitle(activeTab)}
+            </h1>
+
+            {/* Premium Informative Subtitle */}
+            <p className="text-xs sm:text-sm text-rose-100/90 font-medium leading-relaxed drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)] max-w-xl">
+              {getTabSubtitle(activeTab)}
             </p>
           </div>
 
@@ -627,9 +668,9 @@ export default function CustomerDashboardPage() {
             size="sm"
             variant="outline"
             onClick={() => setIsAvatarPickerOpen(true)}
-            className="gap-2 bg-black/35 hover:bg-black/55 text-white border-white/25 backdrop-blur-md rounded-xl text-xs font-semibold transition-all shadow-sm hover:scale-102 cursor-pointer shrink-0"
+            className="gap-2 bg-black/40 hover:bg-black/60 text-white border border-white/25 backdrop-blur-md rounded-xl text-xs font-bold transition-all shadow-md hover:scale-102 cursor-pointer shrink-0 self-start ring-1 ring-white/10"
           >
-            <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+            <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
             <span>Change Character</span>
           </Button>
         </div>

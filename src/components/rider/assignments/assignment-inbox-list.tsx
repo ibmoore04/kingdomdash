@@ -1,7 +1,8 @@
 import type { AssignmentInboxOffer } from '@/types/rider'
 import { AssignmentCard } from './assignment-card'
 import { Button } from '@/components/ui/button'
-import { Radio, RefreshCw, AlertTriangle } from 'lucide-react'
+import { ScanningRadar } from '@/components/rider/dashboard/scanning-radar'
+import { RefreshCw, AlertTriangle } from 'lucide-react'
 
 interface AssignmentInboxListProps {
   offers: AssignmentInboxOffer[]
@@ -31,44 +32,25 @@ export function AssignmentInboxList({
     )
   }
 
-  if (!isAvailable && offers.length === 0) {
-    return (
-      <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white p-8 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-border text-text-muted">
-          <Radio className="h-7 w-7" aria-hidden="true" />
-        </div>
-        <h3 className="mt-4 text-h4 font-bold text-text-primary">You are Offline</h3>
-        <p className="mt-2 max-w-sm text-body-small text-text-secondary">
-          Toggle your availability switch to Online to start receiving nearby delivery dispatches.
-        </p>
-      </div>
-    )
-  }
-
   if (offers.length === 0) {
     return (
-      <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white p-8 text-center">
-        <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <Radio className="h-8 w-8 animate-pulse" aria-hidden="true" />
-          <span className="absolute -top-1 -right-1 flex h-4 w-4">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-primary" />
-          </span>
+      <div className="rounded-2xl sm:rounded-3xl border border-neutral-200/90 bg-white p-6 sm:p-10 text-center shadow-md">
+        <ScanningRadar
+          isAvailable={isAvailable}
+          hubLocation="Ijebu-Ode Dispatch Network"
+        />
+        <div className="mt-5 flex justify-center">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onRefresh}
+            className="gap-2 text-xs font-bold rounded-xl h-9 shadow-xs"
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} aria-hidden="true" />
+            <span>Refresh Radar Offers</span>
+          </Button>
         </div>
-        <h3 className="mt-4 text-h4 font-bold text-text-primary">Waiting for Dispatches</h3>
-        <p className="mt-2 max-w-sm text-body-small text-text-secondary">
-          You are online and available. When a nearby order is placed in Ijebu-Ode, it will appear here immediately.
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onRefresh}
-          className="mt-5 gap-2"
-          disabled={isLoading}
-        >
-          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} aria-hidden="true" />
-          Refresh Inbox
-        </Button>
       </div>
     )
   }

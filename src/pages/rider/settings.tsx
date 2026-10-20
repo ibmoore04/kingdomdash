@@ -25,6 +25,7 @@ import {
   ExternalLink,
   MessageSquare,
   AlertTriangle,
+  Settings,
 } from 'lucide-react'
 import { generateWhatsAppLink } from '@/utils/whatsapp'
 import { SoundHapticsSettingsCard } from '@/components/common/sound-haptics-settings-card'
@@ -261,16 +262,21 @@ export default function RiderSettingsPage() {
   return (
     <RiderLayout>
       <div className="space-y-6 pb-12">
-        {/* Page Header */}
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-h3 font-bold text-text-primary">Rider Settings</h1>
-            <p className="text-body-small text-text-secondary">
-              Configure dispatch alerts, navigation app preferences, device optimization, and credentials.
-            </p>
+        {/* Page Header Elevated Card */}
+        <div className="bg-white rounded-2xl border border-neutral-200/90 shadow-md p-5 sm:p-6 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Settings className="h-6 w-6" aria-hidden="true" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">Rider Settings</h1>
+              <p className="text-xs sm:text-sm text-neutral-500 mt-0.5">
+                Configure dispatch alerts, navigation app preferences, device optimization, and credentials.
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="success" className="gap-1 text-caption">
+          <div className="flex items-center gap-2 shrink-0">
+            <Badge variant="success" className="gap-1 text-caption font-semibold">
               <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
               Verified Courier
             </Badge>

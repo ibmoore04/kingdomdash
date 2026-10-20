@@ -122,17 +122,19 @@ export default function RiderSupportPage() {
     <RiderLayout>
       <div className="space-y-6 max-w-5xl mx-auto pb-12">
         {/* Header Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-border shadow-xs">
-          <div>
-            <h1 className="text-xl font-extrabold text-text-primary flex items-center gap-2">
-              <Bike className="w-5 h-5 text-primary" />
-              <span>Rider Support & Operations Help Desk</span>
-            </h1>
-            <p className="text-xs text-text-secondary mt-1">
-              Submit fleet support tickets, track issues by Reference Code, or view admin responses.
-            </p>
+        <div className="bg-white rounded-2xl border border-neutral-200/90 shadow-md p-5 sm:p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Bike className="h-6 w-6" aria-hidden="true" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">Rider Support Desk</h1>
+              <p className="text-xs sm:text-sm text-neutral-500 mt-0.5">
+                Submit fleet support tickets, track issues by Reference Code, or view admin responses.
+              </p>
+            </div>
           </div>
-          <Button asChild variant="primary" className="rounded-xl px-5 font-bold text-xs gap-2 shrink-0">
+          <Button asChild variant="primary" className="rounded-xl px-5 font-bold text-xs gap-2 shrink-0 h-10 shadow-sm">
             <Link to="/support?reason=rider_inquiry">
               <Plus className="w-4 h-4" />
               <span>Log Rider Support Ticket</span>

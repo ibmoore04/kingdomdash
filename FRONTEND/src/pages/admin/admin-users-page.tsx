@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { getUsers, toggleUserActive, getCorporateLeads, updateCorporateLeadStatus, type CorporateLeadRow } from '../../services/supabase/admin';
 import type { AdminUserRow } from '../../types/admin';
 import { useAuthStore } from '@/stores/auth-store';
@@ -101,7 +102,7 @@ export const AdminUsersPage: React.FC = () => {
           id: impersonatingUser.id,
           email: impersonatingUser.email || '',
           full_name: impersonatingUser.full_name || '',
-          phone: impersonatingUser.phone_number || null,
+          phone: impersonatingUser.phone || impersonatingUser.phone_number || null,
           avatar_url: null,
           role: impersonatingUser.role,
           is_active: impersonatingUser.is_active,
@@ -166,15 +167,24 @@ export const AdminUsersPage: React.FC = () => {
         limit: pageSize,
         search: search || undefined,
         role: roleFilter || undefined,
+        isActive: activeFilter,
       });
-      setUsers((res.data || []) as unknown as AdminUserRow[]);
+      const rows = ((res.data || []) as unknown as any[]).map((u) => {
+        const phone = u.phone || u.phone_number || null;
+        return {
+          ...u,
+          phone,
+          phone_number: phone,
+        };
+      });
+      setUsers(rows as unknown as AdminUserRow[]);
       setTotalCount(res.count || 0);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to retrieve users');
     } finally {
       setLoading(false);
     }
-  }, [page, search, roleFilter]);
+  }, [page, search, roleFilter, activeFilter]);
 
   useEffect(() => {
     // Always keep corporate leads count fresh for tab counter
@@ -651,8 +661,18 @@ export const AdminUsersPage: React.FC = () => {
                   <div className="font-semibold text-text-primary text-sm">
                     {user.full_name || 'Unnamed User'}
                   </div>
-                  <div className="text-[11px] font-mono text-text-secondary">
-                    {user.phone_number || 'No phone'}
+                  <div className="text-[11px] font-mono text-text-secondary mt-0.5">
+                    {user.phone || user.phone_number ? (
+                      <a
+                        href={`tel:${user.phone || user.phone_number}`}
+                        className="text-text-secondary hover:text-primary transition-colors inline-flex items-center gap-1"
+                      >
+                        <Phone className="w-3 h-3 text-text-muted shrink-0" />
+                        <span>{user.phone || user.phone_number}</span>
+                      </a>
+                    ) : (
+                      <span className="text-text-muted italic">No phone</span>
+                    )}
                   </div>
                 </div>
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-light-surface text-text-secondary border border-border">
@@ -762,7 +782,19 @@ export const AdminUsersPage: React.FC = () => {
                       <div className="font-semibold text-text-primary">{user.full_name || 'Unnamed User'}</div>
                       <div className="text-[10px] text-text-muted font-mono">{user.id}</div>
                     </td>
-                    <td className="px-4 py-3 font-mono">{user.phone_number || '—'}</td>
+                    <td className="px-4 py-3 font-mono">
+                      {user.phone || user.phone_number ? (
+                        <a
+                          href={`tel:${user.phone || user.phone_number}`}
+                          className="text-text-secondary hover:text-primary hover:underline transition-colors inline-flex items-center gap-1.5"
+                        >
+                          <Phone className="w-3.5 h-3.5 text-text-muted shrink-0" />
+                          <span>{user.phone || user.phone_number}</span>
+                        </a>
+                      ) : (
+                        <span className="text-text-muted">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-light-surface text-text-secondary border border-border">
                         <Shield className="w-2.5 h-2.5 text-primary" />
@@ -865,8 +897,17 @@ export const AdminUsersPage: React.FC = () => {
       )}
 
       {/* Role Impersonation Modal */}
-      {impersonationModalOpen && impersonatingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      {impersonationModalOpen && impersonatingUser && typeof document !== 'undefined' && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && actionLoading === null) {
+              setImpersonationModalOpen(false);
+              setImpersonatingUser(null);
+              setImpersonationError(null);
+            }
+          }}
+        >
           <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="p-5 border-b border-border bg-light-surface/60 flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center border border-amber-200">
@@ -894,7 +935,7 @@ export const AdminUsersPage: React.FC = () => {
                 <div className="p-2.5 rounded-xl bg-light-surface border border-border flex items-center justify-between">
                   <div>
                     <div className="font-semibold text-text-primary">{impersonatingUser.full_name}</div>
-                    <div className="text-[11px] text-text-muted font-mono">{impersonatingUser.email || impersonatingUser.phone_number}</div>
+                    <div className="text-[11px] text-text-muted font-mono">{impersonatingUser.email || impersonatingUser.phone || impersonatingUser.phone_number}</div>
                   </div>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white border border-border text-text-secondary">
                     {impersonatingUser.role}
@@ -950,7 +991,8 @@ export const AdminUsersPage: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

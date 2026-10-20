@@ -82,10 +82,28 @@ export default {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
+        'radar-sweep': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        'radar-pulse-wave': {
+          '0%': { transform: 'scale(0.15)', opacity: '0.9' },
+          '50%': { opacity: '0.45' },
+          '100%': { transform: 'scale(1.2)', opacity: '0' },
+        },
+        'radar-blip': {
+          '0%, 100%': { opacity: '0.3', transform: 'scale(0.85)' },
+          '50%': { opacity: '1', transform: 'scale(1.25)' },
+        },
       },
       animation: {
         'fade-up': 'fade-up 0.6s cubic-bezier(0.25,0.46,0.45,0.94) both',
         'fade-in': 'fade-in 0.5s ease both',
+        'radar-sweep': 'radar-sweep 3s linear infinite',
+        'radar-pulse-wave-1': 'radar-pulse-wave 3s cubic-bezier(0, 0.2, 0.8, 1) infinite',
+        'radar-pulse-wave-2': 'radar-pulse-wave 3s cubic-bezier(0, 0.2, 0.8, 1) 1s infinite',
+        'radar-pulse-wave-3': 'radar-pulse-wave 3s cubic-bezier(0, 0.2, 0.8, 1) 2s infinite',
+        'radar-blip': 'radar-blip 2s ease-in-out infinite',
       },
     },
   },

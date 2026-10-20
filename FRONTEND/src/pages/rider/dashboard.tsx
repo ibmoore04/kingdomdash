@@ -11,12 +11,13 @@ import { getRiderActiveDelivery } from '@/services/rider/custody-service'
 import type { AssignmentInboxOffer, ActiveDeliveryDetails } from '@/types/rider'
 import { AssignmentCard } from '@/components/rider/assignments/assignment-card'
 import { CompulsoryContactBanner } from '@/components/rider/dashboard/compulsory-contact-banner'
+import { ScanningRadar } from '@/components/rider/dashboard/scanning-radar'
 import { Switch } from '@/components/ui/switch'
 import { updateRiderAvailability } from '@/services/rider/rider-service'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { KingdomAvatar } from '@/components/common/kingdom-avatar'
 import {
-  Bike,
   Inbox,
   ArrowRight,
   Star,
@@ -27,6 +28,7 @@ import {
   MapPin,
   AlertTriangle,
   Package,
+  Bike,
 } from 'lucide-react'
 
 import { supabase } from '@/services/supabase/client'
@@ -145,26 +147,42 @@ export default function RiderDashboardPage() {
       inboxCount={inboxOffers.length}
     >
       <div className="space-y-5 sm:space-y-6 w-full">
-        {/* ── Welcome & Operational Context Header ─────────────────────────── */}
+        {/* ── Welcome & Operational Context Elevated Header Card ───────────── */}
         <h1 className="sr-only">Rider Dashboard</h1>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-text-primary tracking-tight">
-                {greeting}, {riderFirstName}
-              </h2>
-              <span className="text-xl sm:text-2xl" role="img" aria-label="wave">
-                👋
-              </span>
+        <div className="bg-white rounded-2xl border border-neutral-200/90 shadow-md p-5 sm:p-6 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <Link
+              to="/rider/profile"
+              className="relative group shrink-0"
+              title="View Rider Profile & Character"
+            >
+              <KingdomAvatar
+                avatarUrl={rider?.avatar_url}
+                name={rider?.full_name || 'Rider'}
+                size="md"
+                role="rider"
+                showBadge={true}
+                className="h-12 w-12 sm:h-14 sm:w-14 ring-2 ring-primary/25 shadow-sm transition-transform group-hover:scale-105"
+              />
+            </Link>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">
+                  {greeting}, {riderFirstName}
+                </h2>
+                <span className="text-xl" role="img" aria-label="wave">
+                  👋
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-neutral-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                <MapPin className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
+                <span>Ijebu-Ode Central Delivery Zone</span>
+                <span className="text-neutral-300">•</span>
+                <span className="font-semibold text-neutral-800 capitalize">
+                  {rider?.vehicle_type || 'Motorcycle'}
+                </span>
+              </p>
             </div>
-            <p className="text-body-small text-text-secondary mt-0.5 flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
-              <span>Ijebu-Ode Central Delivery Zone</span>
-              <span className="text-text-muted">•</span>
-              <span className="font-semibold text-text-primary capitalize">
-                {rider?.vehicle_type || 'Motorcycle'}
-              </span>
-            </p>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -174,7 +192,7 @@ export default function RiderDashboardPage() {
               size="sm"
               onClick={loadData}
               disabled={isLoading}
-              className="gap-1.5 text-xs font-semibold h-9 rounded-xl border-border bg-white text-text-secondary hover:text-text-primary shadow-xs"
+              className="gap-1.5 text-xs font-semibold h-9 rounded-xl border-neutral-200 bg-white text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 shadow-xs"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin text-primary' : ''}`} aria-hidden="true" />
               <span>Sync Status</span>
@@ -188,10 +206,10 @@ export default function RiderDashboardPage() {
         {/* ── Duty Switch Hero Card (TEST-ID PRESERVED) ────────────────────── */}
         <div
           data-testid="rider-duty-status-card"
-          className={`relative overflow-hidden rounded-2xl sm:rounded-3xl border transition-all duration-300 p-5 sm:p-6 shadow-sm ${
+          className={`relative overflow-hidden rounded-2xl sm:rounded-3xl border border-neutral-200/90 shadow-md transition-all duration-300 p-5 sm:p-6 ${
             rider?.is_available
               ? 'border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-white'
-              : 'border-border bg-gradient-to-br from-slate-50 via-white to-slate-50/60'
+              : 'border-neutral-200/90 bg-gradient-to-br from-slate-50 via-white to-slate-50/60'
           }`}
         >
           {/* Subtle background glow effect when online */}
@@ -427,24 +445,11 @@ export default function RiderDashboardPage() {
           </div>
 
           {inboxOffers.length === 0 ? (
-            <div className="rounded-2xl sm:rounded-3xl border border-border bg-white p-8 sm:p-10 text-center shadow-xs">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-3.5">
-                <Inbox className="h-7 w-7" aria-hidden="true" />
-              </div>
-              <h3 className="text-base font-bold text-text-primary mb-1">
-                {rider?.is_available ? 'Radar Active — Waiting for Dispatch' : 'Rider is Currently Offline'}
-              </h3>
-              <p className="text-body-small text-text-muted max-w-md mx-auto leading-relaxed">
-                {rider?.is_available
-                  ? 'Your dispatch radar is active in Ijebu-Ode. When a customer places an order or requests a courier, jobs will ping this inbox in real-time.'
-                  : 'Toggle your status to Online above to start receiving instant delivery offers from nearby restaurants and stores.'}
-              </p>
-              {rider?.is_available && (
-                <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-caption font-semibold text-emerald-700">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Scanning Ijebu-Ode network</span>
-                </div>
-              )}
+            <div className="rounded-2xl sm:rounded-3xl border border-neutral-200/90 bg-white p-6 sm:p-10 text-center shadow-md">
+              <ScanningRadar
+                isAvailable={Boolean(rider?.is_available)}
+                hubLocation="Ijebu-Ode Central Network"
+              />
             </div>
           ) : (
             <div className="space-y-3.5">

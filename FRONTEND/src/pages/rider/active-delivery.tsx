@@ -298,34 +298,38 @@ export default function RiderActiveDeliveryPage() {
 
   return (
     <RiderLayout activeTripCount={1}>
-      <h1 className="sr-only">Active Delivery Trip</h1>
-      <div className="space-y-5 pb-24">
+      <div className="space-y-6 pb-24">
         {/* Header summary */}
-        <div className="flex items-center justify-between gap-2 border-b border-border pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-caption font-mono font-semibold text-text-muted">
-                #{activeDelivery.delivery_id.slice(0, 8)}
-              </span>
-              <Badge
-                variant={
-                  activeDelivery.service_type === 'food'
-                    ? 'primary'
-                    : activeDelivery.service_type === 'grocery'
-                    ? 'success'
-                    : 'info'
-                }
-                className="capitalize text-caption"
-              >
-                {activeDelivery.service_type}
-              </Badge>
+        <div className="bg-white rounded-2xl border border-neutral-200/90 shadow-md p-5 sm:p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Bike className="h-6 w-6" aria-hidden="true" />
             </div>
-            <h1 className="text-h3 font-bold text-text-primary mt-0.5">
-              {activeDelivery.vendor_name}
-            </h1>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono font-bold text-neutral-500">
+                  #{activeDelivery.delivery_id.slice(0, 8)}
+                </span>
+                <Badge
+                  variant={
+                    activeDelivery.service_type === 'food'
+                      ? 'primary'
+                      : activeDelivery.service_type === 'grocery'
+                      ? 'success'
+                      : 'info'
+                  }
+                  className="capitalize text-xs font-semibold"
+                >
+                  {activeDelivery.service_type}
+                </Badge>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight mt-0.5">
+                {activeDelivery.vendor_name}
+              </h1>
+            </div>
           </div>
 
-          <Badge variant="warning" className="capitalize text-caption font-bold">
+          <Badge variant="warning" className="capitalize text-xs font-bold px-3 py-1 self-start sm:self-auto">
             {activeDelivery.delivery_status.replace('_', ' ')}
           </Badge>
         </div>

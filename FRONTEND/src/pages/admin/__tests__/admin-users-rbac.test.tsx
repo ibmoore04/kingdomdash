@@ -154,4 +154,49 @@ describe('AdminUsersPage RBAC & Super Admin Isolation', () => {
       ).toBeInTheDocument()
     })
   })
+
+  it('renders user phone numbers with clickable tel links in both desktop table and mobile cards', async () => {
+    useAuthStore.setState({
+      profile: sampleAdminProfile as any,
+      session: { user: { id: 'admin-1' } } as any,
+    })
+
+    vi.mocked(adminService.getUsers).mockResolvedValueOnce({
+      data: [
+        {
+          id: 'cust-10',
+          full_name: 'Meiya Miller',
+          email: 'meiya@test.com',
+          phone: '+2348099887766',
+          role: 'customer',
+          is_active: true,
+          created_at: new Date().toISOString(),
+        },
+        {
+          id: 'cust-11',
+          full_name: 'No Phone Customer',
+          email: 'nophone@test.com',
+          phone: null,
+          role: 'customer',
+          is_active: true,
+          created_at: new Date().toISOString(),
+        },
+      ],
+      count: 2,
+    } as any)
+
+    render(<AdminUsersPage />)
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Meiya Miller').length).toBeGreaterThan(0)
+    })
+
+    // Both desktop table and mobile card render phone link
+    const phoneLinks = screen.getAllByRole('link', { name: /\+2348099887766/i })
+    expect(phoneLinks.length).toBeGreaterThan(0)
+    expect(phoneLinks[0]).toHaveAttribute('href', 'tel:+2348099887766')
+
+    // Missing phone renders fallback dash in desktop table
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0)
+  })
 })
