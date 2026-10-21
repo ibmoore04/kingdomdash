@@ -1,4 +1,5 @@
 import { supabase } from './client'
+import { sanitizePostgrestSearch } from '@/utils/sanitize-postgrest'
 
 export interface CorporateLead {
   id: string
@@ -20,8 +21,8 @@ export async function getUserCorporateLead(userEmail: string, userPhone?: string
     return { data: null, error: null }
   }
 
-  const cleanEmail = userEmail?.trim().toLowerCase()
-  const cleanPhone = userPhone?.trim()
+  const cleanEmail = sanitizePostgrestSearch(userEmail?.trim())?.toLowerCase()
+  const cleanPhone = sanitizePostgrestSearch(userPhone?.trim())
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

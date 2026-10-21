@@ -49,7 +49,7 @@ export function RiderHeader({ rider }: RiderHeaderProps) {
     <header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center justify-between border-b border-neutral-200/90 bg-white/95 backdrop-blur-md px-3 sm:px-6 lg:px-8">
       {/* ── Left Side: Brand Logo & Section Title ─────────────────────────── */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        <Link to="/rider/dashboard" className="flex items-center gap-1.5 sm:gap-2.5 group shrink-0">
+        <Link to="/" className="flex items-center gap-1.5 sm:gap-2.5 group shrink-0" title="Back to Public Website">
           <img
             src="/KingdomDash-logo.jpg"
             alt="KingdomDash"
@@ -110,16 +110,16 @@ export function RiderHeader({ rider }: RiderHeaderProps) {
           </Link>
         </Button>
 
-        {/* Public Website Link (Desktop & Tablet only, hidden on mobile to prevent squishing header actions) */}
+        {/* Public Website Link (Visible on all screen sizes) */}
         <Button
           asChild
           variant="outline"
           size="sm"
-          className="hidden md:inline-flex gap-1.5 h-8 px-2.5 lg:px-3 text-xs font-semibold text-neutral-700 hover:text-primary rounded-xl shrink-0"
+          className="inline-flex gap-1.5 h-8 px-2 sm:px-2.5 lg:px-3 text-xs font-semibold text-neutral-700 hover:text-primary rounded-xl shrink-0"
         >
           <Link to="/" title="Back to Public Website">
             <Globe className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
-            <span className="hidden lg:inline whitespace-nowrap">Website</span>
+            <span className="hidden sm:inline whitespace-nowrap">Website</span>
           </Link>
         </Button>
 

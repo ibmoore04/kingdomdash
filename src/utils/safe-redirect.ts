@@ -36,8 +36,8 @@ export function validateRedirectPath(
 
   // Must be relative starting with /
   if (!decoded.startsWith('/')) return null
-  // Reject protocol-relative URLs (e.g. //evil.com)
-  if (decoded.startsWith('//')) return null
+  // Reject protocol-relative URLs (e.g. //evil.com) and backslash bypasses (e.g. /\evil.com, /\\evil.com)
+  if (decoded.startsWith('//') || decoded.includes('\\')) return null
   // Reject dangerous schemes
   if (/javascript:|data:|vbscript:/i.test(decoded)) return null
   // Reject any embedded scheme pattern (e.g. /http:// or scheme:)

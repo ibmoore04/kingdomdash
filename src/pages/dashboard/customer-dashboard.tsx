@@ -604,7 +604,7 @@ export default function CustomerDashboardPage() {
       </header>
 
       {/* 2. Full-Width Geometric Crimson KingdomDash Cover Banner (Edge-to-Edge) */}
-      <div className="relative min-h-[12rem] sm:min-h-[14rem] lg:min-h-[15.5rem] w-full overflow-hidden bg-gradient-to-r from-[#5a0513] via-[#850d1e] to-[#38020a] shadow-inner shrink-0">
+      <div className="relative min-h-[14rem] sm:min-h-[15.5rem] lg:min-h-[17rem] w-full overflow-hidden bg-gradient-to-r from-[#5a0513] via-[#850d1e] to-[#38020a] shadow-inner shrink-0">
         <svg
           className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-85"
           viewBox="0 0 1200 320"
@@ -635,8 +635,8 @@ export default function CustomerDashboardPage() {
         </svg>
         <div className="absolute inset-0 bg-radial-gradient from-white/10 to-transparent pointer-events-none" />
 
-        <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-start justify-between gap-4 pt-5 sm:pt-6">
-          <div className="space-y-1.5 max-w-2xl">
+        <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-start justify-between gap-3 pt-5 sm:pt-6 pb-16 sm:pb-20">
+          <div className="space-y-1.5 max-w-xl min-w-0 pr-1">
             {/* Sleek Top Pill Badge */}
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold bg-white/15 text-white backdrop-blur-md border border-white/25 uppercase tracking-widest shadow-2xs">
@@ -653,12 +653,12 @@ export default function CustomerDashboardPage() {
             </div>
 
             {/* Cinematic Gradient Title with High-Contrast Drop Shadow */}
-            <h1 className="text-2xl sm:text-3xl lg:text-[2.25rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-rose-100 tracking-tight drop-shadow-[0_2px_14px_rgba(0,0,0,0.6)] leading-tight">
+            <h1 className="text-xl sm:text-3xl lg:text-[2.25rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-rose-100 tracking-tight drop-shadow-[0_2px_14px_rgba(0,0,0,0.6)] leading-tight">
               {activeTab === 'profile' ? 'Profile & Account Settings' : getTabTitle(activeTab)}
             </h1>
 
             {/* Premium Informative Subtitle */}
-            <p className="text-xs sm:text-sm text-rose-100/90 font-medium leading-relaxed drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)] max-w-xl">
+            <p className="text-xs sm:text-sm text-rose-100/90 font-medium leading-relaxed drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)] max-w-lg">
               {getTabSubtitle(activeTab)}
             </p>
           </div>
@@ -668,10 +668,11 @@ export default function CustomerDashboardPage() {
             size="sm"
             variant="outline"
             onClick={() => setIsAvatarPickerOpen(true)}
-            className="gap-2 bg-black/40 hover:bg-black/60 text-white border border-white/25 backdrop-blur-md rounded-xl text-xs font-bold transition-all shadow-md hover:scale-102 cursor-pointer shrink-0 self-start ring-1 ring-white/10"
+            className="gap-1.5 sm:gap-2 bg-black/40 hover:bg-black/60 text-white border border-white/25 backdrop-blur-md rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-md hover:scale-102 cursor-pointer shrink-0 self-start ring-1 ring-white/10 px-2.5 sm:px-3 py-1.5 mt-0.5"
           >
-            <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
-            <span>Change Character</span>
+            <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse shrink-0" />
+            <span className="hidden xs:inline">Change Character</span>
+            <span className="xs:hidden">Avatar</span>
           </Button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { supabase } from './client'
+import { sanitizePostgrestSearch } from '@/utils/sanitize-postgrest'
 
 export interface SupportTicketPayload {
   name: string
@@ -140,10 +141,13 @@ export async function getAllSupportTickets(
     }
 
     if (options?.search && options.search.trim() !== '') {
-      const q = `%${options.search.trim().toLowerCase()}%`
-      query = query.or(
-        `reference_code.ilike.${q},email.ilike.${q},name.ilike.${q},subject.ilike.${q},message.ilike.${q}`
-      )
+      const clean = sanitizePostgrestSearch(options.search)
+      if (clean) {
+        const q = `%${clean.toLowerCase()}%`
+        query = query.or(
+          `reference_code.ilike.${q},email.ilike.${q},name.ilike.${q},subject.ilike.${q},message.ilike.${q}`
+        )
+      }
     }
 
     const { data, error } = await query

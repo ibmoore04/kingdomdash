@@ -22,9 +22,12 @@ describe('safe-redirect unit tests', () => {
     expect(validateRedirectPath('ftp://files.example.com', origin)).toBeNull()
   })
 
-  it('rejects protocol-relative URLs', () => {
+  it('rejects protocol-relative URLs and backslash bypasses (CVE-2025-68470)', () => {
     expect(validateRedirectPath('//evil.example', origin)).toBeNull()
     expect(validateRedirectPath('///evil.example', origin)).toBeNull()
+    expect(validateRedirectPath('/\\evil.example', origin)).toBeNull()
+    expect(validateRedirectPath('/\\\\evil.example', origin)).toBeNull()
+    expect(validateRedirectPath('/path\\evil.example', origin)).toBeNull()
   })
 
   it('rejects dangerous script schemes', () => {
