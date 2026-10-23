@@ -14,12 +14,9 @@ import {
   Globe,
   HelpCircle,
   Wallet,
-  Sparkles,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useCurrentVendor } from '@/hooks/use-current-vendor'
-import { KingdomAvatar } from '@/components/common/kingdom-avatar'
-import { AvatarPickerModal } from '@/components/common/avatar-picker-modal'
 import { VendorPendingView } from '@/components/vendor/vendor-pending-view'
 import { VendorOverviewTab } from '@/components/vendor/vendor-overview-tab'
 import { VendorOrdersList } from '@/components/vendor/VendorOrdersList'
@@ -111,7 +108,6 @@ export default function VendorDashboardPage() {
       : 'overview'
   )
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState(false)
 
   // Data states
   const [categories, setCategories] = useState<Category[]>([])
@@ -571,113 +567,18 @@ export default function VendorDashboardPage() {
               </Link>
             </Button>
 
-            <Button asChild variant="ghost" size="sm" className="hidden lg:inline-flex gap-1.5 text-caption font-semibold rounded-xl">
+            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex gap-1.5 text-caption font-semibold rounded-xl">
               <Link to={publicStorePath} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                 Preview Store
               </Link>
             </Button>
-
-            {/* Character Avatar Capsule */}
-            <button
-              type="button"
-              onClick={() => setIsAvatarPickerOpen(true)}
-              className="inline-flex items-center gap-1.5 p-1 sm:px-2 sm:py-1 rounded-xl hover:bg-neutral-100 text-xs font-semibold text-neutral-800 transition-colors cursor-pointer border border-transparent hover:border-neutral-200 shrink-0"
-              title="Change Character Avatar"
-            >
-              <KingdomAvatar
-                avatarUrl={profile?.avatar_url}
-                name={vendor.business_name || profile?.full_name}
-                size="sm"
-                role="vendor"
-                showBadge={false}
-                className="h-7 w-7 ring-1 ring-neutral-200 shrink-0"
-              />
-              <span className="hidden xl:inline max-w-[100px] truncate font-bold text-neutral-900">
-                {vendor.business_name}
-              </span>
-            </button>
           </div>
         </header>
 
         {/* Main Scrollable View */}
-        <main className="flex-1 overflow-y-auto pb-28 lg:pb-8">
-          {/* Geometric Crimson KingdomDash Cover Banner */}
-          <div className="relative min-h-[12.5rem] sm:min-h-[14rem] lg:min-h-[15.5rem] w-full overflow-hidden bg-gradient-to-r from-[#5a0513] via-[#850d1e] to-[#38020a] shadow-inner shrink-0">
-            <svg
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-85"
-              viewBox="0 0 1200 320"
-              preserveAspectRatio="none"
-            >
-              <defs>
-                <linearGradient id="facet1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#9B1124" />
-                  <stop offset="100%" stopColor="#6B0616" />
-                </linearGradient>
-                <linearGradient id="facet2" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#C41E3A" />
-                  <stop offset="100%" stopColor="#800A1A" />
-                </linearGradient>
-                <linearGradient id="facet3" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#E11D48" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#9B1124" stopOpacity="0.9" />
-                </linearGradient>
-              </defs>
-              <polygon points="0,0 360,0 240,320 0,320" fill="url(#facet1)" />
-              <polygon points="360,0 760,0 560,320 240,320" fill="url(#facet2)" />
-              <polygon points="760,0 1200,0 980,320 560,320" fill="#750816" />
-              <polygon points="980,320 1200,0 1200,320" fill="#4A040E" />
-              <polygon points="240,320 560,320 420,130" fill="url(#facet3)" />
-              <polygon points="560,320 980,320 780,120" fill="#B91C1C" fillOpacity="0.45" />
-              <polygon points="360,0 580,150 760,0" fill="#F87171" fillOpacity="0.25" />
-              <polygon points="140,0 420,130 240,320" fill="#4A040E" fillOpacity="0.4" />
-            </svg>
-            <div className="absolute inset-0 bg-radial-gradient from-white/10 to-transparent pointer-events-none" />
-
-            <div className="relative z-10 h-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-start justify-between gap-3 pt-5 sm:pt-6 pb-16 sm:pb-20">
-              <div className="space-y-1.5 max-w-xl min-w-0 pr-1">
-                {/* Sleek Top Pill Badge */}
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold bg-white/15 text-white backdrop-blur-md border border-white/25 uppercase tracking-widest shadow-2xs">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${vendor.is_active ? 'bg-emerald-400' : 'bg-amber-400'} opacity-75`} />
-                      <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${vendor.is_active ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                    </span>
-                    <span>Vendor Partner Portal</span>
-                  </span>
-                  <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-mono font-semibold text-rose-200/90 tracking-wider">
-                    <span className="text-white/40">•</span>
-                    <span>{vendor.business_name}</span>
-                  </span>
-                </div>
-
-                {/* Cinematic Gradient Title with High-Contrast Drop Shadow */}
-                <h2 className="text-xl sm:text-3xl lg:text-[2.25rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-rose-100 tracking-tight drop-shadow-[0_2px_14px_rgba(0,0,0,0.6)] leading-tight">
-                  {NAV_ITEMS.find((item) => item.id === activeTab)?.label}
-                </h2>
-
-                {/* Premium Informative Subtitle */}
-                <p className="text-xs sm:text-sm text-rose-100/90 font-medium leading-relaxed drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)] max-w-lg">
-                  {TAB_DESCRIPTIONS[activeTab]}
-                </p>
-              </div>
-
-              {/* Change Character Button */}
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setIsAvatarPickerOpen(true)}
-                className="gap-1.5 sm:gap-2 bg-black/40 hover:bg-black/60 text-white border border-white/25 backdrop-blur-md rounded-xl text-[11px] sm:text-xs font-bold transition-all shadow-md hover:scale-102 cursor-pointer shrink-0 self-start ring-1 ring-white/10 px-2.5 sm:px-3 py-1.5 mt-0.5"
-              >
-                <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse shrink-0" />
-                <span className="hidden xs:inline">Change Character</span>
-                <span className="xs:hidden">Avatar</span>
-              </Button>
-            </div>
-          </div>
-
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 -mt-10 sm:-mt-12 relative z-10 space-y-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-28 lg:pb-8">
+          <div className="mx-auto max-w-6xl space-y-6">
             {/* Immediate Compulsory Contact Warning Banner */}
             <VendorCompulsoryContactBanner vendor={vendor} onSaved={refreshVendor} />
 
@@ -974,12 +875,6 @@ export default function VendorDashboardPage() {
 
       {/* Immediate Compulsory Store Phone Registration Modal */}
       <CompulsoryVendorContactModal vendor={vendor} onSaved={refreshVendor} />
-
-      {/* Royal Character Avatar Picker Modal */}
-      <AvatarPickerModal
-        open={isAvatarPickerOpen}
-        onOpenChange={setIsAvatarPickerOpen}
-      />
     </div>
   )
 }
