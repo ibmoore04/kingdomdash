@@ -199,7 +199,7 @@ export default function ServicesPage() {
       {/* ─── 3. SPECIALIZED SOLUTIONS ─────────────────────────────────────── */}
       <section className="py-12 sm:py-16 bg-neutral-50/60 border-t border-neutral-100">
         <PageContainer>
-          <div className="mb-8 space-y-1">
+          <div className="max-w-4xl mx-auto mb-8 space-y-1">
             <span className="text-[11px] font-bold uppercase tracking-wider text-primary block">
               SPECIALIZED PLATFORM SOLUTIONS
             </span>
@@ -208,7 +208,7 @@ export default function ServicesPage() {
             </h2>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="max-w-4xl mx-auto w-full grid gap-6 md:grid-cols-2 items-stretch justify-center">
             {/* Solution 1: Personal Shopper */}
             <div className="rounded-2xl border border-neutral-200/90 bg-white p-6 sm:p-7 shadow-2xs flex flex-col justify-between space-y-4">
               <div className="space-y-3">

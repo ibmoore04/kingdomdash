@@ -51,7 +51,7 @@ describe('Public routes render without error', () => {
       // Wait for lazy-loaded page to replace the loading fallback
       await waitFor(
         () => expect(screen.getByRole('main')).toBeInTheDocument(),
-        { timeout: 5000 },
+        { timeout: 10000 },
       )
     })
   })

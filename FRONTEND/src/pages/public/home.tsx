@@ -621,9 +621,9 @@ export default function HomePage() {
       {/* ─── 7. UNIFIED LOCAL COVERAGE & MOBILE EXPERIENCE ──────────────── */}
       <section className="py-10 sm:py-14 bg-neutral-50/80 border-t border-neutral-200/60">
         <PageContainer>
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="max-w-4xl mx-auto w-full grid gap-6 md:grid-cols-2 items-stretch justify-center">
             {/* Left Card: Coverage */}
-            <div className="rounded-2xl border border-neutral-200/90 bg-white p-6 sm:p-8 shadow-2xs flex flex-col justify-between space-y-4">
+            <div className="w-full rounded-2xl border border-neutral-200/90 bg-white p-6 sm:p-8 shadow-2xs flex flex-col justify-between space-y-4">
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
                   <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
@@ -644,7 +644,7 @@ export default function HomePage() {
             </div>
 
             {/* Right Card: Mobile App CTA */}
-            <div className="rounded-2xl border border-neutral-200/90 bg-white p-6 sm:p-8 shadow-2xs flex flex-col justify-between space-y-4">
+            <div className="w-full rounded-2xl border border-neutral-200/90 bg-white p-6 sm:p-8 shadow-2xs flex flex-col justify-between space-y-4">
               <div className="space-y-3">
                 <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
                   <Smartphone className="h-3.5 w-3.5" aria-hidden="true" />

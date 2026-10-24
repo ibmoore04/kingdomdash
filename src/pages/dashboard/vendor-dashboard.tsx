@@ -105,7 +105,7 @@ const TAB_DESCRIPTIONS: Record<TabType, string> = {
 export default function VendorDashboardPage() {
   const [searchParams] = useSearchParams()
   const { vendor, isLoading: isVendorLoading, isPendingApproval, refreshVendor } = useCurrentVendor()
-  const { profile, signOut } = useAuthStore()
+  const { signOut } = useAuthStore()
 
   const initialTab = (searchParams.get('tab') as TabType) || 'overview'
   const [activeTab, setActiveTab] = useState<TabType>(

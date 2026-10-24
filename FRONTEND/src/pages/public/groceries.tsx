@@ -188,19 +188,20 @@ export default function GroceriesPage() {
           </div>
 
           {/* Personal Market Shopper Strip */}
-          <div className="mt-3.5 rounded-xl border border-primary/20 bg-primary/5 p-3 sm:px-4 sm:py-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
-            <div className="flex items-center gap-2.5 text-left min-w-0">
-              <ShoppingBag className="h-4 w-4 text-primary shrink-0" />
-              <p className="text-xs text-neutral-700 truncate">
-                <strong className="text-neutral-900 font-semibold">Prefer a custom market run to Oke-Aje or Ita Osu?</strong> We send a personal shopper.
+          <div className="mt-3.5 rounded-xl border border-primary/20 bg-primary/5 p-3.5 sm:px-4 sm:py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 overflow-hidden">
+            <div className="flex items-start sm:items-center gap-2.5 text-left flex-1 min-w-0 w-full">
+              <ShoppingBag className="h-4 w-4 text-primary shrink-0 mt-0.5 sm:mt-0" />
+              <p className="text-xs text-neutral-700 leading-relaxed break-words">
+                <strong className="text-neutral-900 font-semibold">Prefer a custom market run to Oke-Aje or Ita Osu?</strong>{' '}
+                <span>We send a personal shopper.</span>
               </p>
             </div>
             <Link
               to="/personal-shopper"
-              className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline shrink-0"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline shrink-0 whitespace-nowrap self-start sm:self-auto pt-0.5 sm:pt-0"
             >
               <span>Use Personal Shopper</span>
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5 shrink-0" />
             </Link>
           </div>
         </PageContainer>
