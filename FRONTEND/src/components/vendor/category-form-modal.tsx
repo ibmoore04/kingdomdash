@@ -1,10 +1,5 @@
 import { useState, useEffect } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { BottomSheet } from '@/components/ui/bottom-sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -18,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { Category, CategoryInsert, CategoryUpdate, ReferenceCategory } from '@/types'
+import { FolderPlus, Layers } from 'lucide-react'
 
 interface CategoryFormModalProps {
   isOpen: boolean
@@ -111,160 +107,174 @@ export function CategoryFormModal({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-h4 font-bold text-text-primary">
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      className="sm:max-w-xl md:max-w-xl"
+      title={
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+            {editingCategory ? <Layers className="h-4 w-4" /> : <FolderPlus className="h-4 w-4" />}
+          </span>
+          <h3 className="text-h4 font-bold text-text-primary">
             {editingCategory ? 'Edit Category' : 'Create Category'}
-          </DialogTitle>
-        </DialogHeader>
+          </h3>
+        </div>
+      }
+      description={
+        editingCategory
+          ? 'Update category details and menu taxonomy section'
+          : 'Create a new category section for your products and menu items'
+      }
+      footer={
+        <div className="flex items-center justify-end gap-3 w-full">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="rounded-xl px-4 py-2 font-semibold"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="category-form"
+            variant="primary"
+            disabled={isSubmitting}
+            className="rounded-xl px-5 py-2 font-bold text-white bg-primary hover:bg-primary-hover shadow-sm"
+          >
+            {isSubmitting ? 'Saving…' : editingCategory ? 'Save Changes' : 'Create Category'}
+          </Button>
+        </div>
+      }
+    >
+      {error && (
+        <div className="rounded-xl border border-status-error/20 bg-status-error/10 p-3 text-body-small text-status-error mb-4" role="alert">
+          {error}
+        </div>
+      )}
 
-        {error && (
-          <div className="rounded-lg border border-status-error/20 bg-status-error/10 p-3 text-body-small text-status-error" role="alert">
-            {error}
-          </div>
-        )}
+      <form id="category-form" onSubmit={handleSubmit} className="space-y-4 pb-2">
+        <div>
+          <Label htmlFor="category-name" className="text-label font-semibold text-text-primary">
+            Category Name <span className="text-status-error">*</span>
+          </Label>
+          <Input
+            id="category-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Swallows & Soups, Grills, Produce"
+            className="mt-1"
+            required
+          />
+        </div>
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+        <div>
+          <Label htmlFor="category-service-type" className="text-label font-semibold text-text-primary">
+            Service Type <span className="text-status-error">*</span>
+          </Label>
+          <Select
+            value={serviceType}
+            onValueChange={(val) => setServiceType(val as 'food' | 'grocery')}
+          >
+            <SelectTrigger
+              id="category-service-type"
+              className="mt-1 flex h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-body-small focus-visible:ring-primary"
+            >
+              <SelectValue placeholder="Select Service Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {(!vendorServices || vendorServices.includes('food')) && (
+                <SelectItem value="food">Food Menu</SelectItem>
+              )}
+              {(!vendorServices || vendorServices.includes('grocery')) && (
+                <SelectItem value="grocery">Grocery Catalog</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {referenceCategories.length > 0 && (
           <div>
-            <Label htmlFor="category-name" className="text-label font-semibold text-text-primary">
-              Category Name <span className="text-status-error">*</span>
-            </Label>
-            <Input
-              id="category-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Swallows & Soups, Grills, Produce"
-              className="mt-1"
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="category-service-type" className="text-label font-semibold text-text-primary">
-              Service Type <span className="text-status-error">*</span>
+            <Label htmlFor="reference-category" className="text-label font-semibold text-text-primary">
+              Global Reference Category (Optional)
             </Label>
             <Select
-              value={serviceType}
-              onValueChange={(val) => setServiceType(val as 'food' | 'grocery')}
+              value={referenceCategoryId || 'none'}
+              onValueChange={(val) => {
+                const resolvedVal = val === 'none' ? '' : val
+                setReferenceCategoryId(resolvedVal)
+                const matched = referenceCategories.find((rc) => rc.id === resolvedVal)
+                if (matched && matched.service_type) {
+                  setServiceType(matched.service_type as 'food' | 'grocery')
+                }
+              }}
             >
               <SelectTrigger
-                id="category-service-type"
+                id="reference-category"
                 className="mt-1 flex h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-body-small focus-visible:ring-primary"
               >
-                <SelectValue placeholder="Select Service Type" />
+                <SelectValue placeholder="None / Custom Category" />
               </SelectTrigger>
               <SelectContent>
-                {(!vendorServices || vendorServices.includes('food')) && (
-                  <SelectItem value="food">Food Menu</SelectItem>
-                )}
-                {(!vendorServices || vendorServices.includes('grocery')) && (
-                  <SelectItem value="grocery">Grocery Catalog</SelectItem>
-                )}
+                <SelectItem value="none">None / Custom Category</SelectItem>
+                {referenceCategories
+                  .filter((ref) => !ref.service_type || ref.service_type === serviceType)
+                  .map((ref) => (
+                    <SelectItem key={ref.id} value={ref.id}>
+                      {ref.name} ({ref.service_type})
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
+        )}
 
-          {referenceCategories.length > 0 && (
-            <div>
-              <Label htmlFor="reference-category" className="text-label font-semibold text-text-primary">
-                Global Reference Category (Optional)
-              </Label>
-              <Select
-                value={referenceCategoryId || 'none'}
-                onValueChange={(val) => {
-                  const resolvedVal = val === 'none' ? '' : val
-                  setReferenceCategoryId(resolvedVal)
-                  const matched = referenceCategories.find((rc) => rc.id === resolvedVal)
-                  if (matched && matched.service_type) {
-                    setServiceType(matched.service_type as 'food' | 'grocery')
-                  }
-                }}
-              >
-                <SelectTrigger
-                  id="reference-category"
-                  className="mt-1 flex h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-body-small focus-visible:ring-primary"
-                >
-                  <SelectValue placeholder="None / Custom Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None / Custom Category</SelectItem>
-                  {referenceCategories
-                    .filter((ref) => !ref.service_type || ref.service_type === serviceType)
-                    .map((ref) => (
-                      <SelectItem key={ref.id} value={ref.id}>
-                        {ref.name} ({ref.service_type})
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+        <div>
+          <Label htmlFor="category-description" className="text-label font-semibold text-text-primary">
+            Description (Optional)
+          </Label>
+          <Textarea
+            id="category-description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Brief description of this menu section"
+            className="mt-1 resize-none"
+            rows={2}
+          />
+        </div>
 
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="category-description" className="text-label font-semibold text-text-primary">
-              Description (Optional)
+            <Label htmlFor="display-order" className="text-label font-semibold text-text-primary">
+              Display Order
             </Label>
-            <Textarea
-              id="category-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of this menu section"
-              className="mt-1 resize-none"
-              rows={2}
+            <Input
+              id="display-order"
+              type="number"
+              value={displayOrder}
+              onChange={(e) => setDisplayOrder(e.target.value)}
+              min="0"
+              step="1"
+              className="mt-1"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="display-order" className="text-label font-semibold text-text-primary">
-                Display Order
-              </Label>
-              <Input
-                id="display-order"
-                type="number"
-                value={displayOrder}
-                onChange={(e) => setDisplayOrder(e.target.value)}
-                min="0"
-                step="1"
-                className="mt-1"
+          <div className="flex flex-col justify-center pt-5">
+            <div className="flex items-center gap-3">
+              <Switch
+                id="category-active"
+                checked={isActive}
+                onCheckedChange={setIsActive}
               />
-            </div>
-
-            <div className="flex flex-col justify-center pt-5">
-              <div className="flex items-center gap-3">
-                <Switch
-                  id="category-active"
-                  checked={isActive}
-                  onCheckedChange={setIsActive}
-                />
-                <Label htmlFor="category-active" className="cursor-pointer text-body-small font-medium text-text-primary">
-                  {isActive ? 'Active' : 'Inactive'}
-                </Label>
-              </div>
+              <Label htmlFor="category-active" className="cursor-pointer text-body-small font-medium text-text-primary">
+                {isActive ? 'Active' : 'Inactive'}
+              </Label>
             </div>
           </div>
-
-          <div className="mt-6 flex justify-end gap-3 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={isSubmitting}
-              className="font-bold text-white bg-primary hover:bg-primary-hover"
-            >
-              {isSubmitting ? 'Saving…' : editingCategory ? 'Save Changes' : 'Create Category'}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </form>
+    </BottomSheet>
   )
 }

@@ -65,7 +65,7 @@ export function BottomSheet({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center p-0 pointer-events-none"
       role={role}
       aria-modal="true"
       aria-labelledby={titleId}
@@ -75,7 +75,7 @@ export function BottomSheet({
     >
       {/* Backdrop with blur */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200 pointer-events-auto"
         aria-hidden="true"
         onClick={() => {
           if (closeOnBackdropClick) {
@@ -88,17 +88,21 @@ export function BottomSheet({
       <div
         ref={sheetRef}
         className={cn(
-          'relative z-10 flex w-full max-h-[90vh] flex-col rounded-t-3xl sm:rounded-2xl bg-white shadow-2xl transition-all',
-          'sm:max-w-lg sm:max-h-[85vh]',
-          'animate-in slide-in-from-bottom duration-250 sm:slide-in-from-bottom-2 sm:zoom-in-95',
+          'relative z-10 pointer-events-auto flex w-full max-h-[92vh] sm:max-h-[88vh] flex-col rounded-t-[2rem] sm:rounded-t-[2.25rem] bg-white shadow-[0_-16px_48px_rgba(0,0,0,0.25)] border-t border-neutral-200/80 transition-all',
+          'sm:max-w-xl md:max-w-2xl',
+          'animate-in slide-in-from-bottom duration-300 ease-out',
           'pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-0',
           className
         )}
       >
-        {/* Pull-down drag indicator handle for mobile */}
-        <div className="flex justify-center pt-3 pb-1 sm:hidden">
+        {/* Pull-down drag indicator handle */}
+        <div 
+          className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing group select-none"
+          onClick={onClose}
+          title="Drag down or click to close"
+        >
           <div
-            className="h-1.5 w-12 rounded-full bg-neutral-300 transition-colors hover:bg-neutral-400"
+            className="h-1.5 w-12 rounded-full bg-neutral-300 transition-colors group-hover:bg-neutral-400"
             aria-hidden="true"
           />
         </div>

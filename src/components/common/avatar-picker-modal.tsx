@@ -1,12 +1,6 @@
 import React, { useState } from 'react'
 import { Crown, Sparkles, Check, Shuffle, CheckCircle, Shield } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog'
+import { BottomSheet } from '@/components/ui/bottom-sheet'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { KingdomAvatar } from '@/components/common/kingdom-avatar'
@@ -119,22 +113,53 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-6 bg-white border border-border rounded-2xl shadow-2xl">
-        <DialogHeader className="mb-4">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 border border-amber-500/20">
-              <Crown className="h-4 w-4" />
-            </span>
-            <DialogTitle className="text-h3 font-bold text-neutral-900">
-              Choose KingdomDash Character
-            </DialogTitle>
-          </div>
-          <DialogDescription className="text-body-small text-text-secondary">
-            Select your official royal vinyl doll or anime character avatar. Every KingdomDash user
-            is assigned a unique character persona!
-          </DialogDescription>
-        </DialogHeader>
+    <BottomSheet
+      isOpen={open}
+      onClose={() => onOpenChange(false)}
+      className="sm:max-w-2xl md:max-w-3xl"
+      title={
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 border border-amber-500/20">
+            <Crown className="h-4 w-4" />
+          </span>
+          <h2 className="text-h3 font-bold text-neutral-900">
+            Choose KingdomDash Character
+          </h2>
+        </div>
+      }
+      description="Select your official royal vinyl doll or anime character avatar. Every KingdomDash user is assigned a unique character persona!"
+      footer={
+        <div className="flex items-center justify-between gap-3 w-full">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onOpenChange(false)}
+            className="text-text-muted hover:text-text-primary rounded-xl"
+          >
+            Cancel
+          </Button>
+
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            disabled={isSaving}
+            onClick={handleSaveAvatar}
+            className="gap-2 font-bold text-white bg-primary hover:bg-primary-hover shadow-sm rounded-xl px-4"
+          >
+            {isSaving ? (
+              'Equipping...'
+            ) : (
+              <>
+                <CheckCircle className="h-4 w-4" />
+                <span>Equip {selectedCharacter.name}</span>
+              </>
+            )}
+          </Button>
+        </div>
+      }
+    >
 
         {/* Selected Persona Showcase Banner */}
         <div className="relative overflow-hidden rounded-2xl border border-neutral-200 bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 text-white p-4 sm:p-5 mb-5 shadow-lg">
@@ -303,39 +328,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
               </div>
             )
           })}
-        </div>
-
-        {/* Footer Actions */}
-        <div className="flex items-center justify-between gap-3 pt-5 mt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onOpenChange(false)}
-            className="text-text-muted hover:text-text-primary"
-          >
-            Cancel
-          </Button>
-
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            disabled={isSaving}
-            onClick={handleSaveAvatar}
-            className="gap-2 font-bold text-white bg-primary hover:bg-primary-hover shadow-sm"
-          >
-            {isSaving ? (
-              'Equipping...'
-            ) : (
-              <>
-                <CheckCircle className="h-4 w-4" />
-                <span>Equip {selectedCharacter.name}</span>
-              </>
-            )}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </BottomSheet>
   )
 }

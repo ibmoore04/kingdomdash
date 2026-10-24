@@ -1,10 +1,5 @@
 import { useState, useEffect } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { BottomSheet } from '@/components/ui/bottom-sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -18,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { Category, Product, ProductInsert, ProductUpdate } from '@/types'
-import { ImageIcon } from 'lucide-react'
+import { ImageIcon, UtensilsCrossed, PlusCircle } from 'lucide-react'
 
 interface ProductFormModalProps {
   isOpen: boolean
@@ -134,186 +129,200 @@ export function ProductFormModal({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-h4 font-bold text-text-primary">
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      className="sm:max-w-xl md:max-w-2xl"
+      title={
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+            {editingProduct ? <UtensilsCrossed className="h-4 w-4" /> : <PlusCircle className="h-4 w-4" />}
+          </span>
+          <h3 className="text-h4 font-bold text-text-primary">
             {editingProduct ? 'Edit Product' : 'Add New Product'}
-          </DialogTitle>
-        </DialogHeader>
+          </h3>
+        </div>
+      }
+      description={
+        editingProduct
+          ? 'Update product pricing, availability, and menu details'
+          : 'Create a new dish or store item for customer ordering'
+      }
+      footer={
+        <div className="flex items-center justify-end gap-3 w-full">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="rounded-xl px-4 py-2 font-semibold"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="product-form"
+            variant="primary"
+            disabled={isSubmitting}
+            className="rounded-xl px-5 py-2 font-bold text-white bg-primary hover:bg-primary-hover shadow-sm"
+          >
+            {isSubmitting ? 'Saving…' : editingProduct ? 'Save Product' : 'Add Product'}
+          </Button>
+        </div>
+      }
+    >
+      {error && (
+        <div className="rounded-xl border border-status-error/20 bg-status-error/10 p-3 text-body-small text-status-error mb-4" role="alert">
+          {error}
+        </div>
+      )}
 
-        {error && (
-          <div className="rounded-lg border border-status-error/20 bg-status-error/10 p-3 text-body-small text-status-error" role="alert">
-            {error}
-          </div>
-        )}
+      <form id="product-form" onSubmit={handleSubmit} className="space-y-4 pb-2">
+        <div>
+          <Label htmlFor="product-name" className="text-label font-semibold text-text-primary">
+            Product / Item Name <span className="text-status-error">*</span>
+          </Label>
+          <Input
+            id="product-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Party Jollof Rice, Fresh Tomatoes (1kg)"
+            className="mt-1"
+            required
+          />
+        </div>
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <Label htmlFor="product-name" className="text-label font-semibold text-text-primary">
-              Product / Item Name <span className="text-status-error">*</span>
+            <Label htmlFor="product-category" className="text-label font-semibold text-text-primary">
+              Category
+            </Label>
+            <Select
+              value={categoryId || 'none'}
+              onValueChange={(val) => setCategoryId(val === 'none' ? '' : val)}
+            >
+              <SelectTrigger
+                id="product-category"
+                className="mt-1 h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-body-small focus-visible:ring-primary"
+              >
+                <SelectValue placeholder="No Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No Category</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name} {cat.service_type ? `(${cat.service_type.toUpperCase()})` : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="product-price" className="text-label font-semibold text-text-primary">
+              Price (₦ NGN) <span className="text-status-error">*</span>
             </Label>
             <Input
-              id="product-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Party Jollof Rice, Fresh Tomatoes (1kg)"
+              id="product-price"
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="2500"
+              min="0"
+              step="0.01"
               className="mt-1"
               required
             />
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="product-category" className="text-label font-semibold text-text-primary">
-                Category
-              </Label>
-              <Select
-                value={categoryId || 'none'}
-                onValueChange={(val) => setCategoryId(val === 'none' ? '' : val)}
-              >
-                <SelectTrigger
-                  id="product-category"
-                  className="mt-1 h-10 w-full rounded-md border border-border bg-white px-3 py-2 text-body-small focus-visible:ring-primary"
-                >
-                  <SelectValue placeholder="No Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No Category</SelectItem>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name} {cat.service_type ? `(${cat.service_type.toUpperCase()})` : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <div>
+          <Label htmlFor="product-description" className="text-label font-semibold text-text-primary">
+            Description (Optional)
+          </Label>
+          <Textarea
+            id="product-description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Portion size, ingredients, special details…"
+            className="mt-1 resize-none"
+            rows={2}
+          />
+        </div>
+
+        {/* Image URL & Live Preview */}
+        <div>
+          <Label htmlFor="product-image" className="text-label font-semibold text-text-primary">
+            Image URL (Optional)
+          </Label>
+          <Input
+            id="product-image"
+            type="url"
+            value={imageUrl}
+            onChange={(e) => {
+              setImageUrl(e.target.value)
+              setImagePreviewFailed(false)
+            }}
+            placeholder="https://example.com/image.jpg"
+            className="mt-1"
+          />
+
+          {imageUrl.trim() && (
+            <div className="mt-3 flex items-center gap-3 rounded-lg border border-border bg-page-background p-2.5">
+              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-border bg-dark-surface">
+                {!imagePreviewFailed ? (
+                  <img
+                    src={imageUrl}
+                    alt="Product preview"
+                    className="h-full w-full object-cover"
+                    onError={() => setImagePreviewFailed(true)}
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-text-muted">
+                    <ImageIcon className="h-6 w-6" aria-hidden="true" />
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-caption font-semibold text-text-primary">
+                  {imagePreviewFailed ? 'Image load failed (URL unreachable)' : 'Live Image Preview'}
+                </p>
+                <p className="truncate text-caption text-text-secondary">{imageUrl}</p>
+              </div>
             </div>
+          )}
+        </div>
 
-            <div>
-              <Label htmlFor="product-price" className="text-label font-semibold text-text-primary">
-                Price (₦ NGN) <span className="text-status-error">*</span>
-              </Label>
-              <Input
-                id="product-price"
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="2500"
-                min="0"
-                step="0.01"
-                className="mt-1"
-                required
-              />
-            </div>
-          </div>
-
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="product-description" className="text-label font-semibold text-text-primary">
-              Description (Optional)
-            </Label>
-            <Textarea
-              id="product-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Portion size, ingredients, special details…"
-              className="mt-1 resize-none"
-              rows={2}
-            />
-          </div>
-
-          {/* Image URL & Live Preview */}
-          <div>
-            <Label htmlFor="product-image" className="text-label font-semibold text-text-primary">
-              Image URL (Optional)
+            <Label htmlFor="product-display-order" className="text-label font-semibold text-text-primary">
+              Display Order
             </Label>
             <Input
-              id="product-image"
-              type="url"
-              value={imageUrl}
-              onChange={(e) => {
-                setImageUrl(e.target.value)
-                setImagePreviewFailed(false)
-              }}
-              placeholder="https://example.com/image.jpg"
+              id="product-display-order"
+              type="number"
+              value={displayOrder}
+              onChange={(e) => setDisplayOrder(e.target.value)}
+              min="0"
+              step="1"
               className="mt-1"
             />
-
-            {imageUrl.trim() && (
-              <div className="mt-3 flex items-center gap-3 rounded-lg border border-border bg-page-background p-2.5">
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-border bg-dark-surface">
-                  {!imagePreviewFailed ? (
-                    <img
-                      src={imageUrl}
-                      alt="Product preview"
-                      className="h-full w-full object-cover"
-                      onError={() => setImagePreviewFailed(true)}
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-text-muted">
-                      <ImageIcon className="h-6 w-6" aria-hidden="true" />
-                    </div>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-caption font-semibold text-text-primary">
-                    {imagePreviewFailed ? 'Image load failed (URL unreachable)' : 'Live Image Preview'}
-                  </p>
-                  <p className="truncate text-caption text-text-secondary">{imageUrl}</p>
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="product-display-order" className="text-label font-semibold text-text-primary">
-                Display Order
-              </Label>
-              <Input
-                id="product-display-order"
-                type="number"
-                value={displayOrder}
-                onChange={(e) => setDisplayOrder(e.target.value)}
-                min="0"
-                step="1"
-                className="mt-1"
+          <div className="flex flex-col justify-center pt-5">
+            <div className="flex items-center gap-3">
+              <Switch
+                id="product-availability"
+                checked={isAvailable}
+                onCheckedChange={setIsAvailable}
               />
-            </div>
-
-            <div className="flex flex-col justify-center pt-5">
-              <div className="flex items-center gap-3">
-                <Switch
-                  id="product-availability"
-                  checked={isAvailable}
-                  onCheckedChange={setIsAvailable}
-                />
-                <Label htmlFor="product-availability" className="cursor-pointer text-body-small font-medium text-text-primary">
-                  {isAvailable ? 'In Stock (Available)' : 'Out of Stock'}
-                </Label>
-              </div>
+              <Label htmlFor="product-availability" className="cursor-pointer text-body-small font-medium text-text-primary">
+                {isAvailable ? 'In Stock (Available)' : 'Out of Stock'}
+              </Label>
             </div>
           </div>
-
-          <div className="mt-6 flex justify-end gap-3 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={isSubmitting}
-              className="font-bold text-white bg-primary hover:bg-primary-hover"
-            >
-              {isSubmitting ? 'Saving…' : editingProduct ? 'Save Product' : 'Add Product'}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </form>
+    </BottomSheet>
   )
 }
