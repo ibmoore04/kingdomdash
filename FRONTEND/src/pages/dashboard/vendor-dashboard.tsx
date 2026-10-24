@@ -6,14 +6,13 @@ import {
   Store,
   LogOut,
   ExternalLink,
-  Menu,
-  X,
   ShoppingBag,
   Bell,
   Settings,
   Globe,
   HelpCircle,
   Wallet,
+  MoreHorizontal,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useCurrentVendor } from '@/hooks/use-current-vendor'
@@ -32,6 +31,7 @@ import { CategoryFormModal } from '@/components/vendor/category-form-modal'
 import { DeleteConfirmDialog } from '@/components/vendor/delete-confirm-dialog'
 import { CompulsoryVendorContactModal } from '@/components/vendor/compulsory-vendor-contact-modal'
 import { VendorCompulsoryContactBanner } from '@/components/vendor/vendor-compulsory-contact-banner'
+import { BottomSheet } from '@/components/ui/bottom-sheet'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/auth-store'
@@ -75,13 +75,19 @@ const NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] 
   { id: 'settings', label: 'Settings', icon: Settings },
 ]
 
-const VENDOR_MOBILE_NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] = [
+const PRIMARY_MOBILE_NAV_ITEMS: { id: TabType; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'orders', label: 'Orders', icon: ShoppingBag },
-  { id: 'earnings', label: 'Earnings', icon: Wallet },
   { id: 'products', label: 'Products', icon: UtensilsCrossed },
-  { id: 'support', label: 'Support', icon: HelpCircle },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'earnings', label: 'Earnings', icon: Wallet },
+]
+
+const MORE_NAV_ITEMS: { id: TabType; label: string; description: string; icon: typeof LayoutDashboard }[] = [
+  { id: 'categories', label: 'Categories', description: 'Store taxonomy, dish sections & menu groups', icon: FolderTree },
+  { id: 'profile', label: 'Business Profile', description: 'Store identity, address & brand presentation', icon: Store },
+  { id: 'notifications', label: 'Notifications', description: 'Platform alerts, orders & system notices', icon: Bell },
+  { id: 'support', label: 'Merchant Support', description: 'Partner tickets, menu changes & assistance', icon: HelpCircle },
+  { id: 'settings', label: 'Store Settings', description: 'Operational preferences, fulfillment & security', icon: Settings },
 ]
 
 const TAB_DESCRIPTIONS: Record<TabType, string> = {
@@ -107,7 +113,8 @@ export default function VendorDashboardPage() {
       ? initialTab
       : 'overview'
   )
-  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [isMoreOpen, setIsMoreOpen] = useState(false)
+  const isMoreActive = MORE_NAV_ITEMS.some((item) => item.id === activeTab)
 
   // Data states
   const [categories, setCategories] = useState<Category[]>([])
@@ -483,15 +490,6 @@ export default function VendorDashboardPage() {
         {/* Top Header */}
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-white/95 backdrop-blur-md px-4 sm:px-6">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <button
-              type="button"
-              onClick={() => setMobileNavOpen(true)}
-              className="rounded-xl p-2 text-text-secondary hover:bg-page-background lg:hidden shrink-0 border border-border"
-              aria-label="Open navigation menu"
-            >
-              <Menu className="h-5 w-5" aria-hidden="true" />
-            </button>
-
             {/* Mobile Logo Link back to home */}
             <Link to="/" className="flex items-center gap-2 lg:hidden shrink-0" title="Back to Public Website">
               <img
@@ -689,140 +687,154 @@ export default function VendorDashboardPage() {
 
       {/* ── Mobile Sticky Bottom Navigation Bar ─────────────────────────────── */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-border bg-white/95 backdrop-blur-md px-2 py-1 shadow-lg lg:hidden"
+        className="fixed bottom-0 left-0 right-0 z-30 grid grid-cols-5 h-16 border-t border-border bg-white/95 backdrop-blur-md px-1 py-1 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] lg:hidden pb-[calc(0.25rem+env(safe-area-inset-bottom,0px))]"
         aria-label="Vendor mobile bottom navigation"
       >
-        {VENDOR_MOBILE_NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+        {PRIMARY_MOBILE_NAV_ITEMS.map(({ id, label, icon: Icon }) => {
           const isActive = activeTab === id
           return (
             <button
               key={id}
               type="button"
               onClick={() => setActiveTab(id)}
-              className={`flex flex-1 flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors ${
+              className={`flex flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors ${
                 isActive
                   ? 'text-primary font-bold'
                   : 'text-text-muted hover:text-text-primary'
               }`}
             >
-              <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} aria-hidden="true" />
-              <span className="truncate">{label}</span>
+              <div className="relative">
+                <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} aria-hidden="true" />
+                {isActive && (
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-primary" />
+                )}
+              </div>
+              <span className="truncate max-w-[64px]">{label}</span>
             </button>
           )
         })}
+
+        {/* 5th Tab: "More" Options Button */}
+        <button
+          type="button"
+          onClick={() => setIsMoreOpen(true)}
+          className={`flex flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition-colors ${
+            isMoreActive
+              ? 'text-primary font-bold'
+              : 'text-text-muted hover:text-text-primary'
+          }`}
+          aria-label="Open more store options"
+        >
+          <div className="relative">
+            <MoreHorizontal className={`h-5 w-5 ${isMoreActive ? 'stroke-[2.5px]' : 'stroke-2'}`} aria-hidden="true" />
+            {isMoreActive && (
+              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary ring-2 ring-white" />
+            )}
+          </div>
+          <span className="truncate max-w-[64px]">
+            {isMoreActive ? NAV_ITEMS.find((n) => n.id === activeTab)?.label.split(' ')[0] || 'More' : 'More'}
+          </span>
+        </button>
       </nav>
 
-      {/* ── Mobile Drawer Navigation ─────────────────────────────────────────── */}
-      {mobileNavOpen && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
-          <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-xs"
-            onClick={() => setMobileNavOpen(false)}
-            aria-hidden="true"
-          />
-          <div className="relative flex w-72 max-w-[85%] flex-col bg-white p-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-border pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden bg-primary/10 border border-primary/20 shrink-0 p-1">
-                  {vendor.logo_url ? (
-                    <img
-                      src={vendor.logo_url}
-                      alt={vendor.business_name}
-                      className="h-full w-full object-cover rounded-lg"
-                      onError={(e) => {
-                        e.currentTarget.src = '/KingdomDash-emblem-clean.png'
-                      }}
-                    />
-                  ) : (
-                    <img
-                      src="/KingdomDash-emblem-clean.png"
-                      alt="KingdomDash"
-                      className="h-7 w-7 object-contain"
-                    />
-                  )}
-                </div>
-                <div>
-                  <span className="text-body font-bold text-text-primary block truncate max-w-[140px]">
-                    {vendor.business_name}
-                  </span>
-                  <span className="text-[10px] text-primary font-bold uppercase tracking-wider">
-                    Vendor Portal
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setMobileNavOpen(false)}
-                className="rounded-lg p-1.5 text-text-muted hover:bg-page-background hover:text-text-primary"
-                aria-label="Close menu"
-              >
-                <X className="h-5 w-5" aria-hidden="true" />
-              </button>
-            </div>
-
-            <div className="mt-4 space-y-1 flex-1 overflow-y-auto">
-              <div className="px-2 pb-1 text-[10px] font-bold text-text-muted uppercase tracking-wider">
-                Store Operations
-              </div>
-              {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
-                const isActive = activeTab === id
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => {
-                      setActiveTab(id)
-                      setMobileNavOpen(false)
-                    }}
-                    className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-body-small font-medium ${
-                      isActive
-                        ? 'bg-primary text-white font-semibold shadow-xs'
-                        : 'text-text-secondary hover:bg-page-background'
-                    }`}
-                  >
-                    <Icon className="h-4.5 w-4.5 shrink-0" aria-hidden="true" />
-                    <span className="truncate">{label}</span>
-                  </button>
-                )
-              })}
-            </div>
-
-            <div className="mt-auto border-t border-border pt-4 space-y-2">
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="w-full justify-start gap-2.5 text-text-secondary hover:text-primary rounded-xl"
-              >
-                <Link to="/" onClick={() => setMobileNavOpen(false)}>
-                  <Globe className="h-4 w-4 text-primary" />
-                  Public Website
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2.5 text-text-muted hover:text-text-primary rounded-xl"
-              >
-                <Link to={publicStorePath} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                  Preview Store
-                </Link>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => signOut()}
-                className="w-full justify-start gap-2.5 text-text-muted hover:bg-error/10 hover:text-error rounded-xl"
-              >
-                <LogOut className="h-4 w-4" aria-hidden="true" />
-                Sign Out
-              </Button>
-            </div>
+      {/* ── More Options Bottom Sheet Drawer ─────────────────────────────────── */}
+      <BottomSheet
+        isOpen={isMoreOpen}
+        onClose={() => setIsMoreOpen(false)}
+        className="sm:max-w-xl md:max-w-xl"
+        title={
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+              <MoreHorizontal className="h-4 w-4" />
+            </span>
+            <h3 className="text-h4 font-bold text-text-primary">More Store Operations</h3>
           </div>
+        }
+        description="Access catalog taxonomy, store branding, alerts, and settings"
+        footer={
+          <div className="flex items-center justify-between gap-2 w-full pt-1">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="gap-1.5 rounded-xl text-xs font-semibold text-text-secondary hover:text-primary"
+            >
+              <Link to="/" onClick={() => setIsMoreOpen(false)} title="Back to Public Website">
+                <Globe className="h-3.5 w-3.5 text-primary" />
+                <span>Website</span>
+              </Link>
+            </Button>
+
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 rounded-xl text-xs font-semibold text-text-muted hover:text-text-primary"
+            >
+              <Link to={publicStorePath} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>Preview Store</span>
+              </Link>
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setIsMoreOpen(false)
+                signOut()
+              }}
+              className="gap-1.5 rounded-xl text-xs font-semibold text-text-muted hover:bg-error/10 hover:text-error"
+            >
+              <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Sign Out</span>
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-2 py-1">
+          {MORE_NAV_ITEMS.map(({ id, label, description, icon: Icon }) => {
+            const isActive = activeTab === id
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => {
+                  setActiveTab(id)
+                  setIsMoreOpen(false)
+                }}
+                className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-all border cursor-pointer ${
+                  isActive
+                    ? 'border-primary/30 bg-primary/5 text-primary font-bold shadow-xs'
+                    : 'border-border/60 bg-neutral-50/50 hover:bg-neutral-100 hover:border-border text-text-primary'
+                }`}
+              >
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
+                    isActive
+                      ? 'border-primary bg-primary text-white shadow-xs'
+                      : 'border-border bg-white text-text-secondary'
+                  }`}
+                >
+                  <Icon className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-text-primary">{label}</span>
+                    {isActive && (
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-text-secondary line-clamp-1">{description}</p>
+                </div>
+              </button>
+            )
+          })}
         </div>
-      )}
+      </BottomSheet>
 
       {/* ── Dialogs / Modals ─────────────────────────────────────────────────── */}
       <ProductFormModal
