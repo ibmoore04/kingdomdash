@@ -119,11 +119,19 @@ const VendorPendingPage = lazy(() => import('@/pages/customer/vendor-pending-pag
 import { OfflineBanner } from '@/components/shared/offline-banner'
 import { ImpersonationBanner } from '@/components/shared/impersonation-banner'
 import { PwaInstallBanner } from '@/components/common/pwa-install-banner'
-import { Preloader } from '@/components/shared/preloader'
 import { RouteProgressBar } from '@/components/shared/route-progress'
 
 function PageLoader() {
-  return <Preloader fullScreen message="Loading page..." />
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-label="Loading page..."
+      className="fixed top-0 left-0 right-0 z-50 pointer-events-none"
+    >
+      <div className="h-[3px] w-full bg-primary animate-pulse shadow-[0_0_10px_rgba(229,9,20,0.8)]" />
+    </div>
+  )
 }
 
 export default function App() {
