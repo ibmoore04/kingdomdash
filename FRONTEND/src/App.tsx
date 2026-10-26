@@ -1,8 +1,10 @@
-import { lazy, Suspense } from 'react'
+import { Suspense } from 'react'
+import { lazyWithRetry as lazy } from '@/utils/lazy-retry'
 import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom'
 import { PublicLayout } from '@/components/layout/public-layout'
 import { ScrollToTop } from '@/components/layout/scroll-to-top'
 import { RouteGuard } from '@/components/auth/route-guard'
+import { RouteErrorBoundary } from '@/components/shared/route-error-boundary'
 import { useAuthStore } from '@/stores/auth-store'
 
 function RedirectWithQuery({ to }: { to: string }) {
@@ -142,8 +144,9 @@ export default function App() {
       <OfflineBanner />
       <ImpersonationBanner />
       <PwaInstallBanner />
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
+      <RouteErrorBoundary>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
         {/* ── Direct auth aliases (preserving query parameters) ─────────────── */}
         <Route path="/login" element={<RedirectWithQuery to="/auth/login" />} />
         <Route path="/register" element={<RedirectWithQuery to="/auth/register" />} />
@@ -263,6 +266,7 @@ export default function App() {
         </Route>
       </Routes>
     </Suspense>
+    </RouteErrorBoundary>
     </>
   )
 }

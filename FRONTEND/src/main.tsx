@@ -15,6 +15,20 @@ import { useUiStore } from '@/stores/ui-store'
 // Initialize PWA service worker shell
 registerServiceWorker().catch(() => {})
 
+// Auto-recover from stale deployment chunks when new versions deploy to Vercel
+if (typeof window !== 'undefined') {
+  window.addEventListener('vite:preloadError', (event) => {
+    console.warn('[KingdomDash] Stale chunk detected after deployment. Reloading for latest release...', event)
+    const key = 'kd_preload_reload_' + window.location.pathname
+    const lastReload = Number(sessionStorage.getItem(key) || 0)
+    const now = Date.now()
+    if (now - lastReload > 8000) {
+      sessionStorage.setItem(key, String(now))
+      window.location.reload()
+    }
+  })
+}
+
 if (import.meta.env.DEV && typeof window !== 'undefined') {
   const win = window as unknown as Record<string, unknown>
   win.supabase = supabase

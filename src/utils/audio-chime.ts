@@ -15,11 +15,13 @@ function getAudioContextClass(): typeof AudioContext | undefined {
 
 /**
  * Returns or creates the singleton AudioContext instance.
+ * @param createIfMissing Only instantiate if true (avoids premature autoplay warnings on passive checks)
  */
-export function getSharedAudioContext(): AudioContext | null {
+export function getSharedAudioContext(createIfMissing = true): AudioContext | null {
   if (typeof window === 'undefined') return null;
 
   if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+    if (!createIfMissing) return null;
     const AudioContextClass = getAudioContextClass();
     if (AudioContextClass) {
       try {
@@ -35,10 +37,11 @@ export function getSharedAudioContext(): AudioContext | null {
 
 /**
  * Checks whether the AudioContext is running and unblocked by the mobile browser.
+ * Never creates an AudioContext prematurely to satisfy browser autoplay policies.
  */
 export function isAudioUnlocked(): boolean {
-  const ctx = getSharedAudioContext();
-  return Boolean(ctx && ctx.state === 'running');
+  if (!sharedAudioCtx) return false;
+  return sharedAudioCtx.state === 'running';
 }
 
 /**

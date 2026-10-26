@@ -1,10 +1,10 @@
 /**
  * KingdomDash Service Worker (Cache-First UI + Offline Fallback + Push Notifications)
- * Version: kd-sw-v1
+ * Version: kd-sw-v2
  */
 
-const CACHE_NAME = 'kd-static-v1'
-const DYNAMIC_CACHE = 'kd-dynamic-v1'
+const CACHE_NAME = 'kd-static-v2'
+const DYNAMIC_CACHE = 'kd-dynamic-v2'
 
 const PRECACHE_ASSETS = [
   '/',
@@ -99,6 +99,10 @@ self.addEventListener('fetch', (event) => {
           fetch(req)
             .then((networkResp) => {
               if (networkResp && networkResp.status === 200) {
+                const contentType = networkResp.headers.get('content-type') || ''
+                if (url.pathname.endsWith('.js') && contentType.includes('text/html')) {
+                  return
+                }
                 caches.open(DYNAMIC_CACHE).then((cache) => cache.put(req, networkResp))
               }
             })
@@ -109,6 +113,15 @@ self.addEventListener('fetch', (event) => {
         return fetch(req)
           .then((networkResp) => {
             if (networkResp && networkResp.status === 200) {
+              const contentType = networkResp.headers.get('content-type') || ''
+              // If Vercel SPA rewrite served index.html (text/html) for a missing .js chunk, do NOT cache it!
+              if (url.pathname.endsWith('.js') && contentType.includes('text/html')) {
+                return new Response('/* Chunk not found */', {
+                  status: 404,
+                  statusText: 'Not Found',
+                  headers: { 'Content-Type': 'application/javascript' },
+                })
+              }
               const respClone = networkResp.clone()
               caches.open(DYNAMIC_CACHE).then((cache) => cache.put(req, respClone))
             }
@@ -119,7 +132,7 @@ self.addEventListener('fetch', (event) => {
             if (req.destination === 'image') {
               return caches.match('/KingdomDash-emblem.png')
             }
-            return new Response('', { status: 404 })
+            return new Response('', { status: 404, statusText: 'Not Found' })
           })
       })
     )
